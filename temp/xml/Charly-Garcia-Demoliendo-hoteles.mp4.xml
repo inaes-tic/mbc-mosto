@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mlt>
+  <producer id="877035ed-53bb-44d1-8e13-c44bcf378258" mlt_service="avformat" resource="/home/jmrunge/Downloads/Gardel/Charly-Garcia-Demoliendo-hoteles.mp4"/>
+  <playlist id="a44fc7eb-b1d5-4da6-8d03-5bba77ee7a0a">
+    <entry producer="877035ed-53bb-44d1-8e13-c44bcf378258"/>
+  </playlist>
+  <tractor id="7f3727b8-7f49-45a3-9b55-09c217173d46">
+    <multitrack id="a05c0f6e-eac2-4f5e-95a7-07907d7e766f">
+      <track producer="a44fc7eb-b1d5-4da6-8d03-5bba77ee7a0a"/>
+    </multitrack>
+    <filter mlt_service="gamma" id="28ea4a57-f3b8-408b-a69a-c784db6eecc8" gamma="4"/>
+    <filter mlt_service="mono" id="3a64a697-df2d-4c0b-a010-1c8345f4a529"/>
+    <filter mlt_service="watermark" id="678a085f-7751-408e-be45-23a82379607a" resource="/home/jmrunge/zirBig.png"/>
+    <filter mlt_service="dynamictext" id="1a0c97e8-fba1-43aa-a0f9-e0cd958512a0" argument="#time#" size="15" bgcolour="0xffffff88" geometry="605/416:50%x50%:100" dynamic="1"/>
+    <filter mlt_service="dynamictext" id="6ee0235b-95f3-4fce-a69a-f61b8bdd2226" argument="WALLKINTUN" size="12" bgcolour="0xffffff88" geometry="605/435:50%x50%:100" dynamic="1" read_file="/home/jmrunge/temperat.ura"/>
+  </tractor>
+</mlt>

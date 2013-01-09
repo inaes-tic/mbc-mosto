@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mlt>
+  <producer id="c7943a2e-3f66-4572-bb03-3ccbecfb5e24" mlt_service="avformat" resource="/home/jmrunge/Downloads/Gardel/Mancha-De-Rolando-Antes.mp4"/>
+  <playlist id="946fcf55-0cf2-456a-a1e7-8394c7c229ee">
+    <entry producer="c7943a2e-3f66-4572-bb03-3ccbecfb5e24"/>
+  </playlist>
+  <tractor id="44d2445e-9ca0-4888-a346-fc76439d3480">
+    <multitrack id="766647dc-360f-4bf3-8b86-54b238e549be">
+      <track producer="946fcf55-0cf2-456a-a1e7-8394c7c229ee"/>
+    </multitrack>
+    <filter mlt_service="gamma" id="e3721937-47da-43a8-b72c-ccec3c3920a5" gamma="4"/>
+    <filter mlt_service="mono" id="57b22fc2-50db-4cc1-9b61-07271eb08f98"/>
+    <filter mlt_service="watermark" id="38648f45-f289-4c6b-a6cc-9c34da1552b4" resource="/home/jmrunge/zirBig.png"/>
+    <filter mlt_service="dynamictext" id="0eed8b91-d5d3-44e4-ad96-06894fc54ef4" argument="#time#" size="15" bgcolour="0xffffff88" geometry="605/416:50%x50%:100" dynamic="1"/>
+    <filter mlt_service="dynamictext" id="18bb6d1b-6f51-40ad-aceb-f92e65ae24bc" argument="WALLKINTUN" size="12" bgcolour="0xffffff88" geometry="605/435:50%x50%:100" dynamic="1" read_file="/home/jmrunge/temperat.ura"/>
+  </tractor>
+</mlt>

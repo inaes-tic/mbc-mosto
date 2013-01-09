@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mlt>
+  <producer id="86cbb651-77a1-4d95-9564-9b06d7f53f85" mlt_service="avformat" resource="/home/jmrunge/Downloads/Gardel/Charly-Garcia-Cancion-para-mi-muerte-(Vivo).mp4"/>
+  <playlist id="086c1157-c22c-42fe-9feb-178a3145200f">
+    <entry producer="86cbb651-77a1-4d95-9564-9b06d7f53f85"/>
+  </playlist>
+  <tractor id="9fc2fcd4-68cf-4341-af88-88993cc3e8ef">
+    <multitrack id="a9acf0a5-de6b-425a-b058-1427393af148">
+      <track producer="086c1157-c22c-42fe-9feb-178a3145200f"/>
+    </multitrack>
+    <filter mlt_service="gamma" id="7b88abdc-6c0a-4cb9-bae6-0fe8fd469bdc" gamma="4"/>
+    <filter mlt_service="mono" id="6bd764ec-63e7-426f-a59f-d03b09257bae"/>
+    <filter mlt_service="watermark" id="2ab623ed-4ac4-4a93-82a6-af0148bcb13a" resource="/home/jmrunge/zirBig.png"/>
+    <filter mlt_service="dynamictext" id="c72fac94-4e82-4c1f-a43b-ec3516e054da" argument="#time#" size="15" bgcolour="0xffffff88" geometry="605/416:50%x50%:100" dynamic="1"/>
+    <filter mlt_service="dynamictext" id="ca24cf46-ae0f-42e1-8b21-bbb467be3a40" argument="WALLKINTUN" size="12" bgcolour="0xffffff88" geometry="605/435:50%x50%:100" dynamic="1" read_file="/home/jmrunge/temperat.ura"/>
+  </tractor>
+</mlt>
