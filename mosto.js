@@ -4,7 +4,9 @@ var melted_node = require('melted-node'),
     yaml        = require('yaml'),
     sys         = require('util'),
     exec        = require('child_process').exec,
-    Q           = require('q');
+    Q           = require('q'), 
+    Playlist    = require('./api/Playlist.js'),
+    Media       = require('./api/Media.js');
     
 function mosto(configFile) {
     var self = this;
@@ -35,10 +37,24 @@ function mosto(configFile) {
                 console.error("mbc-mosto: [ERROR] Couldnt read playlist file " + element);
             } else {
                 console.log("mbc-mosto: [INFO] Reading playlist: " + element);
-                var playlist = yaml.eval(fileContents.toString());
-                eval("playlist.name='" + element + "'");
+                var aux = yaml.eval(fileContents.toString());
                 console.log("mbc-mosto: [INFO] Adding playlist:");
-                console.log(playlist);
+                console.log(aux);
+                var medias = [];
+                aux.files.forEach(function(element, index, array) {
+                    var type;
+                    var file;
+                    if (typeof element === 'string') {
+                        type = self.config.types.defecto;
+                        file = element;
+                    } else {
+                        type = element.type;
+                        file = element.file;
+                    }
+                    var media = new Media(type, file);
+                    medias.push(media);
+                });
+                var playlist = new Playlist(element, aux.startDate, medias);
                 self.playlists.push(playlist);
             }
             self.orderPlaylists();
@@ -66,18 +82,12 @@ function mosto(configFile) {
     mosto.prototype.playPlaylist = function(playlist) {
         console.log("mbc-mosto: [INFO] Preparing xml for playlist " + playlist.name);
         var xmlFiles = [];
-        playlist.files.forEach(function(element, index, array){
+        playlist.medias.forEach(function(element, index, array){
             var xml = new melted_xml();
             
-            var type;
-            var file;
-            if (typeof element === 'string') {
-                type = self.config.types.defecto;
-                file = element;
-            } else {
-                type = element.type;
-                file = element.file;
-            }
+            var type = element.type;
+            var file = element.file;
+
             var filters = self.config.types[type].filters;
             
             console.log("mbc-mosto: [INFO] Adding file " + file);
