@@ -6,7 +6,6 @@
     base: playlists
     onair: temp/onair
     past: temp/past
-    xml: '/home/jmrunge/mbc/mbc-mosto/temp/xml'
     go: 'temp/go/playlist.go'
   filters:
     gamma: 
