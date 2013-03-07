@@ -3,34 +3,25 @@ var fs          = require('fs'),
     sys         = require('util'),
     exec        = require('child_process').exec,
     Q           = require('q'), 
-    Playlist    = require('./api/Playlist.js'),
-    Media       = require('./api/Media.js'), 
+    Playlist    = require('./api/Playlist'),
+    Media       = require('./api/Media'), 
     mvcp_server = require('./drivers/mvcp/mvcp-driver');
     
 function mosto(configFile) {
     var self = this;
     
     mosto.prototype.startPlaylistsWatch = function() {
-        console.log("mbc-mosto: [INFO] Start watching playlists dir " + self.config.playlists.base) ;
-        fs.watch(self.config.playlists.base, function(event, filename) {
+        console.log("mbc-mosto: [INFO] Start watching playlists dir " + self.config.playlists.to_read) ;
+        fs.watch(self.config.playlists.to_read, function(event, filename) {
             self.readPlaylists();
         });
     };
     
-    mosto.prototype.readConfig = function(callback) {
-        console.log("mbc-mosto: [INFO] Reading configuration from " + self.configFile);
-        var fileContents = fs.readFileSync(self.configFile);
-        if (!fileContents) 
-            throw new Error("mbc-mosto: [ERROR] Couldnt read config file " + self.configFile);
-        self.config = yaml.eval(fileContents.toString());
-        callback();
-    };
-
     mosto.prototype.readPlaylists = function() {
-        console.log("mbc-mosto: [INFO] Start reading playlists from " + self.config.playlists.base);
-        aux = fs.readdirSync(self.config.playlists.base);
+        console.log("mbc-mosto: [INFO] Start reading playlists from " + self.config.playlists.to_read);
+        aux = fs.readdirSync(self.config.playlists.to_read);
         aux.forEach(function(element, index, array){
-            var fileContents = fs.readFileSync(self.config.playlists.base + "/" + element);
+            var fileContents = fs.readFileSync(self.config.playlists.to_read + "/" + element);
             if (!fileContents) {
                 //TODO: do it better
                 console.error("mbc-mosto: [ERROR] Couldnt read playlist file " + element);
@@ -44,7 +35,8 @@ function mosto(configFile) {
                     var type;
                     var file;
                     if (typeof element === 'string') {
-                        type = self.config.types.defecto;
+                        //TODO: Where do we config the filters????
+                        type = "default";
                         file = element;
                     } else {
                         type = element.type;
@@ -61,8 +53,7 @@ function mosto(configFile) {
     };
     
     mosto.prototype.orderPlaylists = function() {
-        console.log("mbc-mosto: [INFO] Start ordering playlists:");
-        console.log(self.playlists);
+        console.log("mbc-mosto: [INFO] Start ordering playlists");
         self.playlists.sort(function (item1, item2) {
             if (item1.startDate < item2.startDate)
                 return -1;
@@ -71,8 +62,7 @@ function mosto(configFile) {
             else
                 return 0;
         });
-        console.log("mbc-mosto: [INFO] Ordered playlists:");
-        console.log(self.playlists);
+        console.log("mbc-mosto: [INFO] Finish ordering playlists");
         self.playlists.forEach(function(element, index, array){
            self.server.playPlaylist(element); 
         });
@@ -83,7 +73,7 @@ function mosto(configFile) {
         fs.watch(self.configFile, function(event, filename) {
             if (event === 'rename')
                 throw new Error("mbc-mosto: [ERROR] Config file renaming is not supported");
-            self.readConfig();
+            this.config = require(this.configFile);
         });
 
         self.startPlaylistsWatch();
@@ -103,11 +93,15 @@ function mosto(configFile) {
     this.server     = new mvcp_server("melted");
     
     if (!this.configFile)
-        this.configFile = "mosto-config.yml";
+        this.configFile = './config.json';
     
-    console.log("mbc-mosto: [INFO] Starting mbc-mosto... " + self.configFile) ;
+    console.log("mbc-mosto: [INFO] Reading configuration from " + this.configFile);
     
-    self.readConfig(self.startMvcpServer);
+    this.config = require(this.configFile);
+    
+    console.log("mbc-mosto: [INFO] Starting mbc-mosto... ") ;
+    
+    self.startMvcpServer();
     
 }
 
