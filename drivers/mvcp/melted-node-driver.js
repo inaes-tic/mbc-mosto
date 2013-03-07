@@ -1,13 +1,15 @@
 var melted_node = require('melted-node'),
     melted_xml  = require('node-mlt'), 
-    Playlist    = require('../../api/Playlist.js'),
-    Media       = require('../../api/Media.js'),
+    Playlist    = require('../../api/Playlist'),
+    Media       = require('../../api/Media'),
     fs          = require('fs'), 
-    config      = require('./conf/melted-node-driver.json');
+    config      = require('./conf/melted-node-driver');
     
-function melted() {
+function melted(host, port) {
     var self = this;
-    this.mlt = new melted_node();
+    console.log("mbc-mosto: [INFO] Creating server instance [" + host + ":" + port + "]")
+    this.mlt = new melted_node(host, port);
+    console.log("mbc-mosto: [INFO] Server instance created [" + this.mlt.host + ":" + this.mlt.port + "]")
     
     melted.prototype.playPlaylist = function(playlist) {
         console.log("mbc-mosto: [INFO] Preparing xml for playlist " + playlist.name);
@@ -93,14 +95,15 @@ function melted() {
     };
     
     melted.prototype.initServer = function() {
+        console.log("mbc-mosto: [INFO] Connecting to server instance [" + self.mlt.host + ":" + self.mlt.port + "]")
         var result = self.mlt.connect();
         return result;
     };
     
 }
 
-exports = module.exports = function() {
-    var melted_node_driver = new melted();
+exports = module.exports = function(host, port) {
+    var melted_node_driver = new melted(host, port);
     return melted_node_driver;
 };
 

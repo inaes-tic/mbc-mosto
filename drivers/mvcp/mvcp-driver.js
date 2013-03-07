@@ -1,11 +1,15 @@
-var melted_node_driver = require("./melted-node-driver.js");
+var melted_node_driver = require("./melted-node-driver"),
+    conf               = require("./conf/mvcp-driver");
 
 function mvcp_driver(type) {
+    var self = this;
     
-    var server;
+    this.server = undefined;
+    
+    console.log("mbc-mosto: [INFO] Creating server for type [" + type + "]")
     
     if (type === 'melted') {
-        server = new melted_node_driver();
+        this.server = new melted_node_driver(conf.host, conf.port);
     } else {
         var err = new Error("mbc-mosto: [ERROR] Unknown type of server [" + type + "]");
         console.error(err);
@@ -13,10 +17,10 @@ function mvcp_driver(type) {
     }
     
     mvcp_driver.prototype.initServer = function() {
-        return server.initServer();
+        return self.server.initServer();
     };
     mvcp_driver.prototype.playPlaylist = function(playlist) {
-        server.playPlaylist(playlist);
+        self.server.playPlaylist(playlist);
     };
 }
 
