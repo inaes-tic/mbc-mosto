@@ -1,5 +1,4 @@
 var fs          = require('fs'),
-    yaml        = require('yaml'),
     sys         = require('util'),
     exec        = require('child_process').exec,
     Q           = require('q'), 
