@@ -5,7 +5,8 @@ var fs          = require('fs'),
     Q           = require('q'), 
     Playlist    = require('./api/Playlist'),
     Media       = require('./api/Media'), 
-    mvcp_server = require('./drivers/mvcp/mvcp-driver');
+    mvcp_server = require('./drivers/mvcp/mvcp-driver'), 
+    crypto      = require('crypto');
     
 function mosto(configFile) {
     var self = this;
@@ -21,34 +22,49 @@ function mosto(configFile) {
         console.log("mbc-mosto: [INFO] Start reading playlists from " + self.config.playlists.to_read);
         aux = fs.readdirSync(self.config.playlists.to_read);
         aux.forEach(function(element, index, array){
-            var fileContents = fs.readFileSync(self.config.playlists.to_read + "/" + element);
-            if (!fileContents) {
-                //TODO: do it better
-                console.error("mbc-mosto: [ERROR] Couldnt read playlist file " + element);
-            } else {
-                console.log("mbc-mosto: [INFO] Reading playlist: " + element);
-                var aux = yaml.eval(fileContents.toString());
-                console.log("mbc-mosto: [INFO] Adding playlist:");
-                console.log(aux);
-                var medias = [];
-                aux.files.forEach(function(element, index, array) {
-                    var type;
-                    var file;
-                    if (typeof element === 'string') {
-                        //TODO: Where do we config the filters????
-                        type = "default";
-                        file = element;
-                    } else {
-                        type = element.type;
-                        file = element.file;
-                    }
-                    var media = new Media(type, file);
-                    medias.push(media);
-                });
-                var playlist = new Playlist(element, aux.startDate, medias);
-                self.playlists.push(playlist);
-            }
-            self.orderPlaylists();
+            console.log("mbc-mosto: [INFO] Reading playlist: " + element);
+            var aux = require(self.config.playlists.to_read + "/" + element);
+            console.log("mbc-mosto: [INFO] Parsing playlist:");
+            console.log(aux);
+            var medias = [];
+            aux.medias.forEach(function(element, index, array) {
+                var type;
+                var file = element.file;
+                if (element.type === undefined) {
+                    //TODO: Where do we config the filters????
+                    type = "default";
+                } else {
+                    type = element.type;
+                }
+                var media = new Media(type, file);
+                medias.push(media);
+            });
+            
+            var callback = undefined;
+            if (index === (array.length - 1))
+                callback = self.orderPlaylists;
+            
+            self.addPlaylist(element, aux.startDate, medias, callback);
+        });
+    };
+    
+    mosto.prototype.addPlaylist = function(name, startDate, medias, callback) {
+        console.log("mbc-mosto: [INFO] Adding playlist " + name);
+        var filename = self.config.playlists.to_read + "/" + name;
+        var md5sum = crypto.createHash('md5');
+
+        var s = fs.ReadStream(filename);
+        s.on('data', function(d) {
+            md5sum.update(d);
+        });
+
+        s.on('end', function() {
+            var hash = md5sum.digest('hex');
+            console.log("mbc-mosto: [INFO] Created hash [" + hash + "] for playlist " + name);
+            var playlist = new Playlist(name, hash, startDate, medias);
+            self.playlists.push(playlist);
+            if (callback !== undefined)
+                callback();
         });
     };
     
