@@ -11,7 +11,7 @@ function melted(host, port) {
     this.mlt = new melted_node(host, port);
     console.log("mbc-mosto: [INFO] Server instance created [" + this.mlt.host + ":" + this.mlt.port + "]")
     
-    melted.prototype.playPlaylist = function(playlist) {
+    melted.prototype.playPlaylist = function(playlist, callback) {
         console.log("mbc-mosto: [INFO] Preparing xml for playlist " + playlist.name);
         var xmlFiles = [];
         playlist.medias.forEach(function(element, index, array){
@@ -67,20 +67,20 @@ function melted(host, port) {
                 } else {
                     console.log("mbc-mosto: [INFO] File ready: " + xmlFile + " at " + playlist.startDate);
                     if (index === (array.length - 1))
-                        self.sendFiles(xmlFiles);
+                        self.sendFiles(xmlFiles, callback);
                 }
             });
         });
     };
     
-    melted.prototype.sendFiles = function(xmlFiles) {
+    melted.prototype.sendFiles = function(xmlFiles, callback) {
         console.log("mbc-mosto: [INFO] Received files: " + xmlFiles);        
         var xmlFile = xmlFiles.shift();
         if (xmlFile !== undefined) {
             console.log('mbc-mosto: [INFO] Sending file ' + xmlFile);
             self.mlt.sendCommand("apnd u0 " + xmlFile, "200 OK", function() {
                 self.mlt.sendCommand("play u0", "200 OK", function() {
-                    self.sendFiles(xmlFiles);
+                    self.sendFiles(xmlFiles, callback);
                 }, function(error) {
                     var err = new Error("mbc-mosto: [ERROR] Error playing u0 for file: " + xmlFile + " [" + error + "]");
                     console.error(err);
@@ -91,11 +91,75 @@ function melted(host, port) {
                 console.error(err);
                 throw err;
             });
+        } else {
+            console.log('mbc-mosto: [INFO] Finish sending files');
+            if (callback !== undefined) {
+                console.log('mbc-mosto: [INFO] Calling callback function');
+                callback();
+            }
         }
     };
     
+    melted.prototype.getServerPlaylist = function(successCallback, errorCallback) {
+            self.mlt.sendCommand("list u0", "201 OK", function(response) {
+                // HACK: Converting the promise object to a string :)
+                var data = "." + response;
+                
+                var split = data.split("\r\n");
+                var JSONresponse = {};
+                JSONresponse.medias = [];
+                for (var i = 2; i < split.length; i++) {
+                    var line = split[i];
+                    if (line.length > 5) {
+                        var media = {};
+                        var parse = line.split(" ");
+                        media.index       = parse[0];
+                        media.file        = parse[1];
+                        media.in          = parse[2];
+                        media.out         = parse[3];
+                        media.real_length = parse[4];
+                        media.calc_length = parse[5];
+                        media.fps         = parse[6]
+                        JSONresponse.medias.push(media);
+                    }
+                }
+//                var aux = JSON.stringify(JSONresponse, null, 4);                
+//                console.log("Esto volvio:");
+//                console.log(aux);
+                successCallback(JSONresponse);
+            }, function(error) {
+                var err = new Error("mbc-mosto: [ERROR] Error getting server playlist: " + error)
+                console.error(err);
+                errorCallback(err);
+            });
+    };
+    
+    melted.prototype.getServerStatus = function(successCallback, errorCallback) {
+            self.mlt.sendCommand("usta u0", "202 OK", function(response) {
+                // HACK: Converting the promise object to a string :)
+                var data = "." + response;
+                
+                var split = data.split("\r\n");
+                var media = {};
+                
+                var parse = split[1].split(" ");
+                media.file         = parse[2];
+                media.currentFrame = parse[3];
+                media.fps          = parse[5];
+                media.in           = parse[6];
+                media.out          = parse[7];
+                media.length       = parse[8];
+                media.index        = parse[16]
+                successCallback(media);
+            }, function(error) {
+                var err = new Error("mbc-mosto: [ERROR] Error getting server status: " + error)
+                console.error(err);
+                errorCallback(err);
+            });
+    };
+    
     melted.prototype.initServer = function() {
-        console.log("mbc-mosto: [INFO] Connecting to server instance [" + self.mlt.host + ":" + self.mlt.port + "]")
+        console.log("mbc-mosto: [INFO] Connecting to server instance [" + self.mlt.host + ":" + self.mlt.port + "]");
         var result = self.mlt.connect();
         return result;
     };

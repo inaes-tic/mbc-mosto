@@ -1,8 +1,8 @@
 {
     "playlists": 
         {
-            "to_read": "./playlists",
-            "on_air": "./temp/onair",
-            "past": "./temp/past"
+            "to_read": "./playlists/to_read",
+            "playing": "./playlists/playing",
+            "old": "./playlists/old"
         }
 }
