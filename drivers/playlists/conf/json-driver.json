@@ -1,0 +1,8 @@
+{
+    "playlists": 
+        {
+            "to_read": "./playlists/to_read",
+            "playing": "./playlists/playing",
+            "old": "./playlists/old"
+        }
+}
