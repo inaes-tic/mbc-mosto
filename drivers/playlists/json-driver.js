@@ -10,7 +10,7 @@ function json_driver() {
     this.newPlaylistCallback    = undefined;
     this.updatePlaylistCallback = undefined;
     this.removePlaylistCallback = undefined;
-    this.playlistsProvider      = undefined;
+//    this.playlistsProvider      = undefined;
     
     console.log("mbc-mosto: [INFO] Creating json playlists driver");
     
@@ -30,9 +30,9 @@ function json_driver() {
     json_driver.prototype.registerRemovePlaylistListener = function(removePlaylistCallback) {
         self.removePlaylistCallback = removePlaylistCallback;
     };
-    json_driver.prototype.registerPlaylistsProvider = function(playlistsProvider) {
-        self.playlistsProvider = playlistsProvider;
-    };
+//    json_driver.prototype.registerPlaylistsProvider = function(playlistsProvider) {
+//        self.playlistsProvider = playlistsProvider;
+//    };
     
     json_driver.prototype.readPlaylists =  function() {
         console.log("mbc-mosto: [INFO] Start reading playlists from " + config.playlists.to_read);
