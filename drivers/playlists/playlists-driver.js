@@ -40,13 +40,13 @@ function playlists_driver(type) {
     };
     
     playlists_driver.prototype.addPlaylist = function(playlist) {
-        newPlaylistCallback(playlist);
+        self.newPlaylistCallback(playlist);
     };
     playlists_driver.prototype.updatePlaylist = function(playlist) {
-        updatePlaylistCallback(playlist);
+        self.updatePlaylistCallback(playlist);
     };
     playlists_driver.prototype.removePlaylist = function(playlist) {
-        removePlaylistCallback(playlist);
+        self.removePlaylistCallback(playlist);
     };
     
 }
