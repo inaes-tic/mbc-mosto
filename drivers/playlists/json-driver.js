@@ -1,9 +1,8 @@
 var fs       = require('fs'),
     config   = require("./conf/json-driver"), 
-    crypto   = require('crypto'), 
     Playlist = require('../../api/Playlist'),
     Media    = require('../../api/Media'),
-    watchr   = require('watchr');;
+    watchr   = require('watchr');
 
 function json_driver() {
     var self = this;
@@ -125,21 +124,10 @@ function json_driver() {
                 endDate.setMinutes(endDate.getMinutes() + parseInt(clipMinutes));
                 endDate.setHours(endDate.getHours() + parseInt(clipHours));
             }
-        });
-            
-
-        var filename = dir + "/" + name;
-        var md5sum = crypto.createHash('md5');
-
-        var s = fs.ReadStream(filename);
-        s.on('data', function(d) {
-            md5sum.update(d);
-        });
-
-        s.on('end', function() {
-            var hash = md5sum.digest('hex');
-            var playlist = new Playlist(name, hash, startDate, medias, endDate);
-            callback(playlist);
+            if (index === (array.length - 1)) {
+                var playlist = new Playlist(name, startDate, medias, endDate);
+                callback(playlist);
+            }
         });
     };
     

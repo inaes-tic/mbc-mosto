@@ -9,9 +9,9 @@ function mosto(configFile) {
         console.log("mbc-mosto: [INFO] Adding playlist " + playlist.name);
         self.playlists.push(playlist);
         console.log("mbc-mosto: [INFO] Added playlist:\nname: " + playlist.name 
-                + "\nhash: " + playlist.hash 
                 + "\nstartDate: " + playlist.startDate 
                 + "\nendDate: " + playlist.endDate);
+        //TODO: stop ordering and playing again all playlists!
         self.orderPlaylists();
     };
     
