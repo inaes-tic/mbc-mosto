@@ -6,7 +6,7 @@ function mvcp_driver(type) {
     
     this.server = undefined;
     
-    console.log("mbc-mosto: [INFO] Creating server for type [" + type + "]")
+    console.log("mbc-mosto: [INFO] Creating server for type [" + type + "]");
     
     if (type === 'melted') {
         this.server = new melted_node_driver(conf.host, conf.port);
