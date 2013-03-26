@@ -30,12 +30,14 @@ function mosto(configFile) {
         self.orderPlaylists();
     };
     
-    mosto.prototype.removePlaylist = function(playlist) {
-        console.log("mbc-mosto: [INFO] Removing playlist " + playlist.name);
+    mosto.prototype.removePlaylist = function(name) {
+        console.log("mbc-mosto: [INFO] Removing playlist " + name);
         var i = -1;
+        var playlist = undefined;
         self.playlists.some(function(element, index, array) {
-            if (element.name === playlist.name) {
+            if (element.name === name) {
                 i = index;
+                playlist = element;
                 return true;
             }
         });
@@ -91,6 +93,8 @@ function mosto(configFile) {
     mosto.prototype.initDriver = function() {
         console.log("mbc-mosto: [INFO] Initializing playlists driver");
         self.driver.registerNewPlaylistListener(self.addPlaylist);
+        self.driver.registerUpdatePlaylistListener(self.updatePlaylist);
+        self.driver.registerRemovePlaylistListener(self.removePlaylist);
         self.driver.start();
     };
     
