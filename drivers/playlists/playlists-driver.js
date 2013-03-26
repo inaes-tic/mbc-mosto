@@ -7,7 +7,6 @@ function playlists_driver(type) {
     this.newPlaylistCallback    = undefined;
     this.updatePlaylistCallback = undefined;
     this.removePlaylistCallback = undefined;
-    this.playlistsProvider      = undefined;
     
     console.log("mbc-mosto: [INFO] Creating playlists driver for type [" + type + "]");
     
@@ -34,9 +33,6 @@ function playlists_driver(type) {
     playlists_driver.prototype.registerRemovePlaylistListener = function(removePlaylistCallback) {
         self.removePlaylistCallback = removePlaylistCallback;
         self.driver.registerRemovePlaylistListener(self.removePlaylist);
-    };
-    playlists_driver.prototype.registerPlaylistsProvider = function(playlistsProvider) {
-        self.driver.registerPlaylistsProvider(playlistsProvider);
     };
     
     playlists_driver.prototype.addPlaylist = function(playlist) {
