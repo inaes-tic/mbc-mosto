@@ -23,6 +23,7 @@ function mosto(configFile) {
                 return true;
             }
         });
+        playlist.loaded = self.playlists[i].loaded;
         self.playlists[i] = playlist;
         console.log("mbc-mosto: [INFO] Updated playlist:\nname: " + playlist.name 
                 + "\nstartDate: " + playlist.startDate 
