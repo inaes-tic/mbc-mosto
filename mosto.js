@@ -32,16 +32,19 @@ function mosto(configFile) {
     mosto.prototype.playPlaylists = function() {
         console.log("mbc-mosto: [INFO] Start playing playlists");
         self.playlists.forEach(function(element, index, array) {
-           self.server.playPlaylist(element, function() {
-                self.server.getServerPlaylist(function(data) {
-                   console.log("Playlist loaded: ") ;
-                   console.log(data);
-                    self.server.getServerStatus(function(data) {
-                       console.log("Currently playing: ") ;
-                       console.log(data);
+            if (!element.loaded) {
+                self.server.playPlaylist(element, function() {
+                    self.server.getServerPlaylist(function(data) {
+                        element.loaded = true;
+                        console.log("Playlist loaded: ") ;
+                        console.log(data);
+                        self.server.getServerStatus(function(data) {
+                            console.log("Currently playing: ") ;
+                            console.log(data);
+                        });
                     });
-                });
-           }); 
+                }); 
+            }
         });
     };
 
