@@ -11,7 +11,22 @@ function mosto(configFile) {
         console.log("mbc-mosto: [INFO] Added playlist:\nname: " + playlist.name 
                 + "\nstartDate: " + playlist.startDate 
                 + "\nendDate: " + playlist.endDate);
-        //TODO: stop ordering and playing again all playlists!
+        self.orderPlaylists();
+    };
+    
+    mosto.prototype.updatePlaylist = function(playlist) {
+        console.log("mbc-mosto: [INFO] Updating playlist " + playlist.name);
+        var i = -1;
+        self.playlists.some(function(element, index, array) {
+            if (element.name === playlist.name) {
+                i = index;
+                return true;
+            }
+        });
+        self.playlists[i] = playlist;
+        console.log("mbc-mosto: [INFO] Updated playlist:\nname: " + playlist.name 
+                + "\nstartDate: " + playlist.startDate 
+                + "\nendDate: " + playlist.endDate);
         self.orderPlaylists();
     };
     
