@@ -30,6 +30,22 @@ function mosto(configFile) {
         self.orderPlaylists();
     };
     
+    mosto.prototype.removePlaylist = function(playlist) {
+        console.log("mbc-mosto: [INFO] Removing playlist " + playlist.name);
+        var i = -1;
+        self.playlists.some(function(element, index, array) {
+            if (element.name === playlist.name) {
+                i = index;
+                return true;
+            }
+        });
+        self.playlists.splice(i, 1);
+        console.log("mbc-mosto: [INFO] Removed playlist:\nname: " + playlist.name 
+                + "\nstartDate: " + playlist.startDate 
+                + "\nendDate: " + playlist.endDate);
+        self.orderPlaylists();
+    };
+    
     mosto.prototype.orderPlaylists = function() {
         console.log("mbc-mosto: [INFO] Start ordering playlists");
         self.playlists.sort(function (item1, item2) {
