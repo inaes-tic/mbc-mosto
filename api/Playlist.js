@@ -1,12 +1,12 @@
-function Playlist(name, hash, startDate, medias, endDate) {
+function Playlist(name, startDate, medias, endDate) {
     this.name      = name;   
-    this.hash      = hash;
     this.startDate = startDate;
     this.medias    = medias;
-    this.endDate    = endDate;
+    this.endDate   = endDate;
+    this.loaded    = false;
 }
 
-exports = module.exports = function(name, hash, startDate, medias, endDate) {
-    var playlist = new Playlist(name, hash, startDate, medias, endDate);
+exports = module.exports = function(name, startDate, medias, endDate) {
+    var playlist = new Playlist(name, startDate, medias, endDate);
     return playlist;
 };
