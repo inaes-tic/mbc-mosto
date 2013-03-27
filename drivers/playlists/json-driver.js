@@ -1,8 +1,8 @@
 var fs       = require('fs'),
     config   = require("./conf/json-driver"), 
-    crypto   = require('crypto'), 
     Playlist = require('../../api/Playlist'),
-    Media    = require('../../api/Media');
+    Media    = require('../../api/Media'),
+    watchr   = require('watchr');
 
 function json_driver() {
     var self = this;
@@ -10,15 +10,41 @@ function json_driver() {
     this.newPlaylistCallback    = undefined;
     this.updatePlaylistCallback = undefined;
     this.removePlaylistCallback = undefined;
-    this.playlistsProvider      = undefined;
     
     console.log("mbc-mosto: [INFO] Creating json playlists driver");
     
     json_driver.prototype.start = function() {
         console.log("mbc-mosto: [INFO] Start watching playlists dir " + config.playlists.to_read) ;
-        fs.watch(config.playlists.to_read, function(event, filename) {
-            self.readPlaylists();
+        watchr.watch({
+            paths: [config.playlists.to_read],
+            listeners: {
+                error: function(err){
+                    console.log("mbc-mosto: [ERROR] Error while watching playlists dir " + config.playlists.to_read, err);
+                },
+                watching: function(err, watcherInstance, isWatching){
+                    if (err) {
+                        console.log("mbc-mosto: [ERROR] Error while watching playlists dir " + config.playlists.to_read, err);
+                    } else {
+                        console.log("mbc-mosto: [INFO] Finish watching playlists dir " + config.playlists.to_read);
+                    }
+                },
+                change: function(changeType, filePath, fileCurrentStat, filePreviousStat){
+                    var name = self.getFileName(filePath);
+                    
+                    if (changeType === "create") {
+                        console.log("mbc-mosto: [INFO] Playlist added: " + name);
+                        self.createPlaylist(config.playlists.to_read, name, self.newPlaylistCallback);                    
+                    } else if (changeType === "update") {
+                        console.log("mbc-mosto: [INFO] Playlist updated: " + name);
+                        self.createPlaylist(config.playlists.to_read, name, self.updatePlaylistCallback);                    
+                    } else if (changeType === "delete") {
+                        console.log("mbc-mosto: [INFO] Playlist deleted: " + name);
+                        self.removePlaylistCallback(name);
+                    }
+                }
+            }
         });
+
         self.readPlaylists();
     };
     json_driver.prototype.registerNewPlaylistListener = function(newPlaylistCallback) {
@@ -30,15 +56,15 @@ function json_driver() {
     json_driver.prototype.registerRemovePlaylistListener = function(removePlaylistCallback) {
         self.removePlaylistCallback = removePlaylistCallback;
     };
-    json_driver.prototype.registerPlaylistsProvider = function(playlistsProvider) {
-        self.playlistsProvider = playlistsProvider;
+    
+    json_driver.prototype.getFileName = function(path) {
+        return path.substring(path.lastIndexOf("/"));
     };
     
     json_driver.prototype.readPlaylists =  function() {
         console.log("mbc-mosto: [INFO] Start reading playlists from " + config.playlists.to_read);
         var aux = fs.readdirSync(config.playlists.to_read);
         aux.forEach(function(element, index, array){
-            //TODO: stop adding new elements!!! Instead, see what happened and act according to it
             self.createPlaylist(config.playlists.to_read, element, self.newPlaylistCallback);
         });
     };
@@ -98,21 +124,10 @@ function json_driver() {
                 endDate.setMinutes(endDate.getMinutes() + parseInt(clipMinutes));
                 endDate.setHours(endDate.getHours() + parseInt(clipHours));
             }
-        });
-            
-
-        var filename = dir + "/" + name;
-        var md5sum = crypto.createHash('md5');
-
-        var s = fs.ReadStream(filename);
-        s.on('data', function(d) {
-            md5sum.update(d);
-        });
-
-        s.on('end', function() {
-            var hash = md5sum.digest('hex');
-            var playlist = new Playlist(name, hash, startDate, medias, endDate);
-            callback(playlist);
+            if (index === (array.length - 1)) {
+                var playlist = new Playlist(name, startDate, medias, endDate);
+                callback(playlist);
+            }
         });
     };
     

@@ -9,7 +9,41 @@ function mosto(configFile) {
         console.log("mbc-mosto: [INFO] Adding playlist " + playlist.name);
         self.playlists.push(playlist);
         console.log("mbc-mosto: [INFO] Added playlist:\nname: " + playlist.name 
-                + "\nhash: " + playlist.hash 
+                + "\nstartDate: " + playlist.startDate 
+                + "\nendDate: " + playlist.endDate);
+        self.orderPlaylists();
+    };
+    
+    mosto.prototype.updatePlaylist = function(playlist) {
+        console.log("mbc-mosto: [INFO] Updating playlist " + playlist.name);
+        var i = -1;
+        self.playlists.some(function(element, index, array) {
+            if (element.name === playlist.name) {
+                i = index;
+                return true;
+            }
+        });
+        playlist.loaded = self.playlists[i].loaded;
+        self.playlists[i] = playlist;
+        console.log("mbc-mosto: [INFO] Updated playlist:\nname: " + playlist.name 
+                + "\nstartDate: " + playlist.startDate 
+                + "\nendDate: " + playlist.endDate);
+        self.orderPlaylists();
+    };
+    
+    mosto.prototype.removePlaylist = function(name) {
+        console.log("mbc-mosto: [INFO] Removing playlist " + name);
+        var i = -1;
+        var playlist = undefined;
+        self.playlists.some(function(element, index, array) {
+            if (element.name === name) {
+                i = index;
+                playlist = element;
+                return true;
+            }
+        });
+        self.playlists.splice(i, 1);
+        console.log("mbc-mosto: [INFO] Removed playlist:\nname: " + playlist.name 
                 + "\nstartDate: " + playlist.startDate 
                 + "\nendDate: " + playlist.endDate);
         self.orderPlaylists();
@@ -32,16 +66,19 @@ function mosto(configFile) {
     mosto.prototype.playPlaylists = function() {
         console.log("mbc-mosto: [INFO] Start playing playlists");
         self.playlists.forEach(function(element, index, array) {
-           self.server.playPlaylist(element, function() {
-                self.server.getServerPlaylist(function(data) {
-                   console.log("Playlist loaded: ") ;
-                   console.log(data);
-                    self.server.getServerStatus(function(data) {
-                       console.log("Currently playing: ") ;
-                       console.log(data);
+            if (!element.loaded) {
+                self.server.playPlaylist(element, function() {
+                    self.server.getServerPlaylist(function(data) {
+                        element.loaded = true;
+                        console.log("Playlist loaded: ") ;
+                        console.log(data);
+                        self.server.getServerStatus(function(data) {
+                            console.log("Currently playing: ") ;
+                            console.log(data);
+                        });
                     });
-                });
-           }); 
+                }); 
+            }
         });
     };
 
@@ -57,6 +94,8 @@ function mosto(configFile) {
     mosto.prototype.initDriver = function() {
         console.log("mbc-mosto: [INFO] Initializing playlists driver");
         self.driver.registerNewPlaylistListener(self.addPlaylist);
+        self.driver.registerUpdatePlaylistListener(self.updatePlaylist);
+        self.driver.registerRemovePlaylistListener(self.removePlaylist);
         self.driver.start();
     };
     
