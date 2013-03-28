@@ -15,6 +15,8 @@ function mongo_driver() {
     console.log("mbc-mosto: [INFO] Creating mongodb playlists driver");
 
     mongo_driver.prototype.start = function() {
+        self.scheds = db.collection('scheds');
+        self.lists = db.collection('lists');
     };
     mongo_driver.prototype.registerNewPlaylistListener = function(newPlaylistCallback) {
         self.newPlaylistCallback = newPlaylistCallback;
