@@ -1,4 +1,5 @@
-var json_driver = require("./json-driver");
+var json_driver = require("./json-driver"),
+    mongo_driver = require("./mongo-driver");
 
 function playlists_driver(type) {
     var self = this;
@@ -12,6 +13,8 @@ function playlists_driver(type) {
     
     if (type === 'json') {
         this.driver = new json_driver();
+    } else if (type === 'mongo') {
+        this.driver = new mongo_driver();
     } else {
         var err = new Error("mbc-mosto: [ERROR] Unknown type of driver [" + type + "]");
         console.error(err);
