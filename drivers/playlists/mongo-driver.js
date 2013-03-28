@@ -41,6 +41,13 @@ function mongo_driver() {
          * and turn them into a mosto.api.Playlist
          */
         //console.log("mbc-mosto: [INFO] Start reading playlists from " + config.playlists.to_read);
+        var now = moment(new Date());
+        var until = moment(new Date());
+        until.add(config.load_time * 60 * 1000);
+        self.scheds.findEach({
+            start: { $lte: until.unix()},
+            end: { $gte: now.unix() }}, function(err, sched) {
+            });
     };
     
 }
