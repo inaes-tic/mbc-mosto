@@ -62,6 +62,20 @@ function mongo_driver() {
     };
     
     mongo_driver.prototype.createPlaylist = function(sched, list, callback) {
+        var startDate = new Date(sched.start * 1000);
+        var endDate   = new Date(sched.end * 1000);
+        var name = list.name;
+
+        var medias = [];
+        list.models.forEach(function(block) {
+            // TODO: don't know what goes in type
+            var type = "default";
+            var file = block.file;
+            var length = block.durationraw;
+            var fps = block.fps;
+            medias.push(new Media(type, file, length, parseFloat(fps)));
+        });
+        callback(new Playlist(name, startDate, medias, endDate));
     };
 }
 
