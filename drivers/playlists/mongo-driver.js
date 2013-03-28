@@ -4,6 +4,7 @@ var config   = require("./conf/mongo-driver"),
     mubsub   = require("mubsub"),
     moment   = require("moment");
 
+var db = require('./db').db();
 function mongo_driver() {
     var self = this;
 
