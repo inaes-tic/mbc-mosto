@@ -17,6 +17,7 @@ function mongo_driver() {
     mongo_driver.prototype.start = function() {
         self.scheds = db.collection('scheds');
         self.lists = db.collection('lists');
+        self.readPlaylists();
     };
     mongo_driver.prototype.registerNewPlaylistListener = function(newPlaylistCallback) {
         self.newPlaylistCallback = newPlaylistCallback;
@@ -30,6 +31,16 @@ function mongo_driver() {
     
     mongo_driver.prototype.getFileName = function(path) {
         return path.substring(path.lastIndexOf("/"));
+    };
+    
+    mongo_driver.prototype.readPlaylists =  function() {
+        // read playlists from the database
+
+        /*
+         * This should get the database's 'scheds' and 'lists' collections
+         * and turn them into a mosto.api.Playlist
+         */
+        //console.log("mbc-mosto: [INFO] Start reading playlists from " + config.playlists.to_read);
     };
     
 }
