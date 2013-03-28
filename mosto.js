@@ -110,7 +110,7 @@ function mosto(configFile) {
     this.config     = false;
     this.playlists  = [];
     this.server     = new mvcp_server("melted");
-    this.driver     = new playlists_driver("json");
+    this.driver     = new playlists_driver("mongo");
     
     if (!this.configFile)
         this.configFile = './config.json';
