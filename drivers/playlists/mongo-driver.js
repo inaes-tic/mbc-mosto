@@ -5,6 +5,10 @@ var config   = require("./conf/mongo-driver"),
     moment   = require("moment");
 
 var db = require('./db').db();
+var client = mubsub(db);
+
+var channel = client.channel('messages', { size: 10000000, max: 5000 });
+
 function mongo_driver() {
     var self = this;
 
@@ -18,6 +22,9 @@ function mongo_driver() {
         self.scheds = db.collection('scheds');
         self.lists = db.collection('lists');
         self.readPlaylists();
+        channel.subscribe({channel: 'schedbackend'}, function(sched) {
+            self.createPlaylist(sched.model, self.updatePlaylistCallback);
+        });
     };
     mongo_driver.prototype.registerNewPlaylistListener = function(newPlaylistCallback) {
         self.newPlaylistCallback = newPlaylistCallback;
