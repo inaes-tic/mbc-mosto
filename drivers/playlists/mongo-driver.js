@@ -47,9 +47,22 @@ function mongo_driver() {
         self.scheds.findEach({
             start: { $lte: until.unix()},
             end: { $gte: now.unix() }}, function(err, sched) {
+                if( err ) {
+                    console.log(err);
+                } else if( sched ) {
+                    console.log("Processing sched:", sched);
+                    self.lists.findById(sched.list, function(err, list) {
+                        console.log("Processing list:", list);
+                        self.createPlaylist(sched, list, self.newPlaylistCallback);
+                    });
+                } else {
+                    console.log('Done');
+                }
             });
     };
     
+    mongo_driver.prototype.createPlaylist = function(sched, list, callback) {
+    };
 }
 
 exports = module.exports = function() {
