@@ -51,31 +51,31 @@ function mongo_driver() {
                     console.log(err);
                 } else if( sched ) {
                     console.log("Processing sched:", sched);
-                    self.lists.findById(sched.list, function(err, list) {
-                        console.log("Processing list:", list);
-                        self.createPlaylist(sched, list, self.newPlaylistCallback);
-                    });
+                    self.createPlaylist(sched, self.newPlaylistCallback);
                 } else {
                     console.log('Done');
                 }
             });
     };
     
-    mongo_driver.prototype.createPlaylist = function(sched, list, callback) {
-        var startDate = new Date(sched.start * 1000);
-        var endDate   = new Date(sched.end * 1000);
-        var name = list.name;
+    mongo_driver.prototype.createPlaylist = function(sched, callback) {
+        self.lists.findById(sched.list, function(err, list) {
+            console.log("Processing list:", list);
+            var startDate = new Date(sched.start * 1000);
+            var endDate   = new Date(sched.end * 1000);
+            var name = list.name;
 
-        var medias = [];
-        list.models.forEach(function(block) {
-            // TODO: don't know what goes in type
-            var type = "default";
-            var file = block.file;
-            var length = block.durationraw;
-            var fps = block.fps;
-            medias.push(new Media(type, file, length, parseFloat(fps)));
+            var medias = [];
+            list.models.forEach(function(block) {
+                // TODO: don't know what goes in type
+                var type = "default";
+                var file = block.file;
+                var length = block.durationraw;
+                var fps = block.fps;
+                medias.push(new Media(type, file, length, parseFloat(fps)));
+            });
+            callback(new Playlist(name, startDate, medias, endDate));
         });
-        callback(new Playlist(name, startDate, medias, endDate));
     };
 }
 
