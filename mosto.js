@@ -103,6 +103,10 @@ function mosto(configFile) {
         var result = self.server.initServer();
         result.then(function() {
             callback();
+        }, function(err) {
+            var e = new Error("mbc-mosto: [ERROR] Error starting MVCP server: " + err);
+            console.error(e);
+            throw e;
         });
     };
     
