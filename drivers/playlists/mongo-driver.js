@@ -70,7 +70,7 @@ function mongo_driver() {
             console.log("Processing list:", list);
             var startDate = new Date(sched.start * 1000);
             var endDate   = new Date(sched.end * 1000);
-            var name = sched._id.toHexString();
+            var name = (sched._id.toHexString && sched._id.toHexString()) || sched._id;
 
             var medias = [];
             list.models.forEach(function(block) {
