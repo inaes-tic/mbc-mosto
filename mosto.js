@@ -109,8 +109,6 @@ function mosto(configFile) {
     this.configFile = configFile;
     this.config     = false;
     this.playlists  = [];
-    this.server     = new mvcp_server("melted");
-    this.driver     = new playlists_driver("mongo");
     
     if (!this.configFile)
         this.configFile = './config.json';
@@ -118,6 +116,9 @@ function mosto(configFile) {
     console.log("mbc-mosto: [INFO] Reading configuration from " + this.configFile);
     
     this.config = require(this.configFile);
+
+    this.server     = new mvcp_server("melted");
+    this.driver     = new playlists_driver(this.config.playlist_server);
     
     console.log("mbc-mosto: [INFO] Starting mbc-mosto... ") ;
     
