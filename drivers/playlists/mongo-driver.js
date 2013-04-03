@@ -22,8 +22,15 @@ function mongo_driver() {
         self.scheds = db.collection('scheds');
         self.lists = db.collection('lists');
         self.readPlaylists();
-        channel.subscribe({channel: 'schedbackend'}, function(sched) {
-            self.createPlaylist(sched.model, self.updatePlaylistCallback);
+
+        channel.subscribe({channel: 'schedbackend', method: 'create'}, function(msg) {
+            self.createPlaylist(msg.model, self.newPlaylistCallback);
+        });
+        channel.subscribe({channel: 'schedbackend', method: 'update'}, function(msg) {
+            self.createPlaylist(msg.model, self.updatePlaylistCallback);
+        });
+        channel.subscribe({channel: 'schedbackend', method: 'delete'}, function(msg) {
+            self.deletePlaylistCallback(msg.model._id);
         });
     };
     mongo_driver.prototype.registerNewPlaylistListener = function(newPlaylistCallback) {
