@@ -2,7 +2,8 @@ var config   = require("./conf/mongo-driver"),
     Playlist = require('../../api/Playlist'),
     Media    = require('../../api/Media'),
     mubsub   = require("mubsub"),
-    moment   = require("moment");
+    moment   = require("moment"),
+    mbc = require('mbc-common');
 
 function mongo_driver() {
     var self = this;
@@ -14,7 +15,7 @@ function mongo_driver() {
     console.log("mbc-mosto: [INFO] Creating mongodb playlists driver");
 
     mongo_driver.prototype.start = function(config) {
-        var db = require('./db').db(config && config.db);
+        var db = mbc.db(config && config.db);
         var client = mubsub(db);
         
         var channel = client.channel('messages', { size: 10000000, max: 5000 });
@@ -30,7 +31,7 @@ function mongo_driver() {
             self.createPlaylist(msg.model, self.updatePlaylistCallback);
         });
         channel.subscribe({channel: 'schedbackend', method: 'delete'}, function(msg) {
-            self.deletePlaylistCallback(msg.model._id);
+            self.removePlaylistCallback(msg.model._id);
         });
     };
     mongo_driver.prototype.registerNewPlaylistListener = function(newPlaylistCallback) {
