@@ -37,6 +37,7 @@ function mongo_driver() {
             self.deletePlaylistCallback(msg.model._id);
         });
     };
+
     mongo_driver.prototype.registerNewPlaylistListener = function(newPlaylistCallback) {
         self.newPlaylistCallback = newPlaylistCallback;
     };
@@ -46,6 +47,7 @@ function mongo_driver() {
     mongo_driver.prototype.registerRemovePlaylistListener = function(removePlaylistCallback) {
         self.removePlaylistCallback = removePlaylistCallback;
     };
+
     mongo_driver.prototype.validTimes = function() {
         var now = moment(new Date());
         var until = moment(new Date());
