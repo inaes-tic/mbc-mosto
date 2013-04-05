@@ -51,6 +51,12 @@ function mongo_driver() {
             to: until
         }
     };
+
+    mongo_driver.prototype.inTime = function(sched) {
+        var boundaries = self.validTimes();
+        return (sched.start <= boundaries.to.unix() &&
+                sched.end >= boundaries.from.unix());
+    };
     
     mongo_driver.prototype.readPlaylists =  function() {
         // read playlists from the database
