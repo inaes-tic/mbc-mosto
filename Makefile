@@ -1,5 +1,7 @@
 NODE=$(shell which node nodejs)
-MOCHA=node_modules/.bin/mocha
+MOCHA=node_modules/mocha/bin/mocha
+
+.PHONY: test
 
 all: test serve
 
