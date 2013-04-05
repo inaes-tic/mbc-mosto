@@ -14,3 +14,29 @@ configure --prefix=/usr
 make
 make install
 ```
+
+Install MBC-Mosto
+=================
+
+```bash
+git clone git@github.com:inaes-tic/mbc-mosto.git
+cd mbc-mosto
+make install
+```
+
+Testing MBC-Mosto
+=================
+
+```bash
+cd mbc-mosto
+make test
+```
+
+Start MBC-Mosto Server
+======================
+
+```bash
+cd mbc-mosto
+make serve
+```
+
