@@ -1,8 +1,8 @@
 var assert = require("assert");
 
-var mvcp_server = require('./mvcp-driver');
+var mvcp_server = require('../drivers/mvcp/mvcp-driver');
 var server      = new mvcp_server('melted');
-var Media        = require('../../api/Media.js');
+var Media        = require('../api/Media.js');
 
 
 // SILENCE LOG OUTPUT
