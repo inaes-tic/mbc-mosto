@@ -1,14 +1,1 @@
-{
-	/*** fps:  25 | 30 | 50 | 60 */
-	fps: "25", 
-	/***  /* sd | hd | fullhd */
-	resolution: "hd",
-	/*** playout_mode: direct | intelligent  */
-	playout_mode: "direct", 
-	/*** playlist_maxlength: infinite | 1.2 hours  */
-	playlist_maxlength: "3 hours",
-	/*** playout_mode: direct | intelligent  */
-	avoid_blank: false,
-	/*** playout_mode: direct | intelligent  */
-	avoid_blank_clip: ""
-}
+{	"fps": "25", "resolution": "hd", "playout_mode": "direct", "playlist_maxlength": "3 hours", "timer_interval": "3000" }

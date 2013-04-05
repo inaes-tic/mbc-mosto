@@ -1,6 +1,9 @@
 var fs               = require('fs'),
     mvcp_server      = require('./drivers/mvcp/mvcp-driver'), 	
 	playlists_driver = require('./drivers/playlists/playlists-driver');
+
+var pauseable = require('pauseable')
+  , EventEmitter = require('events').EventEmitter;
     
 function ScheduledClip( media, schedule_time, expected_start, expected_end ) {
     this.media   = media;
@@ -11,6 +14,9 @@ function ScheduledClip( media, schedule_time, expected_start, expected_end ) {
 	
 function mosto(configFile) {
     var self = this;
+
+
+	/** FETCH MODULE */
        	   
 	/** addPlaylist
 	*
@@ -104,34 +110,38 @@ function mosto(configFile) {
 		console.log("mbc-mosto: checking out new playlists");	
 				
 		//TODO: We need here to retreive data form DB Driver... (ask for it)
-		// we retreive data when: we load for the first time...
+		// we retreive data when: we load for the first time...		
 		
+		//TODO: If we are up to date, just return!! (important to avoid infinite recursions)
 		
 		//now we update re-convert our Scheduled Clips
-		self.convertPlaylistsToScheduledClips();
+		self.convertPlaylistsToScheduledClips();		
 	}
 		
 		
 	mosto.prototype.convertFramesToSeconds = function ( frames, fps ) {
-		return frames/fps;
+		//return frames/fps;
 	}
 	
 	mosto.prototype.convertFramesToMiliseconds = function ( frames, fps ) {
-		return frames*1000.0 / fps;
+		//return frames*1000.0 / fps;
 	}	
 	
 	mosto.prototype.convertUnixToDate =  function ( unix_timestamp ) {
 		var date = new Date(unix_timestamp*1000);	
-		return date.getHours()+":"+ date.getMinutes() + ":" date.getSeconds();
+		//return date.getHours()+":"+ date.getMinutes() + ":" date.getSeconds();
 	}
 
 	mosto.prototype.convertDateToUnix =  function ( date_timestamp ) {
 	
 		var date = new Date(date_timtestamp);
-		return date.getTime()/1000;
+		//return date.getTime()/1000;
 	
 	}
 				
+
+	/** LOGIC MODULE */
+
 	/** convertPlaylistsToScheduledClips
 	*
 	* here we make all the necesarry calculations and update the current playlist
@@ -151,11 +161,20 @@ function mosto(configFile) {
 	
 		console.log("mbs-mosto: converting Playlists to scheduled clips");
 		
-		//clean scheduled clips
-		self.scheduled_clips = {};		
-		var result = self.preparePlaylist( 0, 0 /**/ );
+		//TODO: check if we need to make a checkout!
+		if (self.playlists.length==0) {
+			//make a checkout... (not necesarry if DB Driver take care of it??
+			self.checkoutPlaylists();
+			return;
+		}
 		
-		self.syncroScheduledClips();
+		//clean scheduled clips
+		self.scheduled_clips = [];		
+
+		//var result = self.preparePlaylist( 0, 0 /**/ );
+		
+		//TODO: try to syncro		
+		//self.server.getServerPlaylist( self.syncroScheduledClips );
 	}
 	
 	/** preparePlaylist
@@ -169,7 +188,7 @@ function mosto(configFile) {
 		var i = 0;
 		
 		if (!validatePlaylist(pl)) {
-			console.log("Error in preparePlaylist: " + );
+			console.log("mbc-mosto: [ERROR] in preparePlaylist: " + pl.name );
 		}
 		
 		if ( self.convertDateToUnix( pl.startDate ) > endTimeCode ) {
@@ -183,15 +202,18 @@ function mosto(configFile) {
 				// just add all clips 
 				i = 0;
 				schedule_time = pl.startDate;
-				self.scheduled_clips.push( new ScheduledMedia( pl[i], schedule_time, "","" ) );
+				sched_clip = new ScheduledMedia( pl[i], schedule_time, "","" );
+				self.scheduled_clips.push( sched_clip );
 				for( i=1; i<pl.length; i++) {
 					schedule_time = "now";
-					self.scheduled_clips.push( new ScheduledMedia( pl[i], schedule_time, "","" ) );
+					sched_clip = new ScheduledMedia( pl[i], schedule_time, "","" );
+					self.scheduled_clips.push( sched_clip );
 				}
 			}
 		}
 		
 		next_playlist_id++;		
+		if (self.playlists.length==next_playlist_id) return;
 		return self.preparePlaylist( next_playlist_id );
 	}
 	
@@ -206,6 +228,10 @@ function mosto(configFile) {
         };
 		return true;
 	}
+
+
+	/** SYNC MODULE */
+
 	
 	/** playPlaylists
 	*
@@ -234,21 +260,88 @@ function mosto(configFile) {
 	*	compare every media scheduled in current_playlist with server  playlist
 	*	
 	*/
-	mosto.prototype.syncroScheduledClips = function() {
+	mosto.prototype.syncroScheduledClips = function( server_playing_list ) {
 	
-		var server_playing_list = self.server.getServerPlaylist();
-		
 		var i = 0;
+
+		console.log("mbc-mosto: [INFO] syncroScheduledClips > server_playing_list = " + server_playing_list );
+		console.log("mbc-mosto: [INFO] syncroScheduledClips > server_playing_list medias = " + server_playing_list.medias.length );
+
+
+		if (self.scheduled_clips.length==0) {
+			//call 
+			//self.convertPlaylistsToScheduledClips();
+		} else
+		//TODO: server_playing_list empty, server is stopped...? full load
+		if (	self.scheduled_clips.length>0 
+				&& server_playing_list 
+				&& server_playing_list.length==0) {
+
+			sched_clip = self.scheduled_clips[i];
+			self.server.loadClip( sched_clip.media );
+
+			//EASY only C from CRUD
+			for( i=1; i < self.scheduled_clips.length; i++ ) {
+				
+				sched_clip = self.scheduled_clips[i];
+
+				//TODO: create loadNextClip for melted_server
+				self.server.appendClip( sched_clip.media );
+				
+				//we break the loading loop at second appearance of a non-queued media...
+				//so we must wait to the timer to call it automatically
+				if ( i>0 && sched_clip.schedule_time!="now") {
+					break;
+				}
+				
+			}
+		} else {
+			//More:
+			
 		
-		for(i=0; i<server_playing_list.length;i++) {
-			//
 		}
 	
 	}
 	
-	
-	
 
+
+	/** PLAY MODULE*/
+	/**
+	*	start timer: not necessarelly frame accurate, interval: 200 ms 
+	*
+	*/
+
+	mosto.prototype.timer_fun = function() {
+		//TODO: call sync and send status message to channels...
+		console.log("mbc-mosto: [INFO] sync_func called");
+
+		//calculate now time...
+
+		//call sync
+		self.server.getServerPlaylist( self.syncroScheduledClips );
+
+	}
+
+	mosto.prototype.play = function() {
+		//TODO: check play state		
+		//start timer
+		console.log("mbc-mosto: [INFO] Start playing mosto");
+		if (!self.timer) 
+			self.timer = pauseable.setInterval( self.timer_fun, 3000 );
+		self.timer.resume();
+		console.log("mbc-mosto: [INFO] Start timer: " + self.timer.IsPaused() );
+			
+	}
+	
+	mosto.prototype.stop = function() {
+		self.timer.clear();
+		self.timer = null;
+	}
+
+	mosto.prototype.pause = function() {
+		//TODO: need more testing...
+		//self.timer.pause();
+	}
 	
     mosto.prototype.startWatching = function() {
 	
@@ -262,10 +355,13 @@ function mosto(configFile) {
     
 	
     mosto.prototype.initDriver = function() {
+
         console.log("mbc-mosto: [INFO] Initializing playlists driver");
+
         self.driver.registerNewPlaylistListener(self.logic.addPlaylist);
         self.driver.registerUpdatePlaylistListener(self.logic.updatePlaylist);
         self.driver.registerRemovePlaylistListener(self.logic.removePlaylist);
+
         self.driver.start();
     };
     
@@ -277,36 +373,55 @@ function mosto(configFile) {
     };
     
     		
-    this.configFile = configFile;
+    /** CONFIGURATION */ 
+	this.configFile = configFile;
     this.config     = false;    
-  	this.playlists  = []; // this is the scheduled playlists....in a range between now and max_playlist_duration
+  	this.default_config = {
+		"fps": "25", 
+		"resolution": "hd", 
+		"playout_mode": "direct",
+		"playlists_maxlength": "24:00:00",
+		"scheduled_playlist_maxlength": "04:00:00"
+	};
+	
+	/**	FETCH MODULE*/
+	this.playlists  = []; // this is the scheduled playlists....in a range between now and max_playlist_duration
+	
+	/** LOGIC MODULE*/
 	this.scheduled_clips = []; //here we must have the current playlist up to date...	
+	this.cursor_scheduled_clip = 0;
+	
+	
+	/** SYNC MODULE */
 	this.actual_server_playlist = [];
+	this.cursor_playing_clip = 0;
+	this.cursor_next_clip = 0;
 	
+	/** PLAY MODULE */
+	this.timer = null;
+	
+	
+	/** ALL MODULES */
     this.server     = new mvcp_server("melted");
-    this.driver     = new playlists_driver("json");
-  
-	//scheduled clip: 	
-	this.cursor_scheduled_clip = "";
-	
-  
+    this.driver     = new playlists_driver("json");  
+	 
     if (!this.configFile)
         this.configFile = './config.json';
    	
     console.log("mbc-mosto: [INFO] Reading configuration from " + this.configFile);
-    
-    this.config = require(this.configFile);    
-	this.default_config = {
-		fps: "25", /* 25 | 30 | 50 | 60 */
-		resolution: "hd", /* sd | hd | fullhd */		
-		playout_mode: "direct" /* */		
-	};
+    		
+    this.config = require(this.configFile);	
 	
     console.log("mbc-mosto: [INFO] Starting mbc-mosto... ") ;
     
     self.startMvcpServer(function() {
-        self.startWatching();
+        
+
+		self.play();
+
+		self.startWatching();
         self.initDriver();
+		
     });
     
 }
