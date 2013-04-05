@@ -67,19 +67,48 @@ function mosto(configFile) {
         console.log("mbc-mosto: [INFO] Start playing playlists");
         self.playlists.forEach(function(element, index, array) {
             if (!element.loaded) {
-                self.server.playPlaylist(element, function() {
-                    self.server.getServerPlaylist(function(data) {
-                        element.loaded = true;
-                        console.log("Playlist loaded: ") ;
-                        console.log(data);
-                        self.server.getServerStatus(function(data) {
-                            console.log("Currently playing: ") ;
-                            console.log(data);
-                        });
-                    });
-                }); 
+                self.appendClip(element.medias);
+                element.loaded = true;
+//                self.server.playPlaylist(element, function() {
+//                    self.server.getServerPlaylist(function(data) {
+//                        element.loaded = true;
+//                        console.log("Playlist loaded: ") ;
+//                        console.log(data);
+//                        self.server.getServerStatus(function(data) {
+//                            console.log("Currently playing: ") ;
+//                            console.log(data);
+//                        });
+//                    });
+//                }); 
             }
         });
+    };
+    
+    mosto.prototype.appendClip = function(clips) {
+        var clip = clips.shift();
+        if (clip !== undefined) {
+            self.server.appendClip(clip, function() {
+                console.log("mbc-mosto: [INFO] Loaded clip: " + clip.file);
+                self.appendClip(clips);
+            }, function(err) {
+                console.error("mbc-mosto: [ERROR] Error loading clip " + clip.file + "\n" + err);
+                throw err;
+            });
+        } else {
+            self.server.play(function() {
+                self.server.getServerPlaylist(function(data) {
+                    console.log("Playlist loaded: ") ;
+                    console.log(data);
+                    self.server.getServerStatus(function(data) {
+                        console.log("Currently playing: ") ;
+                        console.log(data);
+                    });
+                });
+            }, function(err) {
+                console.error("mbc-mosto: [ERROR] Error starting playback");
+                throw err;
+            });
+        }
     };
 
     mosto.prototype.startWatching = function() {
@@ -103,6 +132,10 @@ function mosto(configFile) {
         var result = self.server.initServer();
         result.then(function() {
             callback();
+        }, function(err) {
+            var e = new Error("mbc-mosto: [ERROR] Error starting MVCP server: " + err);
+            console.error(e);
+            throw e;
         });
     };
     
