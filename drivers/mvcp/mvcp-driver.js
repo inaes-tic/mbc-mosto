@@ -46,6 +46,9 @@ function mvcp_driver(type) {
     mvcp_driver.prototype.wipePlaylist = function(successCallback, errorCallback) {
         //TODO: this removes all clips before the playing clip
     };
+//    mvcp_driver.prototype.wipePlaylist = function(successCallback, errorCallback) {
+//        self.server.wipePlaylist(successCallback, errorCallback);
+//    };
     mvcp_driver.prototype.clearPlaylist = function(successCallback, errorCallback) {
         //TODO: this removes all clips!! DO NOT USE!!
     };
