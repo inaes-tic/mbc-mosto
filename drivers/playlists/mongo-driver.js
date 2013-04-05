@@ -42,9 +42,6 @@ function mongo_driver() {
     mongo_driver.prototype.registerRemovePlaylistListener = function(removePlaylistCallback) {
         self.removePlaylistCallback = removePlaylistCallback;
     };
-    
-    mongo_driver.prototype.getFileName = function(path) {
-        return path.substring(path.lastIndexOf("/"));
     };
     
     mongo_driver.prototype.readPlaylists =  function() {
