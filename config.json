@@ -1,1 +1,1 @@
-{	"fps": "25", "resolution": "hd", "playout_mode": "direct", "playlist_maxlength": "3 hours", "timer_interval": "3000" }
+{	"fps": "30", "resolution": "hd", "playout_mode": "direct", "playlist_maxlength": "3 hours", "scheduled_playlist_maxlength": "04:00:00", "timer_interval": "5000" }

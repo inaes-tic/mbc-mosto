@@ -125,7 +125,7 @@ function json_driver() {
                 endDate.setHours(endDate.getHours() + parseInt(clipHours));
             }
             if (index === (array.length - 1)) {
-                var playlist = new Playlist(name, startDate, medias, endDate);
+                var playlist = new Playlist(name, startDate, medias, endDate, "snap" );
                 callback(playlist);
             }
         });

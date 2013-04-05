@@ -18,6 +18,8 @@ function mosto(configFile) {
 
 
 	/** FETCH MODULE */
+
+	//TODO: testing json, then mongodb
        	   
 	/** addPlaylist
 	*
@@ -97,7 +99,7 @@ function mosto(configFile) {
         });
         console.log("mbc-mosto: [INFO] Finish ordering playlists");
         //self.playPlaylists(); //this is a direct playout mode
-		self.checkoutPlaylists();
+		//self.checkoutPlaylists();
     };
 	
 	/**	checkoutPlaylists	
@@ -142,6 +144,7 @@ function mosto(configFile) {
 				
 
 	/** LOGIC MODULE */
+	//TODO: testing moment.js, converting time, test recursion
 
 	/** convertPlaylistsToScheduledClips
 	*
@@ -223,6 +226,7 @@ function mosto(configFile) {
 		
 		next_playlist_id++;		
 
+		//iteration ended because we have no more playlists !
 		if (self.playlists.length==next_playlist_id) return;
 
 		return self.preparePlaylist( next_playlist_id );
@@ -278,6 +282,9 @@ function mosto(configFile) {
 		console.log("mbc-mosto: [INFO] syncroScheduledClips > server_playing_list = " + server_playing_list );
 		console.log("mbc-mosto: [INFO] syncroScheduledClips > server_playing_list medias = " + server_playing_list.medias.length );
 
+		if (!server_playing_list || server_playing_list.medias.length==0 ) {
+			return self.convertPlaylistsToScheduledClips();
+		}
 
 		self.now = moment();
 
@@ -342,8 +349,7 @@ function mosto(configFile) {
 				
 					sched_clip = self.scheduled_clips[i];
 
-					self.server.appendClip( sched_clip.media );
-				
+					self.server.appendClip( sched_clip.media );				
 					
 					//we break the loading loop at second appearance of a non-queued media...
 					//so we must wait to the timer to call it automatically
@@ -375,7 +381,8 @@ function mosto(configFile) {
 		self.actual_playing_clip = actual_clip;
 
 		//we have a status let's get synchronized...
-		self.server.getServerPlaylist( self.syncroScheduledClips );
+		//TODO: check errors !
+		self.server.getServerPlaylist( self.syncroScheduledClips, function() { console.log("mbc-mosto: [ERROR] timer_fun_status >  getServerPlaylist() " ); } );
 
 	}
 
@@ -426,9 +433,9 @@ function mosto(configFile) {
 
         console.log("mbc-mosto: [INFO] Initializing playlists driver");
 
-        self.driver.registerNewPlaylistListener(self.logic.addPlaylist);
-        self.driver.registerUpdatePlaylistListener(self.logic.updatePlaylist);
-        self.driver.registerRemovePlaylistListener(self.logic.removePlaylist);
+        self.driver.registerNewPlaylistListener(self.addPlaylist);
+        self.driver.registerUpdatePlaylistListener(self.updatePlaylist);
+        self.driver.registerRemovePlaylistListener(self.removePlaylist);
 
         self.driver.start();
     };
@@ -445,11 +452,12 @@ function mosto(configFile) {
 	this.configFile = configFile;
     this.config     = false;    
   	this.default_config = {
-		"fps": "25", 
+		"fps": "30", 
 		"resolution": "hd", 
 		"playout_mode": "direct",
 		"playlists_maxlength": "24:00:00",
-		"scheduled_playlist_maxlength": "04:00:00"
+		"scheduled_playlist_maxlength": "04:00:00",
+		"timer_interval": "00:00:00"
 	};
 	
 	/**	FETCH MODULE*/
@@ -484,11 +492,10 @@ function mosto(configFile) {
     
     self.startMvcpServer(function() {
         
-
 		self.play();
-
 		self.startWatching();
         self.initDriver();
+
 		
     });
     
