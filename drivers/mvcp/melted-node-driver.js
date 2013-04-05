@@ -59,13 +59,14 @@ function melted(host, port) {
                 var media = {};
                 
                 var parse = split[1].split(" ");
+                media.status       = parse[1];
                 media.file         = parse[2];
                 media.currentFrame = parse[3];
                 media.fps          = parse[5];
                 media.in           = parse[6];
                 media.out          = parse[7];
                 media.length       = parse[8];
-                media.index        = parse[16]
+                media.index        = parse[16];
                 successCallback(media);
             }, function(error) {
                 var err = new Error("mbc-mosto: [ERROR] Error getting server status: " + error)
