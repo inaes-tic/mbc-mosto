@@ -4,11 +4,6 @@ var config   = require("./conf/mongo-driver"),
     mubsub   = require("mubsub"),
     moment   = require("moment");
 
-var db = require('./db').db();
-var client = mubsub(db);
-
-var channel = client.channel('messages', { size: 10000000, max: 5000 });
-
 function mongo_driver() {
     var self = this;
 
@@ -18,7 +13,12 @@ function mongo_driver() {
 
     console.log("mbc-mosto: [INFO] Creating mongodb playlists driver");
 
-    mongo_driver.prototype.start = function() {
+    mongo_driver.prototype.start = function(config) {
+        var db = require('./db').db(config && config.db);
+        var client = mubsub(db);
+        
+        var channel = client.channel('messages', { size: 10000000, max: 5000 });
+
         self.scheds = db.collection('scheds');
         self.lists = db.collection('lists');
         self.readPlaylists();

@@ -1,5 +1,5 @@
 var db;
-exports.db = function() {
+exports.db = function(config) {
     //var conf = require('config').MediaDB;
     var conf = {
         dbName: "mediadb",
