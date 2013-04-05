@@ -5,9 +5,10 @@ var fs               = require('fs'),
 var pauseable = require('pauseable')
   , EventEmitter = require('events').EventEmitter;
     
-function ScheduledClip( media, schedule_time, expected_start, expected_end ) {
+function ScheduledClip( media, schedule_time, schedule_duration, expected_start, expected_end ) {
     this.media   = media;
 	this.schedule_time = schedule_time;
+	this.schedule_duration = schedule_duration;
 	this.expected_start = expected_start;
 	this.expected_end = expected_end;
 };
@@ -134,7 +135,7 @@ function mosto(configFile) {
 
 	mosto.prototype.convertDateToUnix =  function ( date_timestamp ) {
 	
-		var date = new Date(date_timtestamp);
+		var date = new Date(date_timestamp);
 		//return date.getTime()/1000;
 	
 	}
@@ -155,9 +156,10 @@ function mosto(configFile) {
 	*	see modes: snap | fixed
 	* case 2: next playlist start more than xx seconds after this one
 	*	see modes: snap | fixed
-	* STATE MACHINE: for every same combinations of playlists we must have the same current playlist
+	*
+	*	We use a recursive function preparePlaylist	
 	*/
-	mosto.prototype.convertPlaylistsToScheduledClips = function() {
+	mosto.prototype.convertPlaylistsToScheduledClips = function( propagate ) {
 	
 		console.log("mbs-mosto: converting Playlists to scheduled clips");
 		
@@ -171,10 +173,13 @@ function mosto(configFile) {
 		//clean scheduled clips
 		self.scheduled_clips = [];		
 
-		//var result = self.preparePlaylist( 0, 0 /**/ );
+		var result = self.preparePlaylist( 0, 0 /**/ );
 		
-		//TODO: try to syncro		
+		//TODO: try to syncro immediatelly
+		//or wait for timer synchronization
+
 		//self.server.getServerPlaylist( self.syncroScheduledClips );
+
 	}
 	
 	/** preparePlaylist
@@ -196,13 +201,17 @@ function mosto(configFile) {
 				// just add all clips with schedule: "now"
 				for( i=0; i<pl.length; i++) {
 					schedule_time = "now";
-					self.scheduled_clips.push( new ScheduledMedia( pl[i], schedule_time, "","" ) );
+					schedule_duration = pl[i].length * pl[i].fps;
+					expected_start = "";
+					expected_end = "";
+					self.scheduled_clips.push( new ScheduledMedia( pl[i], schedule_time, schedule_duration,"", "" ) );
 				}	
 			} else if ( pl.mode == "fixed") {
 				// just add all clips 
 				i = 0;
 				schedule_time = pl.startDate;
-				sched_clip = new ScheduledMedia( pl[i], schedule_time, "","" );
+				schedule_duration = pl[i].length * pl[i].fps;
+				sched_clip = new ScheduledMedia( pl[i], schedule_time, schedule_duration, "","" );
 				self.scheduled_clips.push( sched_clip );
 				for( i=1; i<pl.length; i++) {
 					schedule_time = "now";
@@ -213,7 +222,9 @@ function mosto(configFile) {
 		}
 		
 		next_playlist_id++;		
+
 		if (self.playlists.length==next_playlist_id) return;
+
 		return self.preparePlaylist( next_playlist_id );
 	}
 	
@@ -268,38 +279,85 @@ function mosto(configFile) {
 		console.log("mbc-mosto: [INFO] syncroScheduledClips > server_playing_list medias = " + server_playing_list.medias.length );
 
 
-		if (self.scheduled_clips.length==0) {
-			//call 
-			//self.convertPlaylistsToScheduledClips();
-		} else
-		//TODO: server_playing_list empty, server is stopped...? full load
-		if (	self.scheduled_clips.length>0 
-				&& server_playing_list 
-				&& server_playing_list.length==0) {
+		self.now = moment();
 
-			sched_clip = self.scheduled_clips[i];
-			self.server.loadClip( sched_clip.media );
+		//Real sync method:
+		var expected_clip = null;
+		//SEARCH FOR SCHEDULED CLIP EXPECTED TO RUN NOW
+		for( i=0; i<self.scheduled_clips.length; i++) {
+			expected_clip = self.scheduled_clips[i];				
+			if (sched_clip.expected_start < self.now && self.now < sched_clip.expected_end ) {
+ 				self.cursor_scheduled_clip = i;
+				break;
+			}				
+		}
 
-			//EASY only C from CRUD
-			for( i=1; i < self.scheduled_clips.length; i++ ) {
-				
-				sched_clip = self.scheduled_clips[i];
+		//MANDATORY TO HAVE AN EXPECTED CLIP!!!
+		if (expected_clip) {
+			// CHECK AND COMPARE IF WE ARE PLAYING THE EXPECTED ONE...
+			if ( self.actual_playing_clip && self.actual_playing_clip.file == expected_clip.media.file ) {
 
-				//TODO: create loadNextClip for melted_server
-				self.server.appendClip( sched_clip.media );
-				
-				//we break the loading loop at second appearance of a non-queued media...
-				//so we must wait to the timer to call it automatically
-				if ( i>0 && sched_clip.schedule_time!="now") {
-					break;
+				var breakpoint_playing_cursor = -1;
+				var breakpoint_scheduled_cursor = -1;
+				//LETS CHECK THE OTHERS....
+				//TODO: check maybe if we have enough time int this clip to check the full list...
+				for( i=self.actual_playing_clip.index,j=self.cursor_scheduled_clip; i<server_playing_list.medias.length,j<self.scheduled_clips.length; i++,j++) {
+					//compara one by one... 
+					queued_media = server_playing_list.medias[i];
+					scheduled_media = self.scheduled_clips[j];
+					if (queued_media.file != scheduled_media.file ) {
+						//record he cursors
+						breakpoint_playing_cursor = i;
+						breakpoint_scheduled_cursor = j;
+						break;
+					}
+				}
+
+				//REMOVE PLAYING CLIPS: WIPE AFTER BREAKING CURSOR....
+				//TODO: check errors !!!
+				for( i = breakpoint_playing_cursor; i<server_playing_list.medias.length; i++ ) {
+					self.server.removeClip( i );				
+				}
+
+				//ADD MISSING SCHEDULED CLIPS
+				//TODO: check errors !!!
+				for( j = breakpoint_scheduled_cursor; j<self.scheduled_clips.length; j++ ) {
+					scheduled_media = self.scheduled_clips[j];
+					self.server.appendClip( scheduled_media );				
 				}
 				
-			}
-		} else {
-			//More:
+				
 			
-		
+			} else {
+				//IF NOT FULL LOAD THEN!!!
+
+				//clean playlist (doesnt matter, we are stopped)...
+				self.server.cleanPlaylist();
+
+				sched_clip = self.scheduled_clips[i];
+				self.server.loadClip( sched_clip.media );
+
+				//EASY only C from CRUD
+				for( i=1; i < self.scheduled_clips.length; i++ ) {
+				
+					sched_clip = self.scheduled_clips[i];
+
+					self.server.appendClip( sched_clip.media );
+				
+					
+					//we break the loading loop at second appearance of a non-queued media...
+					//so we must wait to the timer to call it automatically
+					//WARNING!!! snap was done in convertPlaylists -> preparePlaylist
+					if ( i>0 && sched_clip.schedule_time!="now") {
+						break;
+					}
+				
+				}
+				
+						
+			}
 		}
+
 	
 	}
 	
@@ -311,14 +369,24 @@ function mosto(configFile) {
 	*
 	*/
 
+	mosto.prototype.timer_fun_status = function( actual_clip ) {
+
+
+		self.actual_playing_clip = actual_clip;
+
+		//we have a status let's get synchronized...
+		self.server.getServerPlaylist( self.syncroScheduledClips );
+
+	}
+
 	mosto.prototype.timer_fun = function() {
 		//TODO: call sync and send status message to channels...
 		console.log("mbc-mosto: [INFO] sync_func called");
 
-		//calculate now time...
+		//get status
+		self.server.getServerStatus( self.timer_fun_status, function() { console.log("mbc-mosto: [ERROR] mosto.timer_fun > getServerStatus failed."); } );
 
-		//call sync
-		self.server.getServerPlaylist( self.syncroScheduledClips );
+		//calculate now time...
 
 	}
 
@@ -327,7 +395,7 @@ function mosto(configFile) {
 		//start timer
 		console.log("mbc-mosto: [INFO] Start playing mosto");
 		if (!self.timer) 
-			self.timer = pauseable.setInterval( self.timer_fun, 3000 );
+			self.timer = pauseable.setInterval( self.timer_fun, self.config.timer_interval );
 		self.timer.resume();
 		console.log("mbc-mosto: [INFO] Start timer: " + self.timer.IsPaused() );
 			
@@ -389,17 +457,17 @@ function mosto(configFile) {
 	
 	/** LOGIC MODULE*/
 	this.scheduled_clips = []; //here we must have the current playlist up to date...	
-	this.cursor_scheduled_clip = 0;
+	this.cursor_scheduled_clip = -1;
 	
 	
 	/** SYNC MODULE */
 	this.actual_server_playlist = [];
-	this.cursor_playing_clip = 0;
-	this.cursor_next_clip = 0;
+	this.cursor_playing_clip = -1;
+	this.cursor_next_clip = -1;
 	
 	/** PLAY MODULE */
 	this.timer = null;
-	
+	this.actual_playing_clip = null;
 	
 	/** ALL MODULES */
     this.server     = new mvcp_server("melted");
