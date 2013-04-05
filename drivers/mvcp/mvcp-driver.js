@@ -19,9 +19,6 @@ function mvcp_driver(type) {
     mvcp_driver.prototype.initServer = function() {
         return self.server.initServer();
     };
-    mvcp_driver.prototype.playPlaylist = function(playlist, callback) {
-        self.server.playPlaylist(playlist, callback);
-    };
     mvcp_driver.prototype.getServerPlaylist = function(successCallback, errorCallback) {
         return self.server.getServerPlaylist(successCallback, errorCallback);
     };
