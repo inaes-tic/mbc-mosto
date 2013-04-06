@@ -26,7 +26,8 @@
         "watchr"      : ">=2.3",
         "mubsub"      : "git://github.com/inaes-tic/mubsub.git",
         "moment"      : "2.0.0",
-        "mongoskin"   : "0.4.x"
+        "mongoskin"   : "0.4.x",
+        "mbc"         : "git://github.com/inaes-tic/mbc-common.git"
     },
     "devDependencies": {
         "mocha"    :  "1.7.x"
