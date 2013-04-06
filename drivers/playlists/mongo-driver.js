@@ -26,8 +26,6 @@ function mongo_driver() {
         channel.subscribe({channel: 'schedbackend', method: 'create'}, function(msg) {
             if( self.inTime(msg.model) ) {
                 self.createPlaylist(msg.model, self.newPlaylistCallback);
-            } else {
-                console.log('new sched outside time frame')
             }
         });
         channel.subscribe({channel: 'schedbackend', method: 'update'}, function(msg) {
