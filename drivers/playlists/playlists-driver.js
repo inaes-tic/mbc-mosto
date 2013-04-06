@@ -1,6 +1,7 @@
-var json_driver = require("./json-driver");
+var json_driver = require("./json-driver"),
+    mongo_driver = require("./mongo-driver");
 
-function playlists_driver(type) {
+function playlists_driver(type, config) {
     var self = this;
     
     this.driver                = undefined;
@@ -11,7 +12,9 @@ function playlists_driver(type) {
     console.log("mbc-mosto: [INFO] Creating playlists driver for type [" + type + "]");
     
     if (type === 'json') {
-        this.driver = new json_driver();
+        this.driver = new json_driver(config);
+    } else if (type === 'mongo') {
+        this.driver = new mongo_driver(config);
     } else {
         var err = new Error("mbc-mosto: [ERROR] Unknown type of driver [" + type + "]");
         console.error(err);
@@ -47,7 +50,7 @@ function playlists_driver(type) {
     
 }
 
-exports = module.exports = function(type) {
-    var driver = new playlists_driver(type);
+exports = module.exports = function(type, config) {
+    var driver = new playlists_driver(type, config);
     return driver;
 };
