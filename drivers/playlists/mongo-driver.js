@@ -25,7 +25,9 @@ function mongo_driver() {
         self.readPlaylists();
 
         channel.subscribe({channel: 'schedbackend', method: 'create'}, function(msg) {
-            self.createPlaylist(msg.model, self.newPlaylistCallback);
+            if( self.inTime(msg.model) ) {
+                self.createPlaylist(msg.model, self.newPlaylistCallback);
+            }
         });
         channel.subscribe({channel: 'schedbackend', method: 'update'}, function(msg) {
             self.createPlaylist(msg.model, self.updatePlaylistCallback);
@@ -34,6 +36,7 @@ function mongo_driver() {
             self.removePlaylistCallback(msg.model._id);
         });
     };
+
     mongo_driver.prototype.registerNewPlaylistListener = function(newPlaylistCallback) {
         self.newPlaylistCallback = newPlaylistCallback;
     };
@@ -43,9 +46,21 @@ function mongo_driver() {
     mongo_driver.prototype.registerRemovePlaylistListener = function(removePlaylistCallback) {
         self.removePlaylistCallback = removePlaylistCallback;
     };
-    
-    mongo_driver.prototype.getFileName = function(path) {
-        return path.substring(path.lastIndexOf("/"));
+
+    mongo_driver.prototype.validTimes = function() {
+        var now = moment(new Date());
+        var until = moment(new Date());
+        until.add(config.load_time * 60 * 1000);
+        return {
+            from: now,
+            to: until
+        }
+    };
+
+    mongo_driver.prototype.inTime = function(sched) {
+        var boundaries = self.validTimes();
+        return (sched.start <= boundaries.to.unix() &&
+                sched.end >= boundaries.from.unix());
     };
     
     mongo_driver.prototype.readPlaylists =  function() {
@@ -56,9 +71,9 @@ function mongo_driver() {
          * and turn them into a mosto.api.Playlist
          */
         //console.log("mbc-mosto: [INFO] Start reading playlists from " + config.playlists.to_read);
-        var now = moment(new Date());
-        var until = moment(new Date());
-        until.add(config.load_time * 60 * 1000);
+        var boundaries = self.validTimes();
+        var now = boundaries.from;
+        var until = boundaries.to;
         self.scheds.findEach({
             start: { $lte: until.unix()},
             end: { $gte: now.unix() }}, function(err, sched) {
