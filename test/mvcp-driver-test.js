@@ -21,12 +21,12 @@ describe('connect', function(){
 });
 
 describe('commands', function() {
-    var file1 = "videos/SMPTE_Color_Bars.mp4";
-    var file2 = "videos/SMPTE_Color_Bars.mp4";
-    var file3 = "videos/SMPTE_Color_Bars.mp4";
-    var fileName1 = "playlists/" + file1.substring(file1.lastIndexOf("/") + 1) + ".mlt";
-    var fileName2 = "playlists/" + file2.substring(file2.lastIndexOf("/") + 1) + ".mlt";
-    var fileName3 = "playlists/" + file3.substring(file3.lastIndexOf("/") + 1) + ".mlt";
+    var file1 = "../videos/SMPTE_Color_Bars.mp4";
+    var file2 = "../videos/SMPTE_Color_Bars.mp4";
+    var file3 = "../videos/SMPTE_Color_Bars.mp4";
+    var fileName1 = "playlists/" + file1.substring(file1.lastIndexOf("/") + 1) + ".xml";
+    var fileName2 = "playlists/" + file2.substring(file2.lastIndexOf("/") + 1) + ".xml";
+    var fileName3 = "playlists/" + file3.substring(file3.lastIndexOf("/") + 1) + ".xml";
     describe('#load', function() {
         var pl = undefined;
         var st = undefined;

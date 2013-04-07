@@ -1,0 +1,5 @@
+NLS
+SET root=ROOT
+UADD sdl
+UADD sdl
+UADD sdl
