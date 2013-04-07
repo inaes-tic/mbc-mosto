@@ -57,6 +57,15 @@ function mongo_driver() {
         }
     };
 
+    mongo_driver.prototype.setBoundaries = function(from, to) {
+        if( to === undefined )
+            // assume from = { from: date, to: date }
+            self.boundaries = from;
+        else
+            self.boundaries = { from: from, to: to };
+        return self.validTimes()
+    };
+
     mongo_driver.prototype.inTime = function(sched) {
         var boundaries = self.validTimes();
         return (sched.start <= boundaries.to.unix() &&
