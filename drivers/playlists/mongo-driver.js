@@ -75,8 +75,8 @@ function mongo_driver() {
         return (sched.start <= boundaries.to.unix() &&
                 sched.end >= boundaries.from.unix());
     };
-    
-    mongo_driver.prototype.readPlaylists =  function() {
+
+    mongo_driver.prototype.readPlaylists =  function(from, to) {
         // read playlists from the database
 
         /*
@@ -84,12 +84,10 @@ function mongo_driver() {
          * and turn them into a mosto.api.Playlist
          */
         //console.log("mbc-mosto: [INFO] Start reading playlists from " + config.playlists.to_read);
-        var boundaries = self.validTimes();
-        var now = boundaries.from;
-        var until = boundaries.to;
+        var boundaries = self.setBoundaries(from, to);
         self.scheds.findEach({
-            start: { $lte: until.unix()},
-            end: { $gte: now.unix() }}, function(err, sched) {
+            start: { $lte: boundaries.to.unix()},
+            end: { $gte: boundaries.from.unix() }}, function(err, sched) {
                 if( err ) {
                     console.log(err);
                 } else if( sched ) {
