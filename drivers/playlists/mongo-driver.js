@@ -22,7 +22,8 @@ function mongo_driver() {
 
         self.scheds = db.collection('scheds');
         self.lists = db.collection('lists');
-        self.readPlaylists();
+        var boundaries = self.validTimes();
+        self.readPlaylists(boundaries.from, boundaries.to);
 
         channel.subscribe({channel: 'schedbackend', method: 'create'}, function(msg) {
             if( self.inTime(msg.model) ) {
