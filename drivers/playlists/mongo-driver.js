@@ -62,6 +62,8 @@ function mongo_driver() {
     };
 
     mongo_driver.prototype.setBoundaries = function(from, to) {
+        // Notice that if from = to = undefined then boundaries are
+        // set to undefined, and settings file is used again
         if( to === undefined )
             // assume from = { from: date, to: date }
             self.boundaries = from;
