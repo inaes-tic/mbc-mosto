@@ -48,12 +48,16 @@ function mongo_driver() {
     };
 
     mongo_driver.prototype.validTimes = function() {
-        var now = moment(new Date());
-        var until = moment(new Date());
-        until.add(config.load_time * 60 * 1000);
-        return {
-            from: now,
-            to: until
+        if( self.boundaries ) {
+            return self.boundaries;
+        } else {
+            var now = moment(new Date());
+            var until = moment(new Date());
+            until.add(config.load_time * 60 * 1000);
+            return {
+                from: now,
+                to: until
+            }
         }
     };
 
