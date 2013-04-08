@@ -1,8 +1,0 @@
-<mlt>
-	<producer id="SMPTE_Color_Bars">
-		<property name="resource">../images/SMPTE_Color_Bars.png</property>
-	</producer>
-	<playlist>
-		<entry producer="SMPTE_Color_Bars" in="0" out="50"/>
-	</playlist>
-</mlt>
