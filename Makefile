@@ -20,7 +20,8 @@ ${MELTED}:
 	echo "I can't found melted. Please install it before continue"
 	exit -1
 
-videos: test/videos/SMPTE_Color_Bars.avi test/videos/SMPTE_Color_Bars.mp4
+videos: test/videos/SMPTE_Color_Bars_01.mp4 test/videos/SMPTE_Color_Bars_02.mp4 test/videos/SMPTE_Color_Bars_03.mp4
+
 
 test/videos/%.avi: test/images/%.png
 	avconv -loop 1 -f image2 -i $< -t 30 $@

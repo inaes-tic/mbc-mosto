@@ -21,9 +21,9 @@ describe('connect', function(){
 });
 
 describe('commands', function() {
-    var file1 = "../videos/SMPTE_Color_Bars.mp4";
-    var file2 = "../videos/SMPTE_Color_Bars.mp4";
-    var file3 = "../videos/SMPTE_Color_Bars.mp4";
+    var file1 = "../videos/SMPTE_Color_Bars_01.mp4";
+    var file2 = "../videos/SMPTE_Color_Bars_02.mp4";
+    var file3 = "../videos/SMPTE_Color_Bars_03.mp4";
     var fileName1 = "playlists/" + file1.substring(file1.lastIndexOf("/") + 1) + ".xml";
     var fileName2 = "playlists/" + file2.substring(file2.lastIndexOf("/") + 1) + ".xml";
     var fileName3 = "playlists/" + file3.substring(file3.lastIndexOf("/") + 1) + ".xml";
