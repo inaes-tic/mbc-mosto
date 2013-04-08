@@ -69,17 +69,6 @@ function mosto(configFile) {
             if (!element.loaded) {
                 self.appendClip(element.medias);
                 element.loaded = true;
-//                self.server.playPlaylist(element, function() {
-//                    self.server.getServerPlaylist(function(data) {
-//                        element.loaded = true;
-//                        console.log("Playlist loaded: ") ;
-//                        console.log(data);
-//                        self.server.getServerStatus(function(data) {
-//                            console.log("Currently playing: ") ;
-//                            console.log(data);
-//                        });
-//                    });
-//                }); 
             }
         });
     };
