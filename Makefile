@@ -2,6 +2,7 @@ NODE=$(shell which node nodejs)
 MOCHA=node_modules/mocha/bin/mocha
 MELTED=$(shell which melted)
 ROOT=$(shell pwd)
+NC=$(shell which nc netcat telnet)
 
 .PHONY: test
 
@@ -29,7 +30,7 @@ test/videos/%.mp4: test/images/%.png
 
 test: videos ${MOCHA} ${MELTED}
 	${MELTED}
-	m4 -DROOT=${ROOT} test/melted_setup.txt | nc localhost 5250
+	m4 -DROOT=${ROOT} test/melted_setup.txt | ${NC} localhost 5250
 	-${NODE} ${MOCHA}
 	killall melted
 
