@@ -91,8 +91,14 @@ function mosto(configFile) {
                     self.server.getServerStatus(function(data) {
                         console.log("Currently playing: ") ;
                         console.log(data);
+                    }, function (err) {
+                        console.error("mbc-mosto: [ERROR] Error obtaining MVCP Server Status");
+                        throw err;
                     });
-                });
+                }, function(err) {
+                    console.error("mbc-mosto: [ERROR] Error obtaining MVCP Server Playlist");
+                    throw err;
+                }); 
             }, function(err) {
                 console.error("mbc-mosto: [ERROR] Error starting playback");
                 throw err;
