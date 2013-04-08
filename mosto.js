@@ -150,7 +150,7 @@ function mosto(configFile) {
     
     this.config = require(this.configFile);
 
-    this.server     = new mvcp_server("melted");
+    this.server     = new mvcp_server(this.config.mvcp_server);
     this.driver     = new playlists_driver(this.config.playlist_server);
     
     console.log("mbc-mosto: [INFO] Starting mbc-mosto... ") ;

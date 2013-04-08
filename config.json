@@ -1,3 +1,4 @@
 {
-    "playlist_server": "mongo"
+    "playlist_server": "mongo",
+    "mvcp_server": "melted"
 }
