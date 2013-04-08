@@ -17,7 +17,9 @@ install:
 ${MOCHA}: install
 
 ${MELTED}:
-	echo "I can't found melted. Please install it before continue"
+	echo "ERROR: melted can't be found."
+	echo "Please install it or set the MELTED env variable to it's executable path."
+	echo "eg: \$ MELTED=/usr/local/bin/melted make"
 	exit -1
 
 images: test/images/SMPTE_Color_Bars_01.png test/images/SMPTE_Color_Bars_02.png test/images/SMPTE_Color_Bars_03.png 
