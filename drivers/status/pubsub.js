@@ -37,3 +37,8 @@ function CaspaDriver() {
         this.publisher.publish(this.channel, status);
     };
 }
+
+exports = module.exports = function() {
+    driver = new CaspaDriver();
+    return driver;
+};
