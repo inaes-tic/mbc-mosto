@@ -31,6 +31,7 @@ function CaspaDriver() {
     this.publisher = mbc.pubsub();
 
     var setups = [
+       self.setupStatus
     ];
     var sendReady = _.times(setups.length, function() {
         self.emit('ready');
@@ -39,6 +40,25 @@ function CaspaDriver() {
     setups.forEach(function(setup){
         setup(sendReady);
     });
+
+    CaspaDriver.prototype.setupStatus = function(callback) {
+        var db = mbc.db();
+        var col = db.collection('status');
+        col.findOne({_id: 1}, function(err, res) {
+            if( err )
+                // err.. do something?
+                return;
+            if( !res ) {
+                // the status doesn't exist, create it
+                col.create(self.status, function(err, itm) {
+                    callback();
+                });
+            } else {
+                // res existed, just signal as ready
+                callback();
+            }
+        });
+    };
 
     CaspaDriver.prototype.setStatus = function(status) {
         // this overrides this.status with the values passed by status
