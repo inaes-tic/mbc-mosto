@@ -7,7 +7,7 @@ _ = require('underscore');
 mbc = require('mbc-common');
 
 defaults = { // copied from caspa/models.App.Status
-    _id: 0,
+    _id: 1,
     piece: {
         previous: null,
         curent: null,
