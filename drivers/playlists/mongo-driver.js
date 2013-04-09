@@ -3,7 +3,8 @@ var config   = require("./conf/mongo-driver"),
     Media    = require('../../api/Media'),
     mubsub   = require("mubsub"),
     moment   = require("moment"),
-    mbc      = require('mbc-common');
+    mbc      = require('mbc-common'),
+    async    = require('async');
 
 function mongo_driver() {
     var self = this;
