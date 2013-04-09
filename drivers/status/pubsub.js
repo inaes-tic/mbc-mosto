@@ -36,6 +36,9 @@ function CaspaDriver() {
     CaspaDriver.prototype.publish = function(status) {
         this.publisher.publish({backend: this.channel, model: status});
     };
+    CaspaDriver.prototype.publishStatus = function(status) {
+        this.publisher.publish({backend: "mostoStatus", model: status})
+    };
 }
 
 exports = module.exports = function() {
