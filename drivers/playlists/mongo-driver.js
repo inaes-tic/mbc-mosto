@@ -6,6 +6,15 @@ var config   = require("./conf/mongo-driver"),
     mbc      = require('mbc-common'),
     async    = require('async');
 
+function drop_err(callback, err_handler) {
+    return function(err,v) {
+        if( !err )
+            callback(v);
+        else if( err_handler )
+            err_handler(err);
+    };
+}
+
 function mongo_driver() {
     var self = this;
 
@@ -28,11 +37,11 @@ function mongo_driver() {
 
         channel.subscribe({channel: 'schedbackend', method: 'create'}, function(msg) {
             if( self.inTime(msg.model) ) {
-                self.createPlaylist(msg.model, self.newPlaylistCallback);
+                self.createPlaylist(msg.model, drop_err(self.newPlaylistCallback, console.log));
             }
         });
         channel.subscribe({channel: 'schedbackend', method: 'update'}, function(msg) {
-            self.createPlaylist(msg.model, self.updatePlaylistCallback);
+            self.createPlaylist(msg.model, drop_err(self.updatePlaylistCallback, console.log));
         });
         channel.subscribe({channel: 'schedbackend', method: 'delete'}, function(msg) {
             self.removePlaylistCallback(msg.model._id);
