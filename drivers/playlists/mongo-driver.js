@@ -113,6 +113,12 @@ function mongo_driver() {
     
     mongo_driver.prototype.createPlaylist = function(sched, callback) {
         self.lists.findById(sched.list, function(err, list) {
+            if( err ) {
+                if( callback )
+                    callback(err);
+                return err;
+            }
+
             console.log("Processing list:", list);
             var startDate = new Date(sched.start * 1000);
             var endDate   = new Date(sched.end * 1000);
