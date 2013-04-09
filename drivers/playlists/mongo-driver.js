@@ -80,7 +80,7 @@ function mongo_driver() {
                 sched.end >= boundaries.from.unix());
     };
 
-    mongo_driver.prototype.readPlaylists =  function(from, to) {
+    mongo_driver.prototype.readPlaylists =  function(from, to, callback) {
         // read playlists from the database
 
         /*
@@ -119,7 +119,11 @@ function mongo_driver() {
                 var fps = block.fps;
                 medias.push(new Media(type, file, length, parseFloat(fps)));
             });
-            callback(new Playlist(name, startDate, medias, endDate));
+            var playlist = new Playlist(name, startDate, medias, endDate);
+            if( callback )
+                callback(err, playlist);
+            else
+                return playlist;
         });
     };
 }
