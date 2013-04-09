@@ -29,7 +29,17 @@ function CaspaDriver() {
     this.status = _.clone(defaults);
     this.channel = "mostoStatus";
     this.publisher = mbc.pubsub();
-    
+
+    var setups = [
+    ];
+    var sendReady = _.times(setups.length, function() {
+        self.emit('ready');
+    });
+
+    setups.forEach(function(setup){
+        setup(sendReady);
+    });
+
     CaspaDriver.prototype.setStatus = function(status) {
         // this overrides this.status with the values passed by status
         this.status = _.extend(this.status, status);
