@@ -2,7 +2,8 @@
  * This is the pubsub driver that should tell caspa about the melted status
  *
  *******************/
-
+events = require('events');
+utils = require('utils');
 _ = require('underscore');
 mbc = require('mbc-common');
 
@@ -23,6 +24,7 @@ defaults = { // copied from caspa/models.App.Status
 };
 
 function CaspaDriver() {
+    events.EventEmitter.call(this);
     var self = this;
     this.status = _.clone(defaults);
     this.channel = "mostoStatus";
@@ -40,6 +42,8 @@ function CaspaDriver() {
         this.publisher.publish({backend: "mostoStatus", model: status})
     };
 }
+
+util.inherits(CaspaDriver, events.EventEmitter);
 
 exports = module.exports = function() {
     driver = new CaspaDriver();
