@@ -25,7 +25,7 @@ defaults = { // copied from caspa/models.App.Status
 function CaspaDriver() {
     var self = this;
     this.status = _.clone(defaults);
-    this.channel = "mosto";
+    this.channel = "mostoStatus";
     this.publisher = mbc.pubsub();
     
     CaspaDriver.prototype.setStatus = function(status) {
