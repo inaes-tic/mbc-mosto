@@ -26,9 +26,7 @@ function mongo_driver() {
 
     mongo_driver.prototype.start = function(config) {
         var db = mbc.db(config && config.db);
-        var client = mubsub(db);
-        
-        var channel = client.channel('messages', { size: 10000000, max: 5000 });
+        var channel = mbc.pubsub();
 
         self.scheds = db.collection('scheds');
         self.lists = db.collection('lists');
