@@ -25,8 +25,8 @@ defaults = { // copied from caspa/models.App.Status
 function CaspaDriver() {
     var self = this;
     this.status = _.clone(defaults);
-    this.channel = "mosto"
-    this.publisher = mbc.JSONredis.createJSONClient();
+    this.channel = "mosto";
+    this.publisher = mbc.pubsub();
     
     CaspaDriver.prototype.setStatus = function(status) {
         // this overrides this.status with the values passed by status
