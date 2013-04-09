@@ -32,6 +32,8 @@ function mongo_driver() {
 
         self.scheds = db.collection('scheds');
         self.lists = db.collection('lists');
+
+        // these two lines must go, mosto will take care of calling these
         var boundaries = self.validTimes();
         self.readPlaylists(boundaries.from, boundaries.to);
 
@@ -41,6 +43,7 @@ function mongo_driver() {
             }
         });
         channel.subscribe({channel: 'schedbackend', method: 'update'}, function(msg) {
+            // I forward all create messages
             self.createPlaylist(msg.model, drop_err(self.updatePlaylistCallback, console.log));
         });
         channel.subscribe({channel: 'schedbackend', method: 'delete'}, function(msg) {
@@ -93,9 +96,11 @@ function mongo_driver() {
         // read playlists from the database
 
         /*
-         * This should get the database's 'scheds' and 'lists' collections
-         * and turn them into a mosto.api.Playlist
+         * This gets the database's 'scheds' and 'lists' collections
+         * and turn them into a mosto.api.Playlist. Then return one by one to callback
+         * which defaults to self.newPlaylistCallback
          */
+
         //console.log("mbc-mosto: [INFO] Start reading playlists from " + config.playlists.to_read);
         var boundaries = self.setBoundaries(from, to);
         self.scheds.findItems({
@@ -119,7 +124,7 @@ function mongo_driver() {
             }
         });
     };
-    
+
     mongo_driver.prototype.createPlaylist = function(sched, callback) {
         self.lists.findById(sched.list, function(err, list) {
             if( err ) {
