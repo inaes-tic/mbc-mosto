@@ -34,7 +34,7 @@ function CaspaDriver() {
         this.publish(status);
     };
     CaspaDriver.prototype.publish = function(status) {
-        this.publisher.publish(this.channel, status);
+        this.publisher.publish({backend: this.channel, model: status});
     };
 }
 
