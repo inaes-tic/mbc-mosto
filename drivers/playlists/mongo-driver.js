@@ -89,18 +89,26 @@ function mongo_driver() {
          */
         //console.log("mbc-mosto: [INFO] Start reading playlists from " + config.playlists.to_read);
         var boundaries = self.setBoundaries(from, to);
-        self.scheds.findEach({
+        self.scheds.findItems({
             start: { $lte: boundaries.to.unix()},
-            end: { $gte: boundaries.from.unix() }}, function(err, sched) {
-                if( err ) {
-                    console.log(err);
-                } else if( sched ) {
-                    console.log("Processing sched:", sched);
-                    self.createPlaylist(sched, self.newPlaylistCallback);
-                } else {
-                    console.log('Done');
-                }
-            });
+            end: { $gte: boundaries.from.unix() }
+        }, function(err, scheds) {
+            if( err ) {
+                console.log(err);
+            } else if( scheds ) {
+                console.log("Processing sched list:", scheds);
+                async.map(scheds, self.createPlaylist, function(err, playlists) {
+                    if( callback )
+                        callback(playlists);
+                    else
+                        playlists.forEach(function(playlist) {
+                            self.newPlaylistCallback(playlist);
+                        });
+                });
+            } else {
+                console.log('Done');
+            }
+        });
     };
     
     mongo_driver.prototype.createPlaylist = function(sched, callback) {
