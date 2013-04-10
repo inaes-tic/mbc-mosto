@@ -47,11 +47,26 @@ describe('PlaylistMongoDriver', function(){
 	    "_id" : 1365625760578
         };
 
-        self.db.collection('lists').save(playlist, function(err, list) {
-            self.db.collection('scheds').save(schedule, function(err, sched){
+        self.collections = {
+            lists: self.db.collection('lists'),
+            scheds: self.db.collection('scheds'),
+        };
+
+        self.collections.lists.save(playlist, function(err, list) {
+            self.collections.scheds.save(schedule, function(err, sched){
                 done();
             });
         });
+    });
+
+    after(function(done) {
+        //
+        if(self.collections) {
+            for( var col in self.collections) {
+                self.collections[col].drop();
+            }
+        }
+        done();
     });
 
     describe('#setBoundaries()', function() {
