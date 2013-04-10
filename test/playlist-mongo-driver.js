@@ -86,5 +86,18 @@ describe('PlaylistMongoDriver', function(){
     });
 
     describe('#subscriptions', function() {
+        before(function() {
+            self.pubsub = mbc.pubsub();
+        });
+
+        var message = {
+            backend: 'schedbackend',
+            model: {
+                start: moment(new Date()).unix(),
+                end: moment(new Date()).add(5*60*1000).unix(),
+                _id: 1,
+                list: 1,
+            },
+        };
     });
 });
