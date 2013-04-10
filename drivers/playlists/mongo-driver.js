@@ -35,16 +35,16 @@ function mongo_driver(conf) {
         var boundaries = self.validTimes();
         self.readPlaylists(boundaries.from, boundaries.to);
 
-        channel.subscribe({channel: 'schedbackend', method: 'create'}, function(msg) {
+        channel.subscribe({backend: 'schedbackend', method: 'create'}, function(msg) {
             if( self.inTime(msg.model) ) {
                 self.createPlaylist(msg.model, drop_err(self.newPlaylistCallback, console.log));
             }
         });
-        channel.subscribe({channel: 'schedbackend', method: 'update'}, function(msg) {
+        channel.subscribe({backend: 'schedbackend', method: 'update'}, function(msg) {
             // I forward all create messages
             self.createPlaylist(msg.model, drop_err(self.updatePlaylistCallback, console.log));
         });
-        channel.subscribe({channel: 'schedbackend', method: 'delete'}, function(msg) {
+        channel.subscribe({backend: 'schedbackend', method: 'delete'}, function(msg) {
             self.removePlaylistCallback(msg.model._id);
         });
     };
