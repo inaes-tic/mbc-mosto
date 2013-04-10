@@ -99,5 +99,6 @@ describe('PlaylistMongoDriver', function(){
                 list: 1,
             },
         };
+        this.timeout(10000);
     });
 });
