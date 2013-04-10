@@ -100,5 +100,16 @@ describe('PlaylistMongoDriver', function(){
             },
         };
         this.timeout(10000);
+        it('should respond to create messages',function(done){
+            // set window from now to 10 minutes
+            message.method = 'create';
+            self.driver.setBoundaries(new Date(), moment(new Date()).add(10 * 60 * 1000));
+            self.driver.registerNewPlaylistListener(function(playlist) {
+                playlist.name.should.be.eql(message.model._id);
+                moment(playlist.startDate).valueOf().should.eql(message.model.start * 1000);
+                done();
+            });
+            self.pubsub.publish(message);
+        });
     });
 });
