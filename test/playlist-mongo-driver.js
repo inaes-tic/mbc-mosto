@@ -118,5 +118,13 @@ describe('PlaylistMongoDriver', function(){
             });
             self.pubsub.publish(message);
         });
+        it('should respond to remove messages', function(done) {
+            message.method = 'delete';
+            self.driver.registerRemovePlaylistListener(function(id) {
+                id.should.be.eql(message.model._id);
+                done();
+            });
+            self.pubsub.publish(message);
+        });
     });
 });
