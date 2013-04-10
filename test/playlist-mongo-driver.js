@@ -54,6 +54,9 @@ describe('PlaylistMongoDriver', function(){
     });
 
     describe('#setBoundaries()', function() {
+        beforeEach(function(){
+            self.driver.boundaries = undefined;
+        });
     });
 
     describe('#subscriptions', function() {
