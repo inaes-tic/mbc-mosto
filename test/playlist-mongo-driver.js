@@ -1,9 +1,11 @@
+var mongo_driver = require('../drivers/playlists/mongo-driver')
 var mbc = require('mbc-common');
 
 describe('PlaylistMongoDriver', function(){
     var self = this;
 
     before(function(done) {
+        // setup mongo driver
         var conf = {
             db: {
                 dbName: 'mediatestdb',
@@ -11,7 +13,9 @@ describe('PlaylistMongoDriver', function(){
                 dbPort: 27017
             }
         };
+        self.driver = new mongo_driver(conf);
         self.db = mbc.db(conf.db);
+        self.driver.start();
         var playlist = {
             "_id": 1,
 	    "models" : [
