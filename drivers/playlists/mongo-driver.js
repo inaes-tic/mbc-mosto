@@ -15,7 +15,7 @@ function drop_err(callback, err_handler) {
     };
 }
 
-function mongo_driver() {
+function mongo_driver(conf) {
     var self = this;
 
     this.newPlaylistCallback    = undefined;
@@ -24,8 +24,8 @@ function mongo_driver() {
 
     console.log("mbc-mosto: [INFO] Creating mongodb playlists driver");
 
-    mongo_driver.prototype.start = function(config) {
-        var db = mbc.db(config && config.db);
+    mongo_driver.prototype.start = function() {
+        var db = mbc.db(conf && conf.db);
         var channel = mbc.pubsub();
 
         self.scheds = db.collection('scheds');
@@ -162,7 +162,7 @@ function mongo_driver() {
     };
 }
 
-exports = module.exports = function() {
-    var driver = new mongo_driver();
+exports = module.exports = function(conf) {
+    var driver = new mongo_driver(conf);
     return driver;
 };
