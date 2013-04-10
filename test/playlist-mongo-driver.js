@@ -111,5 +111,12 @@ describe('PlaylistMongoDriver', function(){
             });
             self.pubsub.publish(message);
         });
+        it('should respond to update messages', function(done) {
+            message.method = 'update';
+            self.driver.registerUpdatePlaylistListener(function(playlist) {
+                done();
+            });
+            self.pubsub.publish(message);
+        });
     });
 });
