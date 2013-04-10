@@ -153,6 +153,7 @@ function mongo_driver(conf) {
                 var fps = block.fps;
                 medias.push(new Media(type, file, length, parseFloat(fps)));
             });
+
             var playlist = new Playlist(name, startDate, medias, endDate);
             if( callback )
                 callback(err, playlist);
