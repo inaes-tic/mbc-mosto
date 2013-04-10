@@ -62,6 +62,12 @@ describe('PlaylistMongoDriver', function(){
             self.driver.should.have.property('setBoundaries');
             self.driver.setBoundaries.should.be.a('function');
         });
+        it('should accept two parameters and save them in boundaries = {from, to}', function() {
+            self.driver.setBoundaries(self.from, self.to);
+            var boundaries = self.driver.boundaries;
+            boundaries.should.have.property('from');
+            boundaries.should.have.property('to');
+        });
     });
 
     describe('#subscriptions', function() {
