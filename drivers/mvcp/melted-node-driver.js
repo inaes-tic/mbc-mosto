@@ -53,8 +53,7 @@ function melted(host, port) {
     melted.prototype.getServerStatus = function(successCallback, errorCallback) {
             self.mlt.sendCommand("usta u0", "202 OK", function(response) {
                 // HACK: Converting the promise object to a string :)
-                var data = "." + response;
-                
+                var data = new String("." + response);
                 var split = data.split("\r\n");
                 var media = {};
                 

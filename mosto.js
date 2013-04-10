@@ -1,4 +1,5 @@
 var fs               = require('fs'),
+	moment			= require('moment'),
     mvcp_server      = require('./drivers/mvcp/mvcp-driver'), 	
 	playlists_driver = require('./drivers/playlists/playlists-driver');
 
@@ -29,6 +30,7 @@ function mosto(configFile) {
 	
         console.log("mbc-mosto: [INFO] Adding playlist " + playlist.name);
         self.playlists.push(playlist);
+		self.playlists_hash[playlist.name] = playlist;
         console.log("mbc-mosto: [INFO] Added playlist:\nname: " + playlist.name 
                 + "\nstartDate: " + playlist.startDate 
                 + "\nendDate: " + playlist.endDate);
@@ -43,18 +45,29 @@ function mosto(configFile) {
     mosto.prototype.updatePlaylist = function(playlist) {
 	
         console.log("mbc-mosto: [INFO] Updating playlist " + playlist.name);
-        var i = -1;
+        
+		var i = -1;
+		
         self.playlists.some(function(element, index, array) {
             if (element.name === playlist.name) {
                 i = index;
                 return true;
             }
         });
-        playlist.loaded = self.playlists[i].loaded;
-        self.playlists[i] = playlist;
-        console.log("mbc-mosto: [INFO] Updated playlist:\nname: " + playlist.name 
+		
+		//update may create if needed
+		//TODO: chech time window: startDate-endDate
+		if (i==-1) {
+			self.playlists.push(playlist);
+		} else {
+			playlist.loaded = self.playlists[i].loaded;        
+			self.playlists[i] = playlist;
+		}
+		
+		console.log("mbc-mosto: [INFO] Updated playlist:\nname: " + playlist.name 
                 + "\nstartDate: " + playlist.startDate 
                 + "\nendDate: " + playlist.endDate);
+		
         self.orderPlaylists();
     };
     
@@ -237,7 +250,7 @@ function mosto(configFile) {
 		for( i=0; i<playlist.length; i++) { 
 			element = playlist[i];
 		    if ( element.fps != self.config.fps ) {			
-				console.log("Playlist is not valid! media: " + element.file + " fps:" + element.fps );											
+				console.error("Playlist is not valid! media: " + element.file + " fps:" + element.fps );											
 				return false;
             }
         };
@@ -375,25 +388,34 @@ function mosto(configFile) {
 	*
 	*/
 
-	mosto.prototype.timer_fun_status = function( actual_clip ) {
+	mosto.prototype.timer_fun_status = function( actual_status ) {
+
+		self.actual_status = actual_status;
 
 
-		self.actual_playing_clip = actual_clip;
+		self.actual_playing_clip = self.actual_status.file;
+		self.actual_playing_status = self.actual_status.status;
+
+
+		console.log("mbc-mosto: [INFO] timer_fun_status status: " + self.actual_playing_status + " clip: " + self.actual_playing_clip );
 
 		//we have a status let's get synchronized...
 		//TODO: check errors !
 		self.server.getServerPlaylist( self.syncroScheduledClips, function() { console.log("mbc-mosto: [ERROR] timer_fun_status >  getServerPlaylist() " ); } );
+		
 
 	}
 
 	mosto.prototype.timer_fun = function() {
 		//TODO: call sync and send status message to channels...
-		console.log("mbc-mosto: [INFO] sync_func called");
-
-		//get status
-		self.server.getServerStatus( self.timer_fun_status, function() { console.log("mbc-mosto: [ERROR] mosto.timer_fun > getServerStatus failed."); } );
 
 		//calculate now time...
+		self.timer_clock = moment();
+		console.log("mbc-mosto: [INFO] timer_fun called: " + self.timer_clock.format("hh:mm:ss") );
+
+		//get status
+		self.server.getServerStatus( self.timer_fun_status, function( error ) { console.log("mbc-mosto: [ERROR] mosto.timer_fun > getServerStatus failed: " + error ); } );
+
 
 	}
 
@@ -462,6 +484,9 @@ function mosto(configFile) {
 	
 	/**	FETCH MODULE*/
 	this.playlists  = []; // this is the scheduled playlists....in a range between now and max_playlist_duration
+	this.playlists_hash = [];
+	this.time_window_from = "now";
+	this.time_window_to = "";
 	
 	/** LOGIC MODULE*/
 	this.scheduled_clips = []; //here we must have the current playlist up to date...	
@@ -475,7 +500,10 @@ function mosto(configFile) {
 	
 	/** PLAY MODULE */
 	this.timer = null;
+	this.timer_clock = null;
 	this.actual_playing_clip = null;
+	this.actual_playing_status = "";
+	this.actual_status = null;
 	
 	/** ALL MODULES */
     this.server     = new mvcp_server("melted");
@@ -494,8 +522,8 @@ function mosto(configFile) {
         
 		self.play();
 		self.startWatching();
-        self.initDriver();
-
+        //self.initDriver();
+			
 		
     });
     
