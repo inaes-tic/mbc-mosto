@@ -78,6 +78,11 @@ describe('PlaylistMongoDriver', function(){
             self.driver.setBoundaries({to: self.to});
             self.driver.boundaries.should.have.property('from');
         });
+        it('should accept dates and transform them to moments', function() {
+            self.driver.setBoundaries(new Date(), new Date());
+            moment.isMoment(self.driver.boundaries.from).should.be.ok;
+            moment.isMoment(self.driver.boundaries.to).should.be.ok;
+        });
     });
 
     describe('#subscriptions', function() {
