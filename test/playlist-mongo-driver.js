@@ -1,5 +1,6 @@
 var moment = require('moment');
 var mongo_driver = require('../drivers/playlists/mongo-driver')
+var should = require('should');
 var mbc = require('mbc-common');
 
 describe('PlaylistMongoDriver', function(){
@@ -56,6 +57,10 @@ describe('PlaylistMongoDriver', function(){
     describe('#setBoundaries()', function() {
         beforeEach(function(){
             self.driver.boundaries = undefined;
+        });
+        it('should exist', function() {
+            self.driver.should.have.property('setBoundaries');
+            self.driver.setBoundaries.should.be.a('function');
         });
     });
 
