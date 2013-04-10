@@ -1,3 +1,4 @@
+var moment = require('moment');
 var mongo_driver = require('../drivers/playlists/mongo-driver')
 var mbc = require('mbc-common');
 
@@ -16,6 +17,9 @@ describe('PlaylistMongoDriver', function(){
         self.driver = new mongo_driver(conf);
         self.db = mbc.db(conf.db);
         self.driver.start();
+        self.from = moment(new Date());
+        self.to = moment((self.from.unix() + 120 * 60) * 1000); // add 2hs
+
         var playlist = {
             "_id": 1,
 	    "models" : [
