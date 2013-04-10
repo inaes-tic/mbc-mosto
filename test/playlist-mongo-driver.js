@@ -53,4 +53,9 @@ describe('PlaylistMongoDriver', function(){
         });
     });
 
+    describe('#setBoundaries()', function() {
+    });
+
+    describe('#subscriptions', function() {
+    });
 });
