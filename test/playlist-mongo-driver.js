@@ -74,6 +74,10 @@ describe('PlaylistMongoDriver', function(){
             boundaries.should.have.property('from');
             boundaries.should.have.property('to');
         });
+        it('should accept only a "to" object and assume "from" is now', function() {
+            self.driver.setBoundaries({to: self.to});
+            self.driver.boundaries.should.have.property('from');
+        });
     });
 
     describe('#subscriptions', function() {
