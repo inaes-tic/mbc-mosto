@@ -4,7 +4,7 @@ var melted_node = require('melted-node'),
     Media       = require('../../api/Media'),
     fs          = require('fs'), 
     config      = require('./conf/melted-node-driver'),
-    utils       = require('../../utils');
+    Q           = require('q');
     
 function melted(host, port) {
     var self = this;
@@ -78,8 +78,27 @@ function melted(host, port) {
     
     melted.prototype.initServer = function() {
         console.log("mbc-mosto: [INFO] Connecting to server instance [" + self.mlt.host + ":" + self.mlt.port + "]");
+
+        var deferred = Q.defer();
+        
         var result = self.mlt.connect();
-        return result;
+        
+        result.then(function(response) {
+            var aux = self.mlt.sendPromisedCommand("ULS", "201 OK");
+            aux.then(function(response) {
+                if (response.indexOf("U0") === -1) {
+                    deferred.reject(new Error("mbc-mosto: [ERROR] Unit 0 not found"));
+                } else {
+                    deferred.resolve("OK");
+                }
+            }, function(error) {
+                deferred.reject(new Error("mbc-mosto: [ERROR] Could not query Unit status: ") + error);
+            });
+        }, function(error) {
+            deferred.reject(error);
+        });
+        
+        return deferred.promise;
     };
     
     melted.prototype.sendClip = function(clip, command, successCallback, errorCallback) {
