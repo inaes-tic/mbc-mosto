@@ -24,8 +24,10 @@ function mongo_driver(conf) {
 
     console.log("mbc-mosto: [INFO] Creating mongodb playlists driver");
 
-    mongo_driver.prototype.start = function() {
-        var db = mbc.db(conf && conf.db);
+    mongo_driver.prototype.start = function(ops) {
+        var config = ops.config;
+        var span = ops.span;
+        var db = mbc.db(config && config.db);
         var channel = mbc.pubsub();
 
         self.scheds = db.collection('scheds');
@@ -73,7 +75,7 @@ function mongo_driver(conf) {
         }
     };
 
-    mongo_driver.prototype.setBoundaries = function(from, to) {
+    mongo_driver.prototype.getBoundary(from, to) {
         // Notice that if from = to = undefined then boundaries are
         // set to undefined, and settings file is used again
         if( to === undefined ) {
@@ -89,6 +91,10 @@ function mongo_driver(conf) {
             };
         } else
             self.boundaries = { from: moment(from), to: moment(to) };
+    };
+
+    mongo_driver.prototype.setBoundaries = function(from, to) {
+        self.boundaries = self.getBoundaries(from, to);
         return self.validTimes()
     };
 
@@ -98,7 +104,7 @@ function mongo_driver(conf) {
                 sched.end >= boundaries.from.unix());
     };
 
-    mongo_driver.prototype.readPlaylists =  function(from, to, callback) {
+    mongo_driver.prototype.readPlaylists =  function(ops, callback) {
         // read playlists from the database
 
         /*
@@ -106,6 +112,11 @@ function mongo_driver(conf) {
          * and turn them into a mosto.api.Playlist. Then return one by one to callback
          * which defaults to self.newPlaylistCallback
          */
+        var from = ops.from;
+        var to = ops.to;
+        var setBoundary = ops.setBoundary;
+        var boundaries = undefined;
+
 
         //console.log("mbc-mosto: [INFO] Start reading playlists from " + config.playlists.to_read);
         var boundaries = self.setBoundaries(from, to);
