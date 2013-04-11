@@ -104,12 +104,16 @@ function mongo_driver(conf) {
                 // we calculate it using from and to
                 boundaries.span = boundaries.to.diff(boundaries.from);
             }
-            self.boundaries = {
-                from: moment(boundaries.from),
-                to: moment(boundaries.to)
+            return _.clone(boundaries);
+        } else {
+            
+            var boundaries = {
+                from: moment(from),
+                to: moment(to),
             };
-        } else
-            self.boundaries = { from: moment(from), to: moment(to) };
+            boundaries.span = boundaries.to.diff(boundaries.from);
+            return boundaries;
+        }
     };
 
     mongo_driver.prototype.setBoundaries = function(from, to) {
