@@ -25,15 +25,20 @@ describe('PlaylistMongoDriver', function(){
             "_id": 1,
 	    "models" : [
 		{
-		    "file" : "/path/to/file1.avi",
-		    "durationraw" : "01:32:18.96",
+		    "file" : "./videos/SMPTE_Color_Bars_01.mp4",
+		    "durationraw" : "00:30:00",
 		    "fps" : 25,
 		},
 		{
-		    "file" : "/path/to.file2.avi",
-		    "durationraw" : "00:54:07.16",
+		    "file" : "./videos/SMPTE_Color_Bars_02.mp4",
+		    "durationraw" : "00:30:00",
 		    "fps" : 25,
-		}
+		},
+		{
+		    "file" : "./videos/SMPTE_Color_Bars_03.mp4",
+		    "durationraw" : "00:30:00",
+		    "fps" : 25,
+		},
 	    ],
         }
 
