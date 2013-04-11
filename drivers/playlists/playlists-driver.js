@@ -37,7 +37,7 @@ function playlists_driver(type, config) {
         self.removePlaylistCallback = removePlaylistCallback;
         self.driver.registerRemovePlaylistListener(self.removePlaylist);
     };
-    playlist_driver.prototype.setBoundaries = function(from, to) {
+    playlist_driver.prototype.setWindow = function(from, to) {
         /******************************************************************
          * this receives either a from=date, to=date or an object that is
          * interpreted as follows:
@@ -53,9 +53,9 @@ function playlists_driver(type, config) {
          * span = (to - from) // this is in miliseconds
          * to = from + span
          * if both are absent, the config file is used to get the span value
-         * it returns the boundary object with the structure above (always complete)
+         * it returns the window object with the structure above (always complete)
          *******************************************************************/
-        return self.driver.setBoundaries(from, to);
+        return self.driver.setWindow(from, to);
     };
     playlist_driver.prototype.readPlaylists = function(ops, callback) {
         /******************************************************************
@@ -63,9 +63,9 @@ function playlists_driver(type, config) {
          * {
          *    from: date
          *    to: date
-         *    setBoundary: boolean
+         *    setWindow: boolean
          * }
-         * with the same description as in setBoundaries
+         * with the same description as in setWindow
          ******************************************************************/
         return self.driver.readPlaylists(ops, callback);
     };
