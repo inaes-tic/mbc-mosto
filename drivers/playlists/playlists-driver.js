@@ -21,9 +21,9 @@ function playlists_driver(type, config) {
         throw err;
     }
     
-    playlists_driver.prototype.start = function() {
+    playlists_driver.prototype.start = function(ops) {
         console.log("mbc-mosto: [INFO] Starting playlists driver");
-        self.driver.start();
+        self.driver.start(ops);
     };
     playlists_driver.prototype.registerNewPlaylistListener = function(newPlaylistCallback) {
         self.newPlaylistCallback = newPlaylistCallback;
@@ -36,6 +36,38 @@ function playlists_driver(type, config) {
     playlists_driver.prototype.registerRemovePlaylistListener = function(removePlaylistCallback) {
         self.removePlaylistCallback = removePlaylistCallback;
         self.driver.registerRemovePlaylistListener(self.removePlaylist);
+    };
+    playlist_driver.prototype.setBoundaries = function(from, to) {
+        /******************************************************************
+         * this receives either a from=date, to=date or an object that is
+         * interpreted as follows:
+         * {
+         *   from: date,
+         *   to: date,
+         *   span: int,
+         * }
+         * span should be in milliseconds
+         * if from is absent, it is assumed to be `now`.
+         * if either one of `to` or `span` is be present, the missing one is calculated
+         * using `from` and the other one thus:
+         * span = (to - from) // this is in miliseconds
+         * to = from + span
+         * if both are absent, the config file is used to get the span value
+         * it returns the boundary object with the structure above (always complete)
+         *******************************************************************/
+        return self.driver.setBoundaries(from, to);
+    };
+    playlist_driver.prototype.readPlaylists = function(ops, callback) {
+        /******************************************************************
+         * ops is
+         * {
+         *    from: date
+         *    to: date
+         *    setBoundary: boolean
+         * }
+         * with the same description as in setBoundaries
+         ******************************************************************/
+        return self.driver.readPlaylists(ops, callback);
     };
     
     playlists_driver.prototype.addPlaylist = function(playlist) {
