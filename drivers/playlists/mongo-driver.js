@@ -140,9 +140,11 @@ function mongo_driver(conf) {
         var setBoundary = ops.setBoundary;
         var boundaries = undefined;
 
+        if( setBoundary )
+            boundaries = self.setBoundaries(from, to);
+        else
+            boundaries = self.getBoundary(from, to);
 
-        //console.log("mbc-mosto: [INFO] Start reading playlists from " + config.playlists.to_read);
-        var boundaries = self.setBoundaries(from, to);
         self.scheds.findItems({
             start: { $lte: boundaries.to.unix()},
             end: { $gte: boundaries.from.unix() }
