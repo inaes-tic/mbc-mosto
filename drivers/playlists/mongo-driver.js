@@ -34,8 +34,8 @@ function mongo_driver(conf) {
         self.lists = db.collection('lists');
 
         // these two lines must go, mosto will take care of calling these
-        var boundaries = self.getBoundary({span: span});
-        self.readPlaylists(boundaries.from, boundaries.to);
+        var window = self.getWindow({span: span});
+        self.readPlaylists(window.from, window.to);
 
         channel.subscribe({backend: 'schedbackend', method: 'create'}, function(msg) {
             if( self.inTime(msg.model) ) {
@@ -62,8 +62,8 @@ function mongo_driver(conf) {
     };
 
     mongo_driver.prototype.validTimes = function() {
-        if( self.boundaries ) {
-            return self.boundaries;
+        if( self.window ) {
+            return self.window;
         } else {
             var now = moment(new Date());
             var until = moment(new Date());
@@ -77,54 +77,54 @@ function mongo_driver(conf) {
         }
     };
 
-    mongo_driver.prototype.getBoundary(from, to) {
-        // Notice that if from = to = undefined then boundaries are
+    mongo_driver.prototype.getWindow(from, to) {
+        // Notice that if from = to = undefined then time window is
         // set to undefined, and settings file is used again
         if( to === undefined ) {
             // assume from = { from: date, to: date }
-            var boundaries = from;
-            if( boundaries.from === undefined ) {
-                // if boundaries = { to: date }, I assume from = now
-                boundaries.from = new moment();
+            var window = from;
+            if( window.from === undefined ) {
+                // I assume from = now
+                window.from = new moment();
             } else {
-                boundaries.from = moment(boundaries.from);
+                window.from = moment(window.from);
             }
-            if( !(boundaries.to || boundaries.span) ) {
+            if( !(window.to || window.span) ) {
                 // if neither is present, we use the config file
-                boundaries.span = config.load_time * 60 * 1000;
+                window.span = config.load_time * 60 * 1000;
             }
-            if( boundaries.to === undefined ) {
+            if( window.to === undefined ) {
                 // we asume span is present and calculate it
-                boundaries.to = new moment(boundaries.from);
-                boundaries.to.add(boundaries.span);
+                window.to = new moment(window.from);
+                window.to.add(window.span);
             } else {
-                boundaries.to = moment(boundaries.to);
+                window.to = moment(window.to);
             }
-            if( boundaries.span === undefined ) {
+            if( window.span === undefined ) {
                 // we calculate it using from and to
-                boundaries.span = boundaries.to.diff(boundaries.from);
+                window.span = window.to.diff(window.from);
             }
-            return _.clone(boundaries);
+            return _.clone(window);
         } else {
             
-            var boundaries = {
+            var window = {
                 from: moment(from),
                 to: moment(to),
             };
-            boundaries.span = boundaries.to.diff(boundaries.from);
-            return boundaries;
+            window.span = window.to.diff(window.from);
+            return window;
         }
     };
 
-    mongo_driver.prototype.setBoundaries = function(from, to) {
-        self.boundaries = self.getBoundaries(from, to);
+    mongo_driver.prototype.setWindow = function(from, to) {
+        self.window = self.window(from, to);
         return self.validTimes()
     };
 
     mongo_driver.prototype.inTime = function(sched) {
-        var boundaries = self.validTimes();
-        return (sched.start <= boundaries.to.unix() &&
-                sched.end >= boundaries.from.unix());
+        var window = self.validTimes();
+        return (sched.start <= window.to.unix() &&
+                sched.end >= window.from.unix());
     };
 
     mongo_driver.prototype.readPlaylists =  function(ops, callback) {
@@ -137,17 +137,17 @@ function mongo_driver(conf) {
          */
         var from = ops.from;
         var to = ops.to;
-        var setBoundary = ops.setBoundary;
-        var boundaries = undefined;
+        var setWindow = ops.setWindow;
+        var window = undefined;
 
-        if( setBoundary )
-            boundaries = self.setBoundaries(from, to);
+        if( setWindow )
+            window = self.setWindow(from, to);
         else
-            boundaries = self.getBoundary(from, to);
+            window = self.getWindow(from, to);
 
         self.scheds.findItems({
-            start: { $lte: boundaries.to.unix()},
-            end: { $gte: boundaries.from.unix() }
+            start: { $lte: window.to.unix()},
+            end: { $gte: window.from.unix() }
         }, function(err, scheds) {
             if( err ) {
                 console.log(err);
