@@ -67,11 +67,13 @@ function mongo_driver(conf) {
         } else {
             var now = moment(new Date());
             var until = moment(new Date());
-            until.add(config.load_time * 60 * 1000);
+            var span = config.load_time * 60 * 1000;
+            until.add(span);
             return {
                 from: now,
-                to: until
-            }
+                to: until,
+                span: span
+            };
         }
     };
 
