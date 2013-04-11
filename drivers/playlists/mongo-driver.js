@@ -85,7 +85,24 @@ function mongo_driver(conf) {
             var boundaries = from;
             if( boundaries.from === undefined ) {
                 // if boundaries = { to: date }, I assume from = now
-                boundaries.from = new Date();
+                boundaries.from = new moment();
+            } else {
+                boundaries.from = moment(boundaries.from);
+            }
+            if( !(boundaries.to || boundaries.span) ) {
+                // if neither is present, we use the config file
+                boundaries.span = config.load_time * 60 * 1000;
+            }
+            if( boundaries.to === undefined ) {
+                // we asume span is present and calculate it
+                boundaries.to = new moment(boundaries.from);
+                boundaries.to.add(boundaries.span);
+            } else {
+                boundaries.to = moment(boundaries.to);
+            }
+            if( boundaries.span === undefined ) {
+                // we calculate it using from and to
+                boundaries.span = boundaries.to.diff(boundaries.from);
             }
             self.boundaries = {
                 from: moment(boundaries.from),
