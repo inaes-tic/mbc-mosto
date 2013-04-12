@@ -27,14 +27,14 @@ function mongo_driver(conf) {
 
     console.log("mbc-mosto: [INFO] Creating mongodb playlists driver");
 
-    mongo_driver.prototype.start = function(span) {
+    mongo_driver.prototype.start = function(timeSpan) {
         var db = mbc.db(conf && conf.db);
         var channel = mbc.pubsub();
 
         self.scheds = db.collection('scheds');
         self.lists = db.collection('lists');
 
-        self.setWindow({span: span});
+        self.setWindow({timeSpan: timeSpan});
 
         channel.subscribe({backend: 'schedbackend', method: 'create'}, function(msg) {
             if( self.inTime(msg.model) ) {
@@ -66,12 +66,12 @@ function mongo_driver(conf) {
         } else {
             var now = moment(new Date());
             var until = moment(new Date());
-            var span = config.load_time * 60 * 1000;
-            until.add(span);
+            var timeSpan = config.load_time * 60 * 1000;
+            until.add(timeSpan);
             return {
                 from: now,
                 to: until,
-                span: span
+                timeSpan: timeSpan
             };
         }
     };
@@ -88,21 +88,21 @@ function mongo_driver(conf) {
             } else {
                 window.from = moment(window.from);
             }
-            if( !(window.to || window.span) ) {
+            if( !(window.to || window.timeSpan) ) {
                 // if neither is present, we use the currently set
                 // value, or default to the config file
-                window.span = self.window.span || config.load_time * 60 * 1000;
+                window.timeSpan = self.window.timeSpan || config.load_time * 60 * 1000;
             }
             if( window.to === undefined ) {
-                // we asume span is present and calculate it
+                // we asume timeSpan is present and calculate it
                 window.to = new moment(window.from);
-                window.to.add(window.span);
+                window.to.add(window.timeSpan);
             } else {
                 window.to = moment(window.to);
             }
-            if( window.span === undefined ) {
+            if( window.timeSpan === undefined ) {
                 // we calculate it using from and to
-                window.span = window.to.diff(window.from);
+                window.timeSpan = window.to.diff(window.from);
             }
             return _.clone(window);
         } else {
@@ -111,7 +111,7 @@ function mongo_driver(conf) {
                 from: moment(from),
                 to: moment(to),
             };
-            window.span = window.to.diff(window.from);
+            window.timeSpan = window.to.diff(window.from);
             return window;
         }
     };
