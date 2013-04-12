@@ -128,7 +128,7 @@ function mongo_driver(conf) {
                 sched.end >= window.from.unix());
     };
 
-    mongo_driver.prototype.readPlaylists = function(ops, callback) {
+    mongo_driver.prototype.getPlaylists = function(ops, callback) {
         // read playlists from the database
 
         /*
