@@ -2,6 +2,7 @@ mbc-mosto
 =========
 
 @mbc-playout's playlist juggler
+[![Build Status](https://travis-ci.org/inaes-tic/mbc-mosto.png)](https://travis-ci.org/inaes-tic/mbc-mosto)
 
 Requirements
 ============
