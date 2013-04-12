@@ -34,7 +34,7 @@ function mongo_driver(conf) {
         self.lists = db.collection('lists');
 
         // these two lines must go, mosto will take care of calling these
-        var window = self.getWindow({span: span});
+        var window = self.setWindow({span: span});
         self.readPlaylists(window.from, window.to);
 
         channel.subscribe({backend: 'schedbackend', method: 'create'}, function(msg) {
