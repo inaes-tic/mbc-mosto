@@ -55,6 +55,6 @@ test/videos/%.mp4: test/images/%.png
 
 test: videos ${MOCHA} ${MELTED} melted-run
 	m4 -DROOT=${ROOT} test/melted_setup.txt | ${NC} localhost 5250
-	-${NODE} ${MOCHA}
+	${NODE} ${MOCHA}
 	killall -9 melted
 
