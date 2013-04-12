@@ -17,7 +17,6 @@ function melted(host, port) {
     
     melted.prototype.getServerPlaylist = function(successCallback, errorCallback) {
             self.mlt.sendCommand("list u0", "201 OK", function(response) {
-//                console.log(response);
                 // HACK: Converting the promise object to a string :)
                 var data = "." + response;
                 
@@ -52,7 +51,6 @@ function melted(host, port) {
     
     melted.prototype.getServerStatus = function(successCallback, errorCallback) {
             self.mlt.sendCommand("usta u0", "202 OK", function(response) {
-                console.log(response);
                 // HACK: Converting the promise object to a string :)
                 var data = "." + response;
                 
