@@ -57,7 +57,7 @@ function playlists_driver(type, config) {
          *******************************************************************/
         return self.driver.setWindow(from, to);
     };
-    playlist_driver.prototype.readPlaylists = function(ops, callback) {
+    playlist_driver.prototype.getPlaylists = function(ops, callback) {
         /******************************************************************
          * ops is 
          * {
@@ -67,7 +67,7 @@ function playlists_driver(type, config) {
          * }
          * with the same description as in setWindow
          ******************************************************************/
-        return self.driver.readPlaylists(ops, callback);
+        return self.driver.getPlaylists(ops, callback);
     };
     
     playlists_driver.prototype.addPlaylist = function(playlist) {
