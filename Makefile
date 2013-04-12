@@ -38,6 +38,8 @@ melted-run:
 	${MELTED}
 endif
 
+melted-kill:
+	-killall -9 melted
 
 images: test/images/SMPTE_Color_Bars_01.png test/images/SMPTE_Color_Bars_02.png test/images/SMPTE_Color_Bars_03.png 
 
@@ -53,8 +55,7 @@ test/videos/%.avi: test/images/%.png
 test/videos/%.mp4: test/images/%.png
 	avconv -loop 1 -f image2 -i $< -t 30 $@ &> /dev/null
 
-test: videos ${MOCHA} ${MELTED} melted-run
+test: videos ${MOCHA} ${MELTED} melted-kill melted-run
 	m4 -DROOT=${ROOT} test/melted_setup.txt | ${NC} localhost 5250
-	-${NODE} ${MOCHA}
-	killall -9 melted
+	${NODE} ${MOCHA}
 
