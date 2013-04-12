@@ -1,3 +1,0 @@
-[submodule "node_modules/node-mlt"]
-	path = node_modules/node-mlt
-	url = git@github.com:inaes-tic/node-mlt.git
