@@ -156,7 +156,7 @@ function mongo_driver(conf) {
                 var file = block.file;
                 var length = block.durationraw;
                 var fps = block.fps;
-                medias.push(new Media(block_id, orig_order, actual_order, playlist_id, type, file, length, parseFloat(fps)));
+                medias.push(new Media(block_id, orig_order, actual_order, playlist_id, clip_name, type, file, length, parseFloat(fps)));
             });
 
             var playlist = new Playlist(playlist_id, name, startDate, medias, endDate);
