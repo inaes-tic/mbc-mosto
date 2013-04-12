@@ -3,12 +3,15 @@ var melted_node = require('melted-node'),
     Playlist    = require('../../api/Playlist'),
     Media       = require('../../api/Media'),
     fs          = require('fs'), 
-    config      = require('./conf/melted-node-driver');
+    config      = require('./conf/melted-node-driver'),
+    utils       = require('../../utils');
     
 function melted(host, port) {
     var self = this;
     console.log("mbc-mosto: [INFO] Creating server instance [" + host + ":" + port + "]");
     this.mlt = new melted_node(host, port);
+    console.log("mbc-mosto: [INFO] Server instance created [" + this.mlt.host + ":" + this.mlt.port + "]");
+    this.util = new utils();
     
     melted.prototype.sendCommand = function(command, successCallback, errorCallback) {
         console.log("mbc-mosto: [INFO] Sending command: " + command);        
@@ -83,32 +86,35 @@ function melted(host, port) {
     melted.prototype.sendClip = function(clip, command, successCallback, errorCallback) {
         var xml = new melted_xml();
 
-        var type = clip.type;
-        var file = clip.file;
+        var type     = clip.type;
+        var file     = clip.file;
+        var filename = self.util.getXmlFileNameFromClip(clip);
 
 //            var filters = self.config.types[type].filters;
 
-        console.log("mbc-mosto: [INFO] Generating file " + file);
+        console.log("mbc-mosto: [INFO] Generating file " + filename);
+
+        console.log("mbc-mosto: [INFO] Adding media [" + file + "] to file " + filename);
         var video = new melted_xml.Producer.Video({source: file});
         xml.push(video);
 
-        console.log("mbc-mosto: [INFO] Creating playlist xml object for file " + file);
+        console.log("mbc-mosto: [INFO] Creating playlist xml object for file " + filename);
         var pl = new melted_xml.Playlist;
         pl.entry({producer: video});
         xml.push(pl);
 
-        console.log("mbc-mosto: [INFO] Creating track xml object for file " + file);
+        console.log("mbc-mosto: [INFO] Creating track xml object for file " + filename);
         var track = new melted_xml.Multitrack.Track(pl);
 
-        console.log("mbc-mosto: [INFO] Creating multitrack xml object for file " + file);
+        console.log("mbc-mosto: [INFO] Creating multitrack xml object for file " + filename);
         var multitrack = new melted_xml.Multitrack;
         multitrack.addTrack(track);
 
-        console.log("mbc-mosto: [INFO] Creating tractor xml object for file " + file);
+        console.log("mbc-mosto: [INFO] Creating tractor xml object for file " + filename);
         var tractor = new melted_xml.Tractor; 
         tractor.push(multitrack);
 
-//            console.log("mbc-mosto: [INFO] Creating filter xml objects for file " + file);
+//            console.log("mbc-mosto: [INFO] Creating filter xml objects for file " + filename);
 //            console.log("mbc-mosto: [INFO] Filters: " + filters);
 //            filters.forEach(function(element, index, array){
 //                var filter = self.config.filters[element];
@@ -118,11 +124,11 @@ function melted(host, port) {
 //                tractor.push(filterObj);
 //            });
 
-        console.log("mbc-mosto: [INFO] Pushing xml for file " + file);
+        console.log("mbc-mosto: [INFO] Pushing xml for file " + filename);
         xml.push(tractor);
 
-        var fileName = file.substring(file.lastIndexOf("/") + 1);
-        var xmlFile = config.playlists_xml_dir + "/" + fileName + ".xml";
+//        var fileName = file.substring(file.lastIndexOf("/") + 1);
+        var xmlFile = config.playlists_xml_dir + "/" + filename;
 
         console.log("mbc-mosto: [INFO] Writing file " + xmlFile);
         fs.writeFile(xmlFile, xml.toString({pretty:true}), function(err){
