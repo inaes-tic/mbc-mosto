@@ -30,7 +30,8 @@
         "async"       : "0.2.x"
     },
     "devDependencies": {
-        "mocha"    :  "1.7.x"
+        "mocha"    :  "1.7.x",
+        "should"   :  "1.2.x"
     },
     "bundledDependencies": [
     ],
