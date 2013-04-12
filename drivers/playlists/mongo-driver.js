@@ -15,7 +15,7 @@ function drop_err(callback, err_handler) {
     };
 }
 
-function mongo_driver() {
+function mongo_driver(conf) {
     var self = this;
 
     this.newPlaylistCallback    = undefined;
@@ -24,8 +24,8 @@ function mongo_driver() {
 
     console.log("mbc-mosto: [INFO] Creating mongodb playlists driver");
 
-    mongo_driver.prototype.start = function(config) {
-        var db = mbc.db(config && config.db);
+    mongo_driver.prototype.start = function() {
+        var db = mbc.db(conf && conf.db);
         var channel = mbc.pubsub();
 
         self.scheds = db.collection('scheds');
@@ -35,16 +35,16 @@ function mongo_driver() {
         var boundaries = self.validTimes();
         self.readPlaylists(boundaries.from, boundaries.to);
 
-        channel.subscribe({channel: 'schedbackend', method: 'create'}, function(msg) {
+        channel.subscribe({backend: 'schedbackend', method: 'create'}, function(msg) {
             if( self.inTime(msg.model) ) {
                 self.createPlaylist(msg.model, drop_err(self.newPlaylistCallback, console.log));
             }
         });
-        channel.subscribe({channel: 'schedbackend', method: 'update'}, function(msg) {
+        channel.subscribe({backend: 'schedbackend', method: 'update'}, function(msg) {
             // I forward all create messages
             self.createPlaylist(msg.model, drop_err(self.updatePlaylistCallback, console.log));
         });
-        channel.subscribe({channel: 'schedbackend', method: 'delete'}, function(msg) {
+        channel.subscribe({backend: 'schedbackend', method: 'delete'}, function(msg) {
             self.removePlaylistCallback(msg.model._id);
         });
     };
@@ -153,6 +153,7 @@ function mongo_driver() {
                 var fps = block.fps;
                 medias.push(new Media(type, file, length, parseFloat(fps)));
             });
+
             var playlist = new Playlist(name, startDate, medias, endDate);
             if( callback )
                 callback(err, playlist);
@@ -162,7 +163,7 @@ function mongo_driver() {
     };
 }
 
-exports = module.exports = function() {
-    var driver = new mongo_driver();
+exports = module.exports = function(conf) {
+    var driver = new mongo_driver(conf);
     return driver;
 };
