@@ -8,7 +8,8 @@ function mosto(configFile) {
     mosto.prototype.addPlaylist = function(playlist) {
         console.log("mbc-mosto: [INFO] Adding playlist " + playlist.name);
         self.playlists.push(playlist);
-        console.log("mbc-mosto: [INFO] Added playlist:\nname: " + playlist.name 
+        console.log("mbc-mosto: [INFO] Added playlist:\nid: " + playlist.id 
+                + "\nname: " + playlist.name 
                 + "\nstartDate: " + playlist.startDate 
                 + "\nendDate: " + playlist.endDate);
         self.orderPlaylists();
@@ -25,7 +26,8 @@ function mosto(configFile) {
         });
         playlist.loaded = self.playlists[i].loaded;
         self.playlists[i] = playlist;
-        console.log("mbc-mosto: [INFO] Updated playlist:\nname: " + playlist.name 
+        console.log("mbc-mosto: [INFO] Updated playlist:\nid: " + playlist.id 
+                + "\nname: " + playlist.name 
                 + "\nstartDate: " + playlist.startDate 
                 + "\nendDate: " + playlist.endDate);
         self.orderPlaylists();
@@ -43,7 +45,8 @@ function mosto(configFile) {
             }
         });
         self.playlists.splice(i, 1);
-        console.log("mbc-mosto: [INFO] Removed playlist:\nname: " + playlist.name 
+        console.log("mbc-mosto: [INFO] Removed playlist:\nid: " + playlist.id 
+                + "\nname: " + playlist.name 
                 + "\nstartDate: " + playlist.startDate 
                 + "\nendDate: " + playlist.endDate);
         self.orderPlaylists();
