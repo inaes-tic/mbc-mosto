@@ -5,7 +5,7 @@ var assert = require("assert"),
 // SILENCE LOG OUTPUT
 var util = require('util');
 var fs = require('fs');
-var log = fs.createWriteStream('/home/jmrunge/stdout.log');
+var log = fs.createWriteStream('./stdout.log');
 
 console.log = console.info = function(t) {
   var out;
