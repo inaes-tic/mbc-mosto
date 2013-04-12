@@ -143,13 +143,12 @@ function mongo_driver(conf) {
             var startDate = new Date(sched.start * 1000);
             var endDate   = new Date(sched.end * 1000);
             var name = (sched._id.toHexString && sched._id.toHexString()) || sched._id;
-            var playlist_id = sched._id;
+            var playlist_id = (sched._id.toHexString && sched._id.toHexString()) || sched._id;
 
             var medias = [];
-                var block_id = block._id;
             list.models.forEach(function(block, order) {
+                var block_id = (block._id.toHexString && block._id.toHexString()) || block._id;
                 var orig_order = order;
-                order++;
                 var actual_order = undefined;
                 var clip_name = block.name;
                 // TODO: don't know what goes in type
