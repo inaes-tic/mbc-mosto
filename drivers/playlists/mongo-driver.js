@@ -22,6 +22,8 @@ function mongo_driver(conf) {
     this.updatePlaylistCallback = undefined;
     this.removePlaylistCallback = undefined;
 
+    this.window = {};
+
     console.log("mbc-mosto: [INFO] Creating mongodb playlists driver");
 
     mongo_driver.prototype.start = function(ops) {
@@ -90,8 +92,9 @@ function mongo_driver(conf) {
                 window.from = moment(window.from);
             }
             if( !(window.to || window.span) ) {
-                // if neither is present, we use the config file
-                window.span = config.load_time * 60 * 1000;
+                // if neither is present, we use the currently set
+                // value, or default to the config file
+                window.span = self.window.span || config.load_time * 60 * 1000;
             }
             if( window.to === undefined ) {
                 // we asume span is present and calculate it
