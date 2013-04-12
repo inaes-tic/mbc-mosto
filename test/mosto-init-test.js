@@ -23,8 +23,10 @@ console.log = console.info = function(t) {
 describe('start without melted', function() {
     var mosto_server = undefined;
     
+    this.timeout(15000);
+    
     before(function(done) {
-        exec("killall melted", function(error, stdout, stderr) {
+        exec("killall -9 melted", function(error, stdout, stderr) {
             done();
         });
     });
