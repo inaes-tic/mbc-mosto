@@ -44,7 +44,8 @@ describe('start without melted', function() {
     describe('#start melted', function() {
         before(function(done) {
             exec("melted", {"timeout": "1000"}, function(error, stdout, stderr) {
-                console.error("VOLVIO");
+                if (error)
+                    console.error(error);
                 done();
             });
         });
@@ -56,6 +57,8 @@ describe('start without melted', function() {
         before(function(done) {
             exec("echo 'uadd sdl' | nc localhost 5250", function(error, stdout, stderr) {
                 setTimeout(function() {
+                    if (error)
+                        console.error(error);
                     done();
                 }, 5000);
             });
