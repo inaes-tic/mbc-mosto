@@ -17,15 +17,16 @@ function melted(host, port) {
     
     melted.prototype.getServerPlaylist = function(successCallback, errorCallback) {
             self.mlt.sendCommand("list u0", "201 OK", function(response) {
+//                console.log(response);
                 // HACK: Converting the promise object to a string :)
                 var data = "." + response;
                 
                 var split = data.split("\r\n");
                 var JSONresponse = {};
                 JSONresponse.medias = [];
-                for (var i = 2; i < split.length; i++) {
+                for (var i = 0; i < split.length; i++) {
                     var line = split[i];
-                    if (line.length > 5) {
+                    if (line.length > 20) {
                         var media = {};
                         var parse = line.split(" ");
                         media.index       = parse[0];
@@ -51,6 +52,7 @@ function melted(host, port) {
     
     melted.prototype.getServerStatus = function(successCallback, errorCallback) {
             self.mlt.sendCommand("usta u0", "202 OK", function(response) {
+                console.log(response);
                 // HACK: Converting the promise object to a string :)
                 var data = "." + response;
                 
