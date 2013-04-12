@@ -74,34 +74,34 @@ describe('PlaylistMongoDriver', function(){
         done();
     });
 
-    describe('#setBoundaries()', function() {
+    describe('#setWindow()', function() {
         beforeEach(function(){
-            self.driver.boundaries = undefined;
+            self.driver.window = undefined;
         });
         it('should exist', function() {
-            self.driver.should.have.property('setBoundaries');
-            self.driver.setBoundaries.should.be.a('function');
+            self.driver.should.have.property('setWindow');
+            self.driver.setWindow.should.be.a('function');
         });
-        it('should accept two parameters and save them in boundaries = {from, to}', function() {
-            self.driver.setBoundaries(self.from, self.to);
-            var boundaries = self.driver.boundaries;
-            boundaries.should.have.property('from');
-            boundaries.should.have.property('to');
+        it('should accept two parameters and save them in window = {from, to}', function() {
+            self.driver.setWindow(self.from, self.to);
+            var window = self.driver.window;
+            window.should.have.property('from');
+            window.should.have.property('to');
         });
         it('should accept an object', function() {
-            self.driver.setBoundaries({from: self.from, to: self.to})
-            var boundaries = self.driver.boundaries;
-            boundaries.should.have.property('from');
-            boundaries.should.have.property('to');
+            self.driver.setWindow({from: self.from, to: self.to})
+            var window = self.driver.window;
+            window.should.have.property('from');
+            window.should.have.property('to');
         });
         it('should accept only a "to" object and assume "from" is now', function() {
-            self.driver.setBoundaries({to: self.to});
-            self.driver.boundaries.should.have.property('from');
+            self.driver.setWindow({to: self.to});
+            self.driver.window.should.have.property('from');
         });
         it('should accept dates and transform them to moments', function() {
-            self.driver.setBoundaries(new Date(), new Date());
-            moment.isMoment(self.driver.boundaries.from).should.be.ok;
-            moment.isMoment(self.driver.boundaries.to).should.be.ok;
+            self.driver.setWindow(new Date(), new Date());
+            moment.isMoment(self.driver.window.from).should.be.ok;
+            moment.isMoment(self.driver.window.to).should.be.ok;
         });
     });
 
@@ -123,7 +123,7 @@ describe('PlaylistMongoDriver', function(){
         it('should respond to create messages',function(done){
             // set window from now to 10 minutes
             message.method = 'create';
-            self.driver.setBoundaries(new Date(), moment(new Date()).add(10 * 60 * 1000));
+            self.driver.setWindow(new Date(), moment(new Date()).add(10 * 60 * 1000));
             self.driver.registerNewPlaylistListener(function(playlist) {
                 playlist.name.should.be.eql(message.model._id);
                 moment(playlist.startDate).valueOf().should.eql(message.model.start * 1000);
