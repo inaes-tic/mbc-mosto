@@ -146,9 +146,8 @@ function mongo_driver(conf) {
             var playlist_id = sched._id;
 
             var medias = [];
-            var order = 0;
-            list.models.forEach(function(block) {
                 var block_id = block._id;
+            list.models.forEach(function(block, order) {
                 var orig_order = order;
                 order++;
                 var actual_order = undefined;

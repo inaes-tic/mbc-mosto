@@ -95,11 +95,9 @@ function json_driver() {
         var endDate   = new Date(year, month - 1, day, hour, minute, second);
 
         var medias = [];
-        var order = 0;
         aux.medias.forEach(function(element, index, array) {
             var id           = self.getFileName(element.file);
-            var orig_order   = order;
-            order++;
+            var orig_order   = index;
             var actual_order = undefined;
             var playlist_id  = name;
             var clip_name    = id;
