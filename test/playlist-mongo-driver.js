@@ -23,36 +23,36 @@ describe('PlaylistMongoDriver', function(){
 
         var playlist = {
             "_id": 1,
-	    "models" : [
-		{
-		    "file" : "./videos/SMPTE_Color_Bars_01.mp4",
-		    "durationraw" : "00:30:00",
-		    "fps" : 25,
+            "models" : [
+                {
+                    "file" : "./videos/SMPTE_Color_Bars_01.mp4",
+                    "durationraw" : "00:30:00",
+                    "fps" : 25,
                     "_id" : 1
-		},
-		{
-		    "file" : "./videos/SMPTE_Color_Bars_02.mp4",
-		    "durationraw" : "00:30:00",
-		    "fps" : 25,
+                },
+                {
+                    "file" : "./videos/SMPTE_Color_Bars_02.mp4",
+                    "durationraw" : "00:30:00",
+                    "fps" : 25,
                     "_id" : 2
-		},
-		{
-		    "file" : "./videos/SMPTE_Color_Bars_03.mp4",
-		    "durationraw" : "00:30:00",
-		    "fps" : 25,
+                },
+                {
+                    "file" : "./videos/SMPTE_Color_Bars_03.mp4",
+                    "durationraw" : "00:30:00",
+                    "fps" : 25,
                     "_id" : 3
-		},
-	    ],
+                },
+            ],
         }
 
         var schedule = {
-	    "title" : "long 2",
-	    "list" : 1,
-	    "start" : 1365588000,
-	    "end" : 1365596786,
-	    "allDay" : false,
-	    "event" : null,
-	    "_id" : 1365625760578
+            "title" : "long 2",
+            "list" : 1,
+            "start" : 1365588000,
+            "end" : 1365596786,
+            "allDay" : false,
+            "event" : null,
+            "_id" : 1365625760578
         };
 
         self.collections = {
