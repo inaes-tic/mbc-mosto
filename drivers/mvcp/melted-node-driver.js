@@ -11,7 +11,6 @@ function melted(host, port) {
     console.log("mbc-mosto: [INFO] Creating server instance [" + host + ":" + port + "]");
     this.mlt = new melted_node(host, port);
     console.log("mbc-mosto: [INFO] Server instance created [" + this.mlt.host + ":" + this.mlt.port + "]");
-    this.util = new utils();
     
     melted.prototype.sendCommand = function(command, successCallback, errorCallback) {
         console.log("mbc-mosto: [INFO] Sending command: " + command);        
@@ -88,7 +87,7 @@ function melted(host, port) {
 
         var type     = clip.type;
         var file     = clip.file;
-        var filename = self.util.getXmlFileNameFromClip(clip);
+        var filename = utils.getXmlFileNameFromClip(clip);
 
 //            var filters = self.config.types[type].filters;
 
