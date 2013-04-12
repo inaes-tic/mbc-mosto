@@ -82,32 +82,34 @@ function mongo_driver(conf) {
         if( to === undefined ) {
             // assume from = { from: date, to: date }
             var window = from;
+            var ret = _.clone(window);
             if( window.from === undefined ) {
                 // I assume from = now
-                window.from = new moment();
+                ret.from = new moment();
             } else {
-                window.from = moment(window.from);
+                ret.from = moment(window.from);
             }
             if( !(window.to || window.timeSpan) ) {
                 // if neither is present, we use the currently set
                 // value, or default to the config file
-                window.timeSpan = self.window.timeSpan || config.load_time * 60 * 1000;
+                ret.timeSpan = self.window.timeSpan || config.load_time * 60 * 1000;
             }
             if( window.to === undefined ) {
                 // we asume timeSpan is present and calculate it
-                window.to = new moment(window.from);
-                window.to.add(window.timeSpan);
+                ret.to = new moment(ret.from);
+                ret.to.add(ret.timeSpan);
             } else {
-                window.to = moment(window.to);
+                ret.to = moment(window.to);
             }
-            if( window.timeSpan === undefined ) {
+            if( ret.timeSpan === undefined ) {
+                // if we got here, it means window.to was defined
                 // we calculate it using from and to
-                window.timeSpan = window.to.diff(window.from);
+                ret.timeSpan = ret.to.diff(ret.from);
             } else {
-                // assume we got the timeSpan in minutes
-                window.timeSpan *= 60 * 1000;
+                // this got copied in the _.clone, but it's in minutes
+                ret.timeSpan = window.timeSpan * 60 * 1000;
             }
-            return _.clone(window);
+            return ret;
         } else {
 
             var window = {
