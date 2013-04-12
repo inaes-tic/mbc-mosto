@@ -28,9 +28,8 @@ function mongo_driver(conf) {
     console.log("mbc-mosto: [INFO] Creating mongodb playlists driver");
 
     mongo_driver.prototype.start = function(ops) {
-        var config = ops.config;
         var span = ops.span;
-        var db = mbc.db(config && config.db);
+        var db = mbc.db(conf && conf.db);
         var channel = mbc.pubsub();
 
         self.scheds = db.collection('scheds');
