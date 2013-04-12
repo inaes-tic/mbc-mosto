@@ -1,5 +1,5 @@
 NODE=$(shell which node nodejs | head -1)
-MOCHA=node_modules/mocha/bin/mocha
+MOCHA=node_modules/mocha/bin/mocha --reporter spec --timeout 3000 test
 MELTED=$(shell which melted | head -1)
 ROOT=$(shell pwd)
 NC=$(shell which nc netcat telnet | head -1)
