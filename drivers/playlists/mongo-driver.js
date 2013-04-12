@@ -103,6 +103,9 @@ function mongo_driver(conf) {
             if( window.timeSpan === undefined ) {
                 // we calculate it using from and to
                 window.timeSpan = window.to.diff(window.from);
+            } else {
+                // assume we got the timeSpan in minutes
+                window.timeSpan *= 60 * 1000;
             }
             return _.clone(window);
         } else {
