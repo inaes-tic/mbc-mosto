@@ -4,7 +4,8 @@ var config   = require("./conf/mongo-driver"),
     mubsub   = require("mubsub"),
     moment   = require("moment"),
     mbc      = require('mbc-common'),
-    async    = require('async');
+    async    = require('async'),
+    _        = require('underscore');
 
 function drop_err(callback, err_handler) {
     return function(err,v) {
