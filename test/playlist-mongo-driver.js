@@ -28,16 +28,19 @@ describe('PlaylistMongoDriver', function(){
 		    "file" : "./videos/SMPTE_Color_Bars_01.mp4",
 		    "durationraw" : "00:30:00",
 		    "fps" : 25,
+                    "_id" : 1
 		},
 		{
 		    "file" : "./videos/SMPTE_Color_Bars_02.mp4",
 		    "durationraw" : "00:30:00",
 		    "fps" : 25,
+                    "_id" : 2
 		},
 		{
 		    "file" : "./videos/SMPTE_Color_Bars_03.mp4",
 		    "durationraw" : "00:30:00",
 		    "fps" : 25,
+                    "_id" : 3
 		},
 	    ],
         }
