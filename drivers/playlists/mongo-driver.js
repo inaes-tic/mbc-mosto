@@ -77,7 +77,7 @@ function mongo_driver(conf) {
         }
     };
 
-    mongo_driver.prototype.getWindow(from, to) {
+    mongo_driver.prototype.getWindow = function(from, to) {
         // Notice that if from = to = undefined then time window is
         // set to undefined, and settings file is used again
         if( to === undefined ) {
@@ -117,7 +117,7 @@ function mongo_driver(conf) {
     };
 
     mongo_driver.prototype.setWindow = function(from, to) {
-        self.window = self.window(from, to);
+        self.window = self.getWindow(from, to);
         return self.validTimes()
     };
 
@@ -127,7 +127,7 @@ function mongo_driver(conf) {
                 sched.end >= window.from.unix());
     };
 
-    mongo_driver.prototype.readPlaylists =  function(ops, callback) {
+    mongo_driver.prototype.readPlaylists = function(ops, callback) {
         // read playlists from the database
 
         /*
