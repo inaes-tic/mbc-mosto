@@ -12,7 +12,7 @@ NC=$(shell which nc netcat telnet | head -1)
 
 all: test serve
 
-serve: mosto.js server.js ${MOCHA}
+serve: mosto.js server.js melted-kill melted-run melted-init
 	${NODE} server.js
 
 install:
@@ -42,6 +42,9 @@ endif
 
 melted-kill:
 	-killall -9 melted
+
+melted-init:
+	m4 -DROOT=${ROOT} melted_setup.txt | ${NC} ${MELTED_HOST} ${MELTED_PORT}
 
 images: test/images/SMPTE_Color_Bars_01.png test/images/SMPTE_Color_Bars_02.png test/images/SMPTE_Color_Bars_03.png 
 
