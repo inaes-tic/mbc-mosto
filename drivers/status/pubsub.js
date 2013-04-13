@@ -29,16 +29,17 @@ function CaspaDriver() {
     this.status = _.clone(defaults);
     this.publisher = mbc.pubsub();
 
-    var setups = [
-       self.setupStatus
-    ];
-    var sendReady = _.times(setups.length, function() {
-        self.emit('ready');
-    });
-
-    setups.forEach(function(setup){
-        setup(sendReady);
-    });
+    CaspaDriver.prototype.setupAll = function() {
+        var setups = [
+            this.setupStatus
+        ];
+        var sendReady = _.after(setups.length, function() {
+            self.emit('ready');
+        });
+        setups.forEach(function(setup){
+            setup(sendReady);
+        });
+    };
 
     CaspaDriver.prototype.setupStatus = function(callback) {
         var db = mbc.db();
@@ -73,5 +74,7 @@ util.inherits(CaspaDriver, events.EventEmitter);
 
 exports = module.exports = function() {
     driver = new CaspaDriver();
+    driver.setupAll();
+
     return driver;
 };
