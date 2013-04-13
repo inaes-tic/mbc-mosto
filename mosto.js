@@ -116,9 +116,11 @@ function mosto(configFile) {
     
     mosto.prototype.initDriver = function() {
         console.log("mbc-mosto: [INFO] Initializing playlists driver");
-        self.driver.registerNewPlaylistListener(self.addPlaylist);
-        self.driver.registerUpdatePlaylistListener(self.updatePlaylist);
-        self.driver.registerRemovePlaylistListener(self.removePlaylist);
+
+        self.driver.on ("create", self.addPlaylist);
+        self.driver.on ("update", self.updatePlaylist);
+        self.driver.on ("delete", self.removePlaylist);
+
         self.driver.start();
     };
     
