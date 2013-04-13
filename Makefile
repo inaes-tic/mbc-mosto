@@ -1,6 +1,8 @@
 ROOT=$(shell pwd)
 NODE=$(shell which node nodejs | head -1)
 MOCHA=node_modules/mocha/bin/mocha --reporter spec --timeout 3000 test
+MELTED_PORT = 5250
+MELTED_HOST = localhost
 MELTED_BUILD=${ROOT}/melted/BUILD
 MELTED_INTREE=${MELTED_BUILD}/bin/melted
 MELTED = $(shell sh -c "which melted || echo ${MELTED_INTREE}")
@@ -58,7 +60,7 @@ test/videos/%.mp4: test/images/%.png
 	${AVCONV} -loop 1 -f image2 -i $< -t 30 $@ &> /dev/null
 
 test: videos ${MOCHA} ${MELTED} melted-kill melted-run
-	m4 -DROOT=${ROOT} test/melted_setup.txt | ${NC} localhost 5250
+	m4 -DROOT=${ROOT} test/melted_setup.txt | ${NC} ${MELTED_HOST} ${MELTED_PORT}
 	${NODE} ${MOCHA}
 
 clean-test:
