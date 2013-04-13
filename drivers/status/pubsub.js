@@ -60,9 +60,46 @@ function CaspaDriver() {
         });
     };
 
-    CaspaDriver.prototype.setStatus = function(status) {
+    CaspaDriver.prototype.setStatus = function(meltedStatus) {
         // this overrides this.status with the values passed by status
+        function makePiece(clip) {
+            return {
+                name: clip.name,
+                _id: clip.id
+            }
+        }
+        var clips = meltedStatus.clips;
+        var status = {
+            piece: {
+                previous: makePiece(clips[meltedStatus.previous]),
+                current:  makePiece(clips[meltedStatus.current]),
+                next:     makePiece(clips[meltedStatus.next]),
+            },
+            show: {
+                current: { _id: clips[meltedStatus.current].playlist_id },
+            },
+            on_air: true,
+        };
+        status.piece.current.progress = meltedStatus.position + "%";
+
+        for( var i in meltedStatus.clips ) {
+            if( i < meltedStatus.current ) {
+                if( clips[i].playlist_id != status.show.current ) {
+                    status.show.previous = { _id: clips[i].playlist_id };
+                }
+            } else if ( i > meltedStatus.current ) {
+                if( clips[i].playlist_id != status.show.current ) {
+                    // I'm pass `previous` and the first into `next`, so I'm
+                    // done here
+                    status.show.next = { _id: clips[i].playlist_id };
+                    break;
+                }
+            }
+        }
+
         this.status = _.extend(this.status, status);
+        // except next. If that's undefined, I just don't know!
+        this.status.show.next = status.show.next;
         this.publishStatus(status);
     };
     CaspaDriver.prototype.publishStatus = function(status) {
