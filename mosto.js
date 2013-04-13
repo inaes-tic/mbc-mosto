@@ -1,4 +1,5 @@
 var fs               = require('fs'),
+    _                = require('underscore'),
     mvcp_server      = require('./drivers/mvcp/mvcp-driver'), 
     playlists_driver = require('./drivers/playlists/playlists-driver');
     
@@ -13,24 +14,21 @@ function mosto(configFile) {
                 + "\nendDate: " + playlist.endDate);
         self.orderPlaylists();
     };
-    
+
     mosto.prototype.updatePlaylist = function(playlist) {
-        console.log("mbc-mosto: [INFO] Updating playlist " + playlist.name);
-        var i = -1;
-        self.playlists.some(function(element, index, array) {
-            if (element.name === playlist.name) {
-                i = index;
-                return true;
-            }
-        });
-        playlist.loaded = self.playlists[i].loaded;
-        self.playlists[i] = playlist;
-        console.log("mbc-mosto: [INFO] Updated playlist:\nname: " + playlist.name 
-                + "\nstartDate: " + playlist.startDate 
-                + "\nendDate: " + playlist.endDate);
+        var list = _.find(self.playlists, function (list) {
+            return list.name == playlist.name});
+
+        if (!list)
+            return self.addPlaylist (playlist);
+
+        console.log("mbc-mosto: [INFO] Updated playlist:\nname: " + playlist.name
+                    + "\nstartDate: " + playlist.startDate
+                    + "\nendDate: " + playlist.endDate);
+
         self.orderPlaylists();
     };
-    
+
     mosto.prototype.removePlaylist = function(name) {
         console.log("mbc-mosto: [INFO] Removing playlist " + name);
         var i = -1;
