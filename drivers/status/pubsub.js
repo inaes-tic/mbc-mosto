@@ -50,7 +50,7 @@ function CaspaDriver() {
                 return;
             if( !res ) {
                 // the status doesn't exist, create it
-                col.create(self.status, function(err, itm) {
+                col.save(self.status, function(err, itm) {
                     callback();
                 });
             } else {
