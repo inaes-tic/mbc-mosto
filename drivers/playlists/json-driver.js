@@ -2,14 +2,12 @@ var fs       = require('fs'),
     config   = require("mbc-common").config.Mosto.Json,
     Playlist = require('../../api/Playlist'),
     Media    = require('../../api/Media'),
-    watchr   = require('watchr');
+    watchr   = require('watchr'),
+    events   = require ('events'),
+    util     = require ('util');
 
 function json_driver() {
     var self = this;
-    
-    this.newPlaylistCallback    = undefined;
-    this.updatePlaylistCallback = undefined;
-    this.removePlaylistCallback = undefined;
 
     console.log("json-driver: [INFO] Creating json playlists driver");
 
@@ -33,13 +31,13 @@ function json_driver() {
                     
                     if (changeType === "create") {
                         console.log("json-driver: [INFO] Playlist added: " + name);
-                        self.createPlaylist(config.to_read, name, self.newPlaylistCallback); 
+                        self.createPlaylist(config.playlists.to_read, name, "create");
                     } else if (changeType === "update") {
                         console.log("json-driver: [INFO] Playlist updated: " + name);
-                        self.createPlaylist(config.to_read, name, self.updatePlaylistCallback);
+                        self.createPlaylist(config.playlists.to_read, name, "update");
                     } else if (changeType === "delete") {
                         console.log("json-driver: [INFO] Playlist deleted: " + name);
-                        self.removePlaylistCallback(name);
+                        self.emit("delete", name);
                     }
                 }
             }
@@ -47,16 +45,7 @@ function json_driver() {
 
         self.readPlaylists();
     };
-    json_driver.prototype.registerNewPlaylistListener = function(newPlaylistCallback) {
-        self.newPlaylistCallback = newPlaylistCallback;
-    };
-    json_driver.prototype.registerUpdatePlaylistListener = function(updatePlaylistCallback) {
-        self.updatePlaylistCallback = updatePlaylistCallback;
-    };
-    json_driver.prototype.registerRemovePlaylistListener = function(removePlaylistCallback) {
-        self.removePlaylistCallback = removePlaylistCallback;
-    };
-    
+
     json_driver.prototype.getFileName = function(path) {
         return path.substring(path.lastIndexOf("/") + 1);
     };
@@ -65,11 +54,11 @@ function json_driver() {
         console.log("json-driver: [INFO] Start reading playlists from " + config.to_read);
         var aux = fs.readdirSync(config.to_read);
         aux.forEach(function(element, index, array){
-            self.createPlaylist(config.to_read, element, self.newPlaylistCallback);
+            self.createPlaylist(config.to_read, element, "create");
         });
     };
-    
-    json_driver.prototype.createPlaylist = function(dir, name, callback) {
+
+    json_driver.prototype.createPlaylist = function(dir, name, signal) {
         console.log("json-driver: [INFO] Reading playlist: " + name);
         var file = fs.readFileSync(dir + "/" + name);
         var aux = JSON.parse(file);
@@ -131,7 +120,7 @@ function json_driver() {
             }
             if (index === (array.length - 1)) {
                 var playlist = new Playlist(name, name, startDate, medias, endDate);
-                callback(playlist);
+                self.emit (signal, playlist);
             }
         });
     };
@@ -139,6 +128,7 @@ function json_driver() {
 }
 
 exports = module.exports = function() {
+    util.inherits (json_driver, events.EventEmitter);
     var driver = new json_driver();
     return driver;
 };
