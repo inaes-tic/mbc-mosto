@@ -473,8 +473,9 @@ function mosto(customConfig) {
      *
      */
     mosto.prototype.playPlaylists = function() {
-        console.log("mbc-mosto: [INFO] Start playing playlists");
+        console.log("mbc-mosto: [INFO] Start playing playlists", self.playlists);
         self.playlists.forEach(function(element, index, array) {
+            console.log("mbc-mosto: [INFO] looking at playlist", element);
             if (!element.loaded) {
                 self.server.playPlaylist(element, function() {
                     self.server.getServerPlaylist(function(data) {
