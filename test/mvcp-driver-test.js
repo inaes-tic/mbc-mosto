@@ -15,7 +15,7 @@ describe('connect', function(){
     });
     describe('#mvcp server connected', function(){
         it('--should return true', function(){
-            assert.equal(server.server.mlt.connected, true);
+            assert.equal(server.mlt.connected, true);
         });
     });
 });
