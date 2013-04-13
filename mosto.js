@@ -64,15 +64,16 @@ function mosto(configFile) {
     };
     
     mosto.prototype.playPlaylists = function() {
-        console.log("mbc-mosto: [INFO] Start playing playlists");
+        console.log("mbc-mosto: [INFO] Start playing playlists", self.playlists);
         self.playlists.forEach(function(element, index, array) {
+            console.log("mbc-mosto: [INFO] looking at playlist", element);
             if (!element.loaded) {
                 self.appendClip(element.medias);
                 element.loaded = true;
             }
         });
     };
-    
+
     mosto.prototype.appendClip = function(clips) {
         var clip = clips.shift();
         if (clip !== undefined) {
