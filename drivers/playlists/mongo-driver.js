@@ -176,7 +176,6 @@ function mongo_driver(conf) {
     };
 
     mongo_driver.prototype.createPlaylist = function(sched, callback) {
-
         console.log("mongo-driver: [INFO] Create Playlist:", sched);
         self.lists.findById(sched.list, function(err, list) {
             if( err ) {
