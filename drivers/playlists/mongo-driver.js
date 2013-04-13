@@ -5,6 +5,8 @@ var config   = require("mbc-common").config.Mosto.Mongo,
     moment   = require("moment"),
     mbc      = require('mbc-common'),
     async    = require('async'),
+    events   = require ('events'),
+    util     = require ('util'),
     _        = require('underscore');
 
 function drop_err(callback, err_handler) {
@@ -19,9 +21,7 @@ function drop_err(callback, err_handler) {
 function mongo_driver(conf) {
     var self = this;
 
-    this.newPlaylistCallback    = undefined;
-    this.updatePlaylistCallback = undefined;
-    this.removePlaylistCallback = undefined;
+    events.EventEmitter.call (this);
 
     this.window = {};
 
@@ -40,26 +40,16 @@ function mongo_driver(conf) {
 
         channel.subscribe({backend: 'schedbackend', method: 'create'}, function(msg) {
             if( self.inTime(msg.model) ) {
-                self.createPlaylist(msg.model, drop_err(self.newPlaylistCallback, console.log));
+                self.createPlaylist(msg.model, 'create');
             }
         });
         channel.subscribe({backend: 'schedbackend', method: 'update'}, function(msg) {
             // I forward all create messages
-            self.createPlaylist(msg.model, drop_err(self.updatePlaylistCallback, console.log));
+            self.createPlaylist(msg.model, 'update');
         });
         channel.subscribe({backend: 'schedbackend', method: 'delete'}, function(msg) {
-            self.removePlaylistCallback(msg.model._id);
+            self.emit ("delete", msg.model._id);
         });
-    };
-
-    mongo_driver.prototype.registerNewPlaylistListener = function(newPlaylistCallback) {
-        self.newPlaylistCallback = newPlaylistCallback;
-    };
-    mongo_driver.prototype.registerUpdatePlaylistListener = function(updatePlaylistCallback) {
-        self.updatePlaylistCallback = updatePlaylistCallback;
-    };
-    mongo_driver.prototype.registerRemovePlaylistListener = function(removePlaylistCallback) {
-        self.removePlaylistCallback = removePlaylistCallback;
     };
 
     mongo_driver.prototype.getWindow = function(from, to) {
@@ -153,7 +143,7 @@ function mongo_driver(conf) {
                         callback(playlists);
                     else
                         playlists.forEach(function(playlist) {
-                            self.newPlaylistCallback(playlist);
+                            self.emit ("create", playlist);
                         });
                 });
             } else {
@@ -162,10 +152,11 @@ function mongo_driver(conf) {
         });
     };
 
-    mongo_driver.prototype.createPlaylist = function(sched, callback) {
+    mongo_driver.prototype.createPlaylist = function(sched, callback, method) {
         console.log("mongo-driver: [INFO] Create Playlist:", sched);
         self.lists.findById(sched.list, function(err, list) {
             if( err ) {
+                self.emit ("error", err);
                 if( callback )
                     callback(err);
                 return err;
@@ -192,6 +183,7 @@ function mongo_driver(conf) {
             });
 
             var playlist = new Playlist(playlist_id, name, startDate, medias, endDate, "snap");
+            self.emit (method, playlist);
 
             if( callback )
                 callback(err, playlist);
@@ -202,6 +194,7 @@ function mongo_driver(conf) {
 }
 
 exports = module.exports = function(conf) {
+    util.inherits (mongo_driver, events.EventEmitter);
     var driver = new mongo_driver(conf);
     return driver;
 };
