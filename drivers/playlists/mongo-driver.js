@@ -106,7 +106,7 @@ function mongo_driver(conf) {
             }
             return ret;
         } else {
-            
+
             var window = {
                 from: moment(from),
                 to: moment(to),
