@@ -25,7 +25,7 @@ function mongo_driver(conf) {
 
     this.window = {};
 
-    console.log("mbc-mosto: [INFO] Creating mongodb playlists driver");
+    console.log("mongo-driver: [INFO] Creating mongodb playlists driver");
 
     mongo_driver.prototype.start = function(timeSpan) {
         var db = mbc.db(conf && conf.db);
