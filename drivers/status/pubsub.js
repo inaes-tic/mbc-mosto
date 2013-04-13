@@ -8,7 +8,7 @@ var _ = require('underscore');
 var mbc = require('mbc-common');
 
 defaults = { // copied from caspa/models.App.Status
-    _id: 1,
+    _id: 2,
     piece: {
         previous: null,
         curent: null,
@@ -44,7 +44,7 @@ function CaspaDriver() {
     CaspaDriver.prototype.setupStatus = function(callback) {
         var db = mbc.db();
         var col = db.collection('status');
-        col.findOne({_id: 1}, function(err, res) {
+        col.findOne({_id: 2}, function(err, res) {
             if( err )
                 // err.. do something?
                 return;
