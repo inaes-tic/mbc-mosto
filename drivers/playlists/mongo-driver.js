@@ -145,15 +145,16 @@ function mongo_driver(conf) {
          * and turn them into a mosto.api.Playlist. Then return one by one to callback
          * which defaults to self.newPlaylistCallback
          */
-        var from = ops.from;
-        var to = ops.to;
-        var setWindow = ops.setWindow;
-        var window = undefined;
 
-        if( setWindow )
-            window = self.setWindow(from, to);
-        else
-            window = self._getWindow(from, to);
+        var window;
+
+        if (ops == undefined) {
+            window = self.getWindow();
+        } else if ( ops.setWindow ) {
+            window = self.setWindow(ops.from, ops.to);
+        } else {
+            window = self._getWindow(ops.from, ops.to);
+        }
 
         console.log("mongo-driver: [INFO] getPlaylists" + window);
 
