@@ -31,6 +31,8 @@ function mongo_driver(conf) {
         var db = mbc.db(conf && conf.db);
         var channel = mbc.pubsub();
 
+        console.log("mongo-driver: [INFO] Starting mongo playlists driver");
+
         self.scheds = db.collection('scheds');
         self.lists = db.collection('lists');
 
@@ -149,6 +151,8 @@ function mongo_driver(conf) {
             window = self.setWindow(from, to);
         else
             window = self.getWindow(from, to);
+
+        console.log("mongo-driver: [INFO] getPlaylists" + window);
 
         self.scheds.findItems({
             start: { $lte: window.to.unix()},
