@@ -8,21 +8,21 @@ function playlists_driver(type, config) {
     this.newPlaylistCallback    = undefined;
     this.updatePlaylistCallback = undefined;
     this.removePlaylistCallback = undefined;
-    
-    console.log("mbc-mosto: [INFO] Creating playlists driver for type [" + type + "]");
-    
+
+    console.log("playlists-driver: [INFO] Creating playlists driver for type [" + type + "]");
+
     if (type === 'json') {
         this.driver = new json_driver(config);
     } else if (type === 'mongo') {
         this.driver = new mongo_driver(config);
     } else {
-        var err = new Error("mbc-mosto: [ERROR] Unknown type of driver [" + type + "]");
+        var err = new Error("playlists-driver: [ERROR] Unknown type of driver [" + type + "]");
         console.error(err);
         throw err;
     }
-    
+
     playlists_driver.prototype.start = function(ops) {
-        console.log("mbc-mosto: [INFO] Starting playlists driver");
+        console.log("playlists-driver: [INFO] Starting playlists driver");
         self.driver.start(ops);
     };
     playlists_driver.prototype.registerNewPlaylistListener = function(newPlaylistCallback) {
