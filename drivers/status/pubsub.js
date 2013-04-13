@@ -27,7 +27,6 @@ function CaspaDriver() {
     events.EventEmitter.call(this);
     var self = this;
     this.status = _.clone(defaults);
-    this.channel = "mostoStatus";
     this.publisher = mbc.pubsub();
 
     var setups = [
@@ -63,10 +62,7 @@ function CaspaDriver() {
     CaspaDriver.prototype.setStatus = function(status) {
         // this overrides this.status with the values passed by status
         this.status = _.extend(this.status, status);
-        this.publish(status);
-    };
-    CaspaDriver.prototype.publish = function(status) {
-        this.publisher.publish({backend: this.channel, model: status});
+        this.publishStatus(status);
     };
     CaspaDriver.prototype.publishStatus = function(status) {
         this.publisher.publish({backend: "mostoStatus", model: status})
