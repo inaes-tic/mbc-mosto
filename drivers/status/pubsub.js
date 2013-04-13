@@ -10,17 +10,17 @@ var mbc = require('mbc-common');
 defaults = { // copied from caspa/models.App.Status
     _id: 2,
     piece: {
-        previous: null,
-        curent: null,
-        next: null
+        previous: {name: ''},
+        current:  {name: '', progress: '0%'},
+        next:     {name: ''},
     },
     show: {
-        previous: null,
-        current: null,
-        next: null,
+        previous: {_id: -1},
+        current:  {_id: -1},
+        next:     {_id: -1},
     },
     source: null,
-    no_air: false
+    on_air: false,
 };
 
 function CaspaDriver() {
