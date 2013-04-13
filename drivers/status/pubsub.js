@@ -2,10 +2,10 @@
  * This is the pubsub driver that should tell caspa about the melted status
  *
  *******************/
-events = require('events');
-utils = require('utils');
-_ = require('underscore');
-mbc = require('mbc-common');
+var events = require('events');
+var util = require('util');
+var _ = require('underscore');
+var mbc = require('mbc-common');
 
 defaults = { // copied from caspa/models.App.Status
     _id: 1,
