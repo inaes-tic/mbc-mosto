@@ -116,7 +116,7 @@ describe('PlaylistMongoDriver', function(){
             var message = self.message;
             message.method = 'create';
             self.driver.setWindow(new Date(), moment(new Date()).add(10 * 60 * 1000));
-            self.driver.registerNewPlaylistListener(function(playlist) {
+            self.driver.on('create', function(playlist) {
                 playlist.id.should.be.eql(message.model._id);
                 playlist.name.should.be.eql(message.model.title);
                 moment(playlist.startDate).valueOf().should.eql(message.model.start * 1000);
@@ -127,7 +127,7 @@ describe('PlaylistMongoDriver', function(){
         it('should respond to update messages', function(done) {
             var message = self.message;
             message.method = 'update';
-            self.driver.registerUpdatePlaylistListener(function(playlist) {
+            self.driver.on('update', function(playlist) {
                 done();
             });
             self.pubsub.publish(message);
@@ -135,7 +135,7 @@ describe('PlaylistMongoDriver', function(){
         it('should respond to remove messages', function(done) {
             var message = self.message;
             message.method = 'delete';
-            self.driver.registerRemovePlaylistListener(function(id) {
+            self.driver.on('delete', function(id) {
                 id.should.be.eql(message.model._id);
                 done();
             });
