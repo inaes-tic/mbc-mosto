@@ -50,6 +50,8 @@ function mongo_driver(conf) {
         channel.subscribe({backend: 'schedbackend', method: 'delete'}, function(msg) {
             self.removePlaylistCallback(msg.model._id);
         });
+
+        self.getPlaylists();
     };
 
     mongo_driver.prototype.registerNewPlaylistListener = function(newPlaylistCallback) {
