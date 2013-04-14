@@ -154,14 +154,12 @@ function mongo_driver(conf) {
             if( err ) {
                 console.log(err);
             } else if( scheds ) {
-                console.log("Processing sched list:", scheds);
-                async.map(scheds, self.createPlaylist, function(err, playlists) {
+                console.log("Processing sched list:", scheds.title);
+                async.map(scheds, function (sched) {
+                    return self.createPlaylist(sched, 'create');
+                }, function(err, playlists) {
                     if( callback )
                         callback(playlists);
-                    else
-                        playlists.forEach(function(playlist) {
-                            self.emit ("create", playlist);
-                        });
                 });
             } else {
                 console.log('Done');
