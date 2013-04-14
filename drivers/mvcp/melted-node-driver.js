@@ -183,10 +183,14 @@ function melted(host, port) {
         //Starts playing clip at specified index and frame (use with getServerPlaylist and getServerStatus)
         self.sendCommand("GOTO U0 " + frame + " " + index, successCallback, errorCallback);
     };
+    melted.prototype.seek = function(frame, successCallback, errorCallback) {
+        console.log ("seek to", frame);
+        self.sendCommand("GOTO U0 " + frame, successCallback, errorCallback);
+    };
+
 }
 
 exports = module.exports = function(host, port) {
     var melted_node_driver = new melted(host, port);
     return melted_node_driver;
 };
-
