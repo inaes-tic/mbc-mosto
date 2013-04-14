@@ -1,7 +1,10 @@
-/*******************
+/***************************************************************************
  * This is the pubsub driver that should tell caspa about the melted status
  *
- *******************/
+ * this code is more than slightly coupled with caspa's section that deals
+ * with the messages. It should probably be refactored a little, things like
+ * creating constants in and handling db collections in mbc-common
+ ***************************************************************************/
 var events = require('events');
 var util = require('util');
 var _ = require('underscore');
