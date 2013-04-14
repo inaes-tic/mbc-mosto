@@ -1,10 +1,11 @@
 var fs               = require('fs'),
+    _                = require('underscore'),
     mvcp_server      = require('./drivers/mvcp/mvcp-driver'), 
     playlists_driver = require('./drivers/playlists/playlists-driver');
-    
+
 function mosto(configFile) {
     var self = this;
-    
+
     mosto.prototype.addPlaylist = function(playlist) {
         console.log("mbc-mosto: [INFO] Adding playlist " + playlist.name);
         self.playlists.push(playlist);
@@ -13,24 +14,21 @@ function mosto(configFile) {
                 + "\nendDate: " + playlist.endDate);
         self.orderPlaylists();
     };
-    
+
     mosto.prototype.updatePlaylist = function(playlist) {
-        console.log("mbc-mosto: [INFO] Updating playlist " + playlist.name);
-        var i = -1;
-        self.playlists.some(function(element, index, array) {
-            if (element.name === playlist.name) {
-                i = index;
-                return true;
-            }
-        });
-        playlist.loaded = self.playlists[i].loaded;
-        self.playlists[i] = playlist;
-        console.log("mbc-mosto: [INFO] Updated playlist:\nname: " + playlist.name 
-                + "\nstartDate: " + playlist.startDate 
-                + "\nendDate: " + playlist.endDate);
+        var list = _.find(self.playlists, function (list) {
+            return list.name == playlist.name});
+
+        if (!list)
+            return self.addPlaylist (playlist);
+
+        console.log("mbc-mosto: [INFO] Updated playlist:\nname: " + playlist.name
+                    + "\nstartDate: " + playlist.startDate
+                    + "\nendDate: " + playlist.endDate);
+
         self.orderPlaylists();
     };
-    
+
     mosto.prototype.removePlaylist = function(name) {
         console.log("mbc-mosto: [INFO] Removing playlist " + name);
         var i = -1;
@@ -48,7 +46,7 @@ function mosto(configFile) {
                 + "\nendDate: " + playlist.endDate);
         self.orderPlaylists();
     };
-    
+
     mosto.prototype.orderPlaylists = function() {
         console.log("mbc-mosto: [INFO] Start ordering playlists");
         self.playlists.sort(function (item1, item2) {
@@ -62,17 +60,18 @@ function mosto(configFile) {
         console.log("mbc-mosto: [INFO] Finish ordering playlists");
         self.playPlaylists();
     };
-    
+
     mosto.prototype.playPlaylists = function() {
-        console.log("mbc-mosto: [INFO] Start playing playlists");
+        console.log("mbc-mosto: [INFO] Start playing playlists", self.playlists);
         self.playlists.forEach(function(element, index, array) {
+            console.log("mbc-mosto: [INFO] looking at playlist", element);
             if (!element.loaded) {
                 self.appendClip(element.medias);
                 element.loaded = true;
             }
         });
     };
-    
+
     mosto.prototype.appendClip = function(clips) {
         var clip = clips.shift();
         if (clip !== undefined) {
@@ -114,15 +113,17 @@ function mosto(configFile) {
             this.config = require(this.configFile);
         });
     };
-    
+
     mosto.prototype.initDriver = function() {
         console.log("mbc-mosto: [INFO] Initializing playlists driver");
-        self.driver.registerNewPlaylistListener(self.addPlaylist);
-        self.driver.registerUpdatePlaylistListener(self.updatePlaylist);
-        self.driver.registerRemovePlaylistListener(self.removePlaylist);
+
+        self.driver.on ("create", self.addPlaylist);
+        self.driver.on ("update", self.updatePlaylist);
+        self.driver.on ("delete", self.removePlaylist);
+
         self.driver.start();
     };
-    
+
     mosto.prototype.startMvcpServer = function(callback) {
         var result = self.server.initServer();
         result.then(function() {
@@ -133,28 +134,27 @@ function mosto(configFile) {
             throw e;
         });
     };
-    
+
     this.configFile = configFile;
     this.config     = false;
     this.playlists  = [];
-    
+
     if (!this.configFile)
         this.configFile = './config.json';
-    
+
     console.log("mbc-mosto: [INFO] Reading configuration from " + this.configFile);
-    
+
     this.config = require(this.configFile);
 
     this.server     = new mvcp_server(this.config.mvcp_server);
     this.driver     = new playlists_driver(this.config.playlist_server);
-    
+
     console.log("mbc-mosto: [INFO] Starting mbc-mosto... ") ;
-    
+
     self.startMvcpServer(function() {
         self.startWatching();
         self.initDriver();
     });
-    
 }
 
 exports = module.exports = function(configFile) {
