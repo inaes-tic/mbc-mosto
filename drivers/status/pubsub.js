@@ -91,26 +91,13 @@ function CaspaDriver() {
                 next:     makePiece(clips[meltedStatus.next]),
             },
             show: {
-                current: { _id: clips[meltedStatus.current].playlist_id },
+                previous: { _id: meltedStatus.show.previous.id },
+                current: { _id: meltedStatus.show.current.id },
+                next: { _id: meltedStatus.show.next.id },
             },
             on_air: true,
         };
         status.piece.current.progress = meltedStatus.position * 100 + "%";
-
-        for( var i in meltedStatus.clips ) {
-            if( i < meltedStatus.current ) {
-                if( clips[i].playlist_id != status.show.current ) {
-                    status.show.previous = { _id: clips[i].playlist_id };
-                }
-            } else if ( i > meltedStatus.current ) {
-                if( clips[i].playlist_id != status.show.current ) {
-                    // I'm pass `previous` and the first into `next`, so I'm
-                    // done here
-                    status.show.next = { _id: clips[i].playlist_id };
-                    break;
-                }
-            }
-        }
 
         this.status = _.extend(this.status, status);
         // except next. If that's undefined, I just don't know!
