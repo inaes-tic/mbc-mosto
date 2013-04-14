@@ -95,7 +95,7 @@ function CaspaDriver() {
             },
             on_air: true,
         };
-        status.piece.current.progress = meltedStatus.position + "%";
+        status.piece.current.progress = meltedStatus.position * 100 + "%";
 
         for( var i in meltedStatus.clips ) {
             if( i < meltedStatus.current ) {
