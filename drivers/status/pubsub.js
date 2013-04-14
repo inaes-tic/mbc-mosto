@@ -26,6 +26,12 @@ defaults = { // copied from caspa/models.App.Status
     on_air: false,
 };
 
+function MostoMessage(value, description, message) {
+    this.value = value;
+    this.description = description;
+    this.message = message;
+}
+
 function CaspaDriver() {
     events.EventEmitter.call(this);
     var self = this;
