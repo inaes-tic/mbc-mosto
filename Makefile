@@ -27,7 +27,7 @@ ${MELTED}: melted
 melted:
 	git clone git://github.com/mltframework/melted.git
 
-melted-run:
+melted-run: ${MELTED}
 	LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${MELTED_BUILD}/lib ${MELTED}
 else
 ${MELTED}:
@@ -36,7 +36,7 @@ ${MELTED}:
 	echo "eg: \$ MELTED=/usr/local/bin/melted make"
 	exit -1
 
-melted-run:
+melted-run: ${MELTED}
 	${MELTED}
 endif
 
