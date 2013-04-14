@@ -120,6 +120,19 @@ function CaspaDriver() {
     CaspaDriver.prototype.publishStatus = function(status) {
         this.publisher.publish({backend: "mostoStatus", model: status})
     };
+
+    CaspaDriver.prototype.publishMessage = function(code, description, message, sticky) {
+        message = new MostoMessage(code, description, message);
+        var method = 'emit';
+        if( sticky ) {
+            // I create an id with the timestamp to be able to cancel the error afterwards
+            message.stickId = (new moment()).valueOf();
+            method = 'create';
+        }
+        this.publisher.publish({backend: "mostoMessage", method: method,
+                                model: message});
+        return message;
+    };
 }
 
 util.inherits(CaspaDriver, events.EventEmitter);
