@@ -36,11 +36,13 @@ function CaspaDriver() {
     events.EventEmitter.call(this);
     var self = this;
     this.status = _.clone(defaults);
+    this.db = mbc.db();
     this.publisher = mbc.pubsub();
 
     CaspaDriver.prototype.setupAll = function() {
         var setups = [
-            this.setupStatus
+            this.setupStatus,
+            this.setupMessages,
         ];
         var sendReady = _.after(setups.length, function() {
             self.emit('ready');
@@ -51,8 +53,7 @@ function CaspaDriver() {
     };
 
     CaspaDriver.prototype.setupStatus = function(callback) {
-        var db = mbc.db();
-        var col = db.collection('status');
+        var col = this.db.collection('status');
         col.findOne({_id: 2}, function(err, res) {
             if( err )
                 // err.. do something?
@@ -67,6 +68,11 @@ function CaspaDriver() {
                 callback();
             }
         });
+    };
+
+    CaspaDriver.prototype.setupMessages = function(callback) {
+        // I think we should assume at init there's no sticky errors?
+        this.db.collection('mostomessages').remove(callback);
     };
 
     CaspaDriver.prototype.setStatus = function(meltedStatus) {
