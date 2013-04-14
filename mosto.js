@@ -136,6 +136,27 @@ function mosto(configFile) {
         });
     };
 
+    mosto.prototype.tick = function () {
+        var now = moment().unix();
+        var list = _.find(self.playlists, function (list) {
+            return (list.start <= now) && (list.end > now);
+        });
+
+        if (list) {
+            var t = now - list.start;
+            var server    = new mvcp_server(self.config.mvcp_server);
+            server.getServerStatus(function (media) {
+                var frame = t*media.fps;
+                if (Math.abs(frame - media.currentFrame) > 50) {
+                    console.log ('seek to', media.currentFrame, frame, t, t*25);
+                    server.seek (frame);
+                }
+                console.log("mbc-mosto: server says:", media);
+                console.log("mbc-mosto: [INFO] tick, now playing ["+ list.name +"] since ["+ t + "s] (frame: "+ t*25 +").");
+            });
+        }
+    }
+
     this.configFile = configFile;
     this.config     = false;
     this.playlists  = [];
@@ -156,6 +177,8 @@ function mosto(configFile) {
         self.startWatching();
         self.initDriver();
     });
+
+    setInterval (self.tick, 1000);
 }
 
 exports = module.exports = function(configFile) {
