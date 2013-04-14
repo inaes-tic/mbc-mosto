@@ -175,9 +175,9 @@ function mongo_driver(conf) {
                 return err;
             }
 
-            console.log("mongo-driver: [INFO] Processing list:", list);
-            var startDate = new Date(sched.start * 1000);
-            var endDate   = new Date(sched.end * 1000);
+            console.log("mongo-driver: [INFO] Processing list:", list.name);
+            var start = sched.start;
+            var end   = sched.end;
             var name = (sched._id.toHexString && sched._id.toHexString()) || sched._id;
 
             var medias = [];
@@ -190,7 +190,9 @@ function mongo_driver(conf) {
                 medias.push(new Media(type, file, length, parseFloat(fps)));
             });
 
-            var playlist = new Playlist(name, startDate, medias, endDate);
+            var playlist = new Playlist(name, start, medias, end);
+
+            console.log("mongo-driver: [INFO] emitting: " + method, list.name);
             self.emit (method, playlist);
 
             return playlist;

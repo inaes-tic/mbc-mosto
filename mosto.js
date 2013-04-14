@@ -1,4 +1,5 @@
 var fs               = require('fs'),
+    moment   	     = require('moment'),
     _                = require('underscore'),
     mvcp_server      = require('./drivers/mvcp/mvcp-driver'), 
     playlists_driver = require('./drivers/playlists/playlists-driver');
@@ -11,7 +12,7 @@ function mosto(configFile) {
         self.playlists.push(playlist);
         console.log("mbc-mosto: [INFO] Added playlist:\nname: " + playlist.name 
                 + "\nstartDate: " + playlist.startDate 
-                + "\nendDate: " + playlist.endDate);
+                + "\nend: " + playlist.end);
         self.orderPlaylists();
     };
 
@@ -23,8 +24,8 @@ function mosto(configFile) {
             return self.addPlaylist (playlist);
 
         console.log("mbc-mosto: [INFO] Updated playlist:\nname: " + playlist.name
-                    + "\nstartDate: " + playlist.startDate
-                    + "\nendDate: " + playlist.endDate);
+                    + "\nstart: " + playlist.start
+                    + "\nend: " + playlist.end);
 
         self.orderPlaylists();
     };
@@ -42,17 +43,17 @@ function mosto(configFile) {
         });
         self.playlists.splice(i, 1);
         console.log("mbc-mosto: [INFO] Removed playlist:\nname: " + playlist.name 
-                + "\nstartDate: " + playlist.startDate 
-                + "\nendDate: " + playlist.endDate);
+                + "\nstart: " + playlist.start
+                + "\nend: " + playlist.end);
         self.orderPlaylists();
     };
 
     mosto.prototype.orderPlaylists = function() {
         console.log("mbc-mosto: [INFO] Start ordering playlists");
         self.playlists.sort(function (item1, item2) {
-            if (item1.startDate < item2.startDate)
+            if (item1.start < item2.start)
                 return -1;
-            else if (item1.startDate > item2.startDate)
+            else if (item1.start > item2.start)
                 return 1;
             else
                 return 0;
