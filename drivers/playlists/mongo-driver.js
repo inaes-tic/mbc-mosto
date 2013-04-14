@@ -56,8 +56,8 @@ function mongo_driver(conf) {
 
     mongo_driver.prototype.getWindow = function() {
         if( self.window === undefined) {
-            var now = moment(new Date());
-            var until = moment(new Date());
+            var now = moment();
+            var until = moment();
             var timeSpan = config.load_time * 60 * 1000;
             until.add(timeSpan);
             self.window = {
