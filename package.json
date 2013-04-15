@@ -26,6 +26,8 @@
         "watchr"      : ">=2.3",
 		"moment"	  : ">=2.0.0",
 		"pauseable"	  : ">=0.1.2"
+        "mubsub"      : "git://github.com/inaes-tic/mubsub.git",
+        "mbc"         : "git://github.com/inaes-tic/mbc-common.git"
     },
     "devDependencies": {
         "mocha"    :  "1.7.x"

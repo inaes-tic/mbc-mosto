@@ -1,27 +1,8 @@
 var assert = require("assert");
 
-var mvcp_server = require('./mvcp-driver');
+var mvcp_server = require('../drivers/mvcp/mvcp-driver');
 var server      = new mvcp_server('melted');
-var Media        = require('../../api/Media.js');
-
-
-// SILENCE LOG OUTPUT
-var util = require('util');
-var fs = require('fs');
-var log = fs.createWriteStream('/home/jmrunge/stdout.log');
-
-console.log = console.info = function(t) {
-  var out;
-  if (t && ~t.indexOf('%')) {
-    out = util.format.apply(util, arguments);
-    process.stdout.write(out + '\n');
-    return;
-  } else {
-    out = Array.prototype.join.call(arguments, ' ');
-  }
-  out && log.write(out + '\n');
-};
-// END SILENCE LOG OUTPUT
+var Media        = require('../api/Media.js');
 
 describe('connect', function(){
     before(function(done) {
@@ -40,9 +21,9 @@ describe('connect', function(){
 });
 
 describe('commands', function() {
-    var file1 = "/home/jmrunge/Data/Descargas/videoclips/Charly_Garcia_-_Canción_para_mi_muerte_(Vivo).mp4";
-    var file2 = "/home/jmrunge/Data/Descargas/videoclips/Ella_es_tan_cargosa_-_Botella_al_mar.mp4";
-    var file3 = "/home/jmrunge/Data/Descargas/videoclips/Estelares_-_Aire.mp4";
+    var file1 = "../videos/SMPTE_Color_Bars_01.mp4";
+    var file2 = "../videos/SMPTE_Color_Bars_02.mp4";
+    var file3 = "../videos/SMPTE_Color_Bars_03.mp4";
     var fileName1 = file1.substring(file1.lastIndexOf("/") + 1) + ".xml";
     var fileName2 = file2.substring(file2.lastIndexOf("/") + 1) + ".xml";
     var fileName3 = file3.substring(file3.lastIndexOf("/") + 1) + ".xml";
