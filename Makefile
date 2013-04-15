@@ -58,7 +58,6 @@ test/videos/%.avi: test/images/%.png
 test/videos/%.mp4: test/images/%.png
 	avconv -loop 1 -f image2 -i $< -t 30 $@ &> /dev/null
 
-test: videos ${MOCHA} ${MELTED} melted-kill melted-run
-	m4 -DROOT=${ROOT} test/melted_setup.txt | ${NC} localhost 5250
+test: videos ${MOCHA} melted-test-run
 	${NODE} ${MOCHA}
 
