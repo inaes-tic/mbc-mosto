@@ -32,10 +32,6 @@ describe('start without melted', function() {
     });
     describe('#start mosto', function() {
         it('-- starting mosto shouldnt throw error', function() {
-//            assert.doesNotThrow(function() {
-//                mosto_server = require('../mosto');
-//                done();
-//            });
             mosto_server = new mosto();
             assert.notEqual(mosto_server, undefined);
         });
