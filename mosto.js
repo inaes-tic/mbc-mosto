@@ -726,8 +726,6 @@ function mosto(configFile) {
     this.actual_status = null;
     
     /** ALL MODULES */
-    this.server     = new mvcp_server("melted");
-    this.driver     = new playlists_driver("json");  
     
     if (!this.configFile)
         this.configFile = './config.json';
@@ -738,8 +736,10 @@ function mosto(configFile) {
     
     console.log("mbc-mosto: [INFO] Starting mbc-mosto... ") ;
     
-    self.startMvcpServer(function() {
-        
+    this.server     = new mvcp_server(this.config.mvcp_driver);
+    this.driver     = new playlists_driver(this.config.playlist_driver);
+
+    self.startMvcpServer(function() {        
         self.play();
         self.startWatching();
         self.initDriver();
