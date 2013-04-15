@@ -2,6 +2,12 @@ mbc-mosto
 =========
 
 @mbc-playout's playlist juggler
+[![Build Status](https://travis-ci.org/inaes-tic/mbc-mosto.png)](https://travis-ci.org/inaes-tic/mbc-mosto)
+
+Requirements
+============
+* NodeJS 0.8+
+* node-gyp
 
 Install Melted
 ==============
@@ -13,6 +19,13 @@ cd melted
 configure --prefix=/usr
 make
 make install
+```
+
+Install MongoDB (if planning to use it with Caspa)
+==================================================
+
+```bash
+sudo aptitude install mongodb
 ```
 
 Install MBC-Mosto
