@@ -26,7 +26,7 @@ describe('start without melted', function() {
     this.timeout(15000);
     
     before(function(done) {
-        exec("killall -9 melted", function(error, stdout, stderr) {
+        exec("make melted-kill", {"timeout": "1000"}, function(error, stdout, stderr) {
             done();
         });
     });
@@ -45,7 +45,7 @@ describe('start without melted', function() {
     });
     describe('#start melted', function() {
         before(function(done) {
-            exec("melted", {"timeout": "1000"}, function(error, stdout, stderr) {
+            exec("make melted-run", {"timeout": "1000"}, function(error, stdout, stderr) {
                 if (error)
                     console.error(error);
                 done();
@@ -55,9 +55,9 @@ describe('start without melted', function() {
             assert.equal(mosto_server.server_started, false);
         });
     });
-    describe('#add unit 0 to melted', function() {
+    describe('#setup melted', function() {
         before(function(done) {
-            exec("echo 'uadd sdl' | nc localhost 5250", function(error, stdout, stderr) {
+            exec("make melted-test-run", {"timeout": "1000"}, function(error, stdout, stderr) {
                 setTimeout(function() {
                     if (error)
                         console.error(error);
