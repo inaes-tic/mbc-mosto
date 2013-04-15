@@ -3,6 +3,7 @@ moment           = require('moment'),
 Media            = require('./api/Media'),
 mvcp_server      = require('./drivers/mvcp/mvcp-driver'),   
 playlists_driver = require('./drivers/playlists/playlists-driver'),
+status_driver    = require('./drivers/status/pubsub'),
 config           = require('./drivers/mvcp/conf/melted-node-driver');
 
 
@@ -192,7 +193,6 @@ function mosto(configFile) {
         
         //TODO: try to syncro immediatelly
         //or wait for timer synchronization
-
         //self.server.getServerPlaylist( self.syncroScheduledClips );
 
     }
@@ -302,7 +302,7 @@ function mosto(configFile) {
         console.log("mbc-mosto: [INFO] syncroScheduledClips > server_playing_list = " + server_playing_list );
         console.log("mbc-mosto: [INFO] syncroScheduledClips > server_playing_list medias = " + server_playing_list.medias.length + " playingidx: " + self.actual_playing_index );
 
-        //CALLING upstream (LOGIC > FETCH ) when...
+        //CALLING upstream (LOGIC > FETCH > function convertPlaylistsToScheduledClips() )  when...
         // conditions are:
         // 1) video server is stopped
         // 2) video server list is empty
@@ -323,14 +323,16 @@ function mosto(configFile) {
             console.log("mbc-mosto: [INFO] [SYNC MODULE] no clips playing or queued!!! calling upstream LOGIC > convertPlaylistsToScheduledClips()");
 
             //self.testScheduledClips();
-
             console.log("mbc-mosto: [INFO] len " + self.scheduled_clips.length );
             //CALLING [LOGIC] module method:
             //return self.convertPlaylistsToScheduledClips();
 
         }
 
-        
+        self.sync_lock = false;
+		return; 
+
+
         //SYNC METHOD: always check:
         // 1) if video server is playing the expected clip
         // 2) if queue clips are correct
@@ -427,7 +429,8 @@ function mosto(configFile) {
                 for( i=self.actual_playing_index,j=self.cursor_scheduled_clip; i<server_playing_list.medias.length && j<self.scheduled_clips.length; i++,j++) {
                     //COMPARE EACH ONE
                     //media on video server
-                    var queued_media = server_playing_list.medias[i];
+                    var queued_media = server
+_playing_list.medias[i];
                     //media expected in mosto
                     var scheduled_media = self.scheduled_clips[j].media;
 
@@ -578,7 +581,6 @@ function mosto(configFile) {
 
         self.actual_status = actual_status;
 
-
         self.actual_playing_clip = self.actual_status.file;
         self.actual_playing_status = self.actual_status.status;
         self.actual_playing_index = self.actual_status.index;
@@ -590,9 +592,50 @@ function mosto(configFile) {
         position_millis = self.convertFramesToMilliseconds( self.actual_playing_frame, self.actual_playing_fps);
         self.actual_position_millis = moment.duration( { milliseconds: position_millis } );
 
-        self.actual_playing_progress = (1.0 * self.actual_playing_frame) / (1.0 * self.actual_playing_length);
+        if (self.actual_playing_length>0) 
+          self.actual_playing_progress = (1.0 * self.actual_playing_frame) / (1.0 * self.actual_playing_length);
+        else
+          self.actual__playing_progress = 0.0;
 
         console.log("mbc-mosto: [INFO] timer_fun_status status: " + self.actual_playing_status + " clip: " + self.actual_playing_clip );
+
+/*		
+		 meltedStatus = {
+
+			  clip: {
+				  previous = position in list
+				  current = position in list
+				  next = position in list
+			  },
+
+			  show: {
+				  previous = Playlist
+				  current = Playlist
+				  next = Playlist
+			  }
+
+			  position = playback % of current
+
+			  clips = [clip list]
+		  };
+*/	
+/*
+meltedStatus = {
+  clip: {
+    previous: posicion en la lista,
+    current: posicion en la lista,
+    next: posicion en la lista
+  },
+  show: {
+    previous = Playlist
+    current = Playlist
+    next = Playlist
+  }
+  position = playback % of current
+  clips = [clip list]
+};
+*/
+		//self.status_driver.setStatus( meltedStatus );
 
         //we have a status let's get synchronized...
         //TODO: check errors !
@@ -628,7 +671,7 @@ function mosto(configFile) {
         }
 
         //self.timer.resume();
-        console.log("mbc-mosto: [INFO] Start timer: " + self.timer.IsPaused() );
+        //console.log("mbc-mosto: [INFO] Start timer: " + self.timer.IsPaused() );
         
     }
     
@@ -738,11 +781,12 @@ function mosto(configFile) {
     
     this.server     = new mvcp_server(this.config.mvcp_server);
     this.driver     = new playlists_driver(this.config.playlist_server);
+	this.status_driver = status_driver();
 
     self.startMvcpServer(function() {        
-        self.play();
         self.startWatching();
         self.initDriver();
+        self.play();
     });
     
 }
