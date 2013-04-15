@@ -23,33 +23,36 @@ describe('PlaylistMongoDriver', function(){
 
         var playlist = {
             "_id": 1,
-	    "models" : [
-		{
-		    "file" : "./videos/SMPTE_Color_Bars_01.mp4",
-		    "durationraw" : "00:30:00",
-		    "fps" : 25,
-		},
-		{
-		    "file" : "./videos/SMPTE_Color_Bars_02.mp4",
-		    "durationraw" : "00:30:00",
-		    "fps" : 25,
-		},
-		{
-		    "file" : "./videos/SMPTE_Color_Bars_03.mp4",
-		    "durationraw" : "00:30:00",
-		    "fps" : 25,
-		},
-	    ],
+            "models" : [
+                {
+                    "file" : "./videos/SMPTE_Color_Bars_01.mp4",
+                    "durationraw" : "00:30:00",
+                    "fps" : 25,
+                    "_id" : 1
+                },
+                {
+                    "file" : "./videos/SMPTE_Color_Bars_02.mp4",
+                    "durationraw" : "00:30:00",
+                    "fps" : 25,
+                    "_id" : 2
+                },
+                {
+                    "file" : "./videos/SMPTE_Color_Bars_03.mp4",
+                    "durationraw" : "00:30:00",
+                    "fps" : 25,
+                    "_id" : 3
+                },
+            ],
         }
 
         var schedule = {
-	    "title" : "long 2",
-	    "list" : 1,
-	    "start" : 1365588000,
-	    "end" : 1365596786,
-	    "allDay" : false,
-	    "event" : null,
-	    "_id" : 1365625760578
+            "title" : "long 2",
+            "list" : 1,
+            "start" : 1365588000,
+            "end" : 1365596786,
+            "allDay" : false,
+            "event" : null,
+            "_id" : 1365625760578
         };
 
         self.collections = {
@@ -117,6 +120,7 @@ describe('PlaylistMongoDriver', function(){
                 end: moment(new Date()).add(5*60*1000).unix(),
                 _id: 1,
                 list: 1,
+                name: 'a playlist',
             },
         };
         this.timeout(10000);
@@ -125,7 +129,8 @@ describe('PlaylistMongoDriver', function(){
             message.method = 'create';
             self.driver.setBoundaries(new Date(), moment(new Date()).add(10 * 60 * 1000));
             self.driver.registerNewPlaylistListener(function(playlist) {
-                playlist.name.should.be.eql(message.model._id);
+                playlist.id.should.be.eql(message.model._id);
+                playlist.name.should.be.eql(message.model.name);
                 moment(playlist.startDate).valueOf().should.eql(message.model.start * 1000);
                 done();
             });

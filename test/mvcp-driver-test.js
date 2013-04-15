@@ -24,16 +24,17 @@ describe('commands', function() {
     var file1 = "../videos/SMPTE_Color_Bars_01.mp4";
     var file2 = "../videos/SMPTE_Color_Bars_02.mp4";
     var file3 = "../videos/SMPTE_Color_Bars_03.mp4";
-    var fileName1 = file1.substring(file1.lastIndexOf("/") + 1) + ".xml";
-    var fileName2 = file2.substring(file2.lastIndexOf("/") + 1) + ".xml";
-    var fileName3 = file3.substring(file3.lastIndexOf("/") + 1) + ".xml";
+    var fileName1 = "1-1.xml";
+    var fileName2 = "1-2.xml";
+    var fileName3 = "1-3.xml";
+    var fileName4 = "1-4.xml";
     describe('#load', function() {
         var pl = undefined;
         var st = undefined;
         before(function(done) {
             server.stop(function() {
                 server.clearPlaylist(function() {
-                    var clip = new Media("default", file1, "00:05:10", 25);
+                    var clip = new Media(1, 0, undefined, 1, file1.substring(file1.lastIndexOf("/") + 1), "default", file1, "00:05:10", 25);
                     server.loadClip(clip, function() {
                         server.getServerPlaylist(function(playlist) {
                             pl = playlist;
@@ -126,7 +127,7 @@ describe('commands', function() {
         var pl = undefined;
         var st = undefined;
         before(function(done) {
-            var clip = new Media("default", file2, "00:05:10", 25);
+            var clip = new Media(2, 1, undefined, 1, file2.substring(file1.lastIndexOf("/") + 1), "default", file2, "00:05:10", 25);
             server.appendClip(clip, function() {
                 server.getServerPlaylist(function(playlist) {
                     pl = playlist;
@@ -174,7 +175,7 @@ describe('commands', function() {
         var pl = undefined;
         var st = undefined;
         before(function(done) {
-            var clip = new Media("default", file3, "00:05:10", 25);
+            var clip = new Media(3, 2, undefined, 1, file3.substring(file1.lastIndexOf("/") + 1), "default", file3, "00:05:10", 25);
             server.insertClip(clip, 1, function() {
                 server.getServerPlaylist(function(playlist) {
                     pl = playlist;
@@ -324,7 +325,7 @@ describe('commands', function() {
         var pl = undefined;
         var st = undefined;
         before(function(done) {
-            var clip = new Media("default", file2, "00:05:10", 25);
+            var clip = new Media(4, 3, undefined, 1, file2.substring(file1.lastIndexOf("/") + 1), "default", file2, "00:05:10", 25);
             server.appendClip(clip, function() {
                 server.getServerPlaylist(function(playlist) {
                     pl = playlist;
@@ -357,9 +358,9 @@ describe('commands', function() {
             var fileNameAux = pl.medias[1].file.substring(pl.medias[1].file.lastIndexOf("/") + 1, pl.medias[1].file.length -1);
             assert.equal(fileNameAux, fileName3);
         });
-        it('--List: Clip 3 filename: should return ' + fileName2, function() {
+        it('--List: Clip 3 filename: should return ' + fileName4, function() {
             var fileNameAux = pl.medias[2].file.substring(pl.medias[2].file.lastIndexOf("/") + 1, pl.medias[2].file.length -1);
-            assert.equal(fileNameAux, fileName2);
+            assert.equal(fileNameAux, fileName4);
         });
         it('--Status: Clip index: should return 0', function() {
             assert.equal(st.index, 0);
@@ -408,9 +409,9 @@ describe('commands', function() {
             var fileNameAux = pl.medias[1].file.substring(pl.medias[1].file.lastIndexOf("/") + 1, pl.medias[1].file.length -1);
             assert.equal(fileNameAux, fileName3);
         });
-        it('--List: Clip 3 filename: should return ' + fileName2, function() {
+        it('--List: Clip 3 filename: should return ' + fileName4, function() {
             var fileNameAux = pl.medias[2].file.substring(pl.medias[2].file.lastIndexOf("/") + 1, pl.medias[2].file.length -1);
-            assert.equal(fileNameAux, fileName2);
+            assert.equal(fileNameAux, fileName4);
         });
         it('--Status: Clip index: should return 1', function() {
             assert.equal(st.index, 1);
@@ -459,9 +460,9 @@ describe('commands', function() {
             var fileNameAux = pl.medias[1].file.substring(pl.medias[1].file.lastIndexOf("/") + 1, pl.medias[1].file.length -1);
             assert.equal(fileNameAux, fileName3);
         });
-        it('--List: Clip 3 filename: should return ' + fileName2, function() {
+        it('--List: Clip 3 filename: should return ' + fileName4, function() {
             var fileNameAux = pl.medias[2].file.substring(pl.medias[2].file.lastIndexOf("/") + 1, pl.medias[2].file.length -1);
-            assert.equal(fileNameAux, fileName2);
+            assert.equal(fileNameAux, fileName4);
         });
         it('--Status: Clip index: should return 1', function() {
             assert.equal(st.index, 1);
@@ -510,9 +511,9 @@ describe('commands', function() {
             var fileNameAux = pl.medias[1].file.substring(pl.medias[1].file.lastIndexOf("/") + 1, pl.medias[1].file.length -1);
             assert.equal(fileNameAux, fileName3);
         });
-        it('--List: Clip 3 filename: should return ' + fileName2, function() {
+        it('--List: Clip 3 filename: should return ' + fileName4, function() {
             var fileNameAux = pl.medias[2].file.substring(pl.medias[2].file.lastIndexOf("/") + 1, pl.medias[2].file.length -1);
-            assert.equal(fileNameAux, fileName2);
+            assert.equal(fileNameAux, fileName4);
         });
         it('--Status: Clip index: should return 1', function() {
             assert.equal(st.index, 1);
