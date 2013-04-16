@@ -142,4 +142,6 @@ describe('PlaylistMongoDriver', function(){
             self.pubsub.publish(message);
         });
     });
+    describe("#getPlaylists()", function() {
+    });
 });
