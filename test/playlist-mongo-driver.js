@@ -143,5 +143,19 @@ describe('PlaylistMongoDriver', function(){
         });
     });
     describe("#getPlaylists()", function() {
+        it('should return playlists', function(done) {
+            self.driver.getPlaylists({from: self.from, to: self.to}, function(playlists) {
+                playlists.forEach(function(playlist) {
+                    playlist.should.have.property('id');
+                    playlist.should.have.property('name');
+                    playlist.should.have.property('startDate');
+                    playlist.should.have.property('medias');
+                    playlist.should.have.property('endDate');
+                    playlist.should.have.property('loaded');
+                });
+                done();
+            });
+        });
+
     });
 });
