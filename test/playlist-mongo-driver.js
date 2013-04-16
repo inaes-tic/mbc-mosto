@@ -157,5 +157,26 @@ describe('PlaylistMongoDriver', function(){
             });
         });
 
+        it('should return only playlists within timeframe', function(done) {
+            var inside = function(sched) {
+                return (sched.start <= self.to.unix() &&
+                        sched.end >= self.from.unix());
+            };
+            var sched_id = function(sched) {
+                return sched._id;
+            };
+
+            var in_scheds = _.chain(self.scheds).filter(inside).map(sched_id).value();
+            var out_scheds = _.chain(self.scheds).reject(inside).map(sched_id).value();
+
+            self.driver.getPlaylists({from: self.from, to: self.to}, function(playlists) {
+                var pl_ids = _.chain(playlists).map(function(pl) { return pl.id }).value();
+
+                pl_ids.forEach(function(playlist, ix) {
+                    playlist.should.eql(in_scheds[ix]);
+                });
+                done();
+            });
+        });
     });
 });
