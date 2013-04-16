@@ -76,6 +76,10 @@ function melted(host, port) {
             });
     };
     
+    melted.prototype.isConnected = function() {
+        return self.mlt.connected;
+    };
+    
     melted.prototype.initServer = function() {
         console.log("mbc-mosto: [INFO] Connecting to server instance [" + self.mlt.host + ":" + self.mlt.port + "]");
 
