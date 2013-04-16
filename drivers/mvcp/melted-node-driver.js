@@ -36,7 +36,7 @@ function melted(host, port) {
                         media.out         = parse[3];
                         media.real_length = parse[4];
                         media.calc_length = parse[5];
-                        media.fps         = parse[6]
+                        media.fps         = parse[6];
                         JSONresponse.medias.push(media);
                     }
                 }
@@ -45,7 +45,7 @@ function melted(host, port) {
 //                console.log(aux);
                 successCallback(JSONresponse);
             }, function(error) {
-                var err = new Error("mbc-mosto: [ERROR] Error getting server playlist: " + error)
+                var err = new Error("mbc-mosto: [ERROR] Error getting server playlist: " + error);
                 console.error(err);
                 errorCallback(err);
             });
@@ -70,7 +70,7 @@ function melted(host, port) {
                 media.index        = parse[16];
                 successCallback(media);
             }, function(error) {
-                var err = new Error("mbc-mosto: [ERROR] Error getting server status: " + error)
+                var err = new Error("mbc-mosto: [ERROR] Error getting server status: " + error);
                 console.error(err);
                 errorCallback(err);
             });
