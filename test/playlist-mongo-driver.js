@@ -1,7 +1,8 @@
 var moment = require('moment');
-var mongo_driver = require('../drivers/playlists/mongo-driver')
+var mongo_driver = require('../drivers/playlists/mongo-driver');
 var should = require('should');
 var mbc = require('mbc-common');
+var _ = require('underscore');
 
 describe('PlaylistMongoDriver', function(){
     var self = this;
@@ -21,48 +22,31 @@ describe('PlaylistMongoDriver', function(){
         self.from = moment(new Date());
         self.to = moment((self.from.unix() + 120 * 60) * 1000); // add 2hs
 
-        var playlist = {
-            "_id": 1,
-            "models" : [
-                {
-                    "file" : "./videos/SMPTE_Color_Bars_01.mp4",
-                    "durationraw" : "00:30:00",
-                    "fps" : 25,
-                    "_id" : 1
-                },
-                {
-                    "file" : "./videos/SMPTE_Color_Bars_02.mp4",
-                    "durationraw" : "00:30:00",
-                    "fps" : 25,
-                    "_id" : 2
-                },
-                {
-                    "file" : "./videos/SMPTE_Color_Bars_03.mp4",
-                    "durationraw" : "00:30:00",
-                    "fps" : 25,
-                    "_id" : 3
-                },
-            ],
-        }
-
-        var schedule = {
-            "title" : "long 2",
-            "list" : 1,
-            "start" : 1365588000,
-            "end" : 1365596786,
-            "allDay" : false,
-            "event" : null,
-            "_id" : 1365625760578
-        };
+        var db_data = require('./playlists/db-data');
+        var lists = db_data.lists;
+        var scheds = db_data.scheds;
 
         self.collections = {
             lists: self.db.collection('lists'),
             scheds: self.db.collection('scheds'),
         };
 
-        self.collections.lists.save(playlist, function(err, list) {
+        var ready = _.after(lists.length + scheds.length, function(){ done() });
+
+        self.lists = [];
+        self.scheds = [];
+
+        lists.forEach(function(playlist) {
+            self.lists.push(playlist._id);
+            playlist._id = self.db.ObjectID(playlist._id);
+            self.collections.lists.save(playlist, function(err, list) {
+                ready();
+            });
+        });
+        scheds.forEach(function(schedule) {
+            self.scheds.push(schedule._id);
             self.collections.scheds.save(schedule, function(err, sched){
-                done();
+                ready();
             });
         });
     });
@@ -111,21 +95,23 @@ describe('PlaylistMongoDriver', function(){
     describe('#subscriptions', function() {
         before(function() {
             self.pubsub = mbc.pubsub();
+
+            self.message = {
+                backend: 'schedbackend',
+                model: {
+                    start: moment(new Date()).unix(),
+                    end: moment(new Date()).add(5*60*1000).unix(),
+                    _id: self.scheds[0],
+                    list: self.lists[0],
+                    name: 'a playlist',
+                },
+            };
         });
 
-        var message = {
-            backend: 'schedbackend',
-            model: {
-                start: moment(new Date()).unix(),
-                end: moment(new Date()).add(5*60*1000).unix(),
-                _id: 1,
-                list: 1,
-                name: 'a playlist',
-            },
-        };
         this.timeout(10000);
         it('should respond to create messages',function(done){
             // set window from now to 10 minutes
+            var message = self.message;
             message.method = 'create';
             self.driver.setWindow(new Date(), moment(new Date()).add(10 * 60 * 1000));
             self.driver.registerNewPlaylistListener(function(playlist) {
@@ -137,6 +123,7 @@ describe('PlaylistMongoDriver', function(){
             self.pubsub.publish(message);
         });
         it('should respond to update messages', function(done) {
+            var message = self.message;
             message.method = 'update';
             self.driver.registerUpdatePlaylistListener(function(playlist) {
                 done();
@@ -144,6 +131,7 @@ describe('PlaylistMongoDriver', function(){
             self.pubsub.publish(message);
         });
         it('should respond to remove messages', function(done) {
+            var message = self.message;
             message.method = 'delete';
             self.driver.registerRemovePlaylistListener(function(id) {
                 id.should.be.eql(message.model._id);
