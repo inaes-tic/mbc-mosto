@@ -40,6 +40,13 @@ describe('PlaylistMongoDriver', function(){
             });
         });
         self.scheds.forEach(function(schedule, ix) {
+            var hsix = ix - 3;
+            var now = self.from;
+            // schedules are from 1hs before now
+            var schtime = moment(now + (hsix * 30 * 60 * 1000)).unix();
+            var length = schedule.end - schedule.start;
+            schedule.start = schtime;
+            schedule.end = schtime + length;
             self.collections.scheds.save(schedule, function(err, sched){
                 ready();
             });
