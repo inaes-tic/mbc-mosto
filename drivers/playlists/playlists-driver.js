@@ -47,6 +47,12 @@ function playlists_driver(type, config) {
     playlists_driver.prototype.removePlaylist = function(playlist) {
         self.removePlaylistCallback(playlist);
     };
+    playlists_driver.prototype.readPlaylists = function(from, to, callback) {
+        self.driver.readPlaylists(from,to,callback);
+    };
+    playlists_driver.prototype.setBoundaries = function(from, to) {
+        self.driver.setBoundaries(from,to);
+    };
     
 }
 
