@@ -183,7 +183,7 @@ function mongo_driver(conf) {
             console.log("Processing list:", list);
             var startDate = new Date(sched.start * 1000);
             var endDate   = new Date(sched.end * 1000);
-            var name = sched.name;
+            var name = sched.title;
             var playlist_id = (sched._id.toHexString && sched._id.toHexString()) || sched._id;
 
             var medias = [];
