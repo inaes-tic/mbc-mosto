@@ -188,7 +188,7 @@ function mongo_driver(conf) {
 
             var medias = [];
             list.models.forEach(function(block, order) {
-                var block_id = (block._id.toHexString && block._id.toHexString()) || block._id;
+                var block_id = block.checksum;
                 var orig_order = order;
                 var actual_order = undefined;
                 var clip_name = block.name;
