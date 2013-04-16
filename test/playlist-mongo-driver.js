@@ -23,28 +23,23 @@ describe('PlaylistMongoDriver', function(){
         self.to = moment((self.from.unix() + 120 * 60) * 1000); // add 2hs
 
         var db_data = require('./playlists/db-data');
-        var lists = db_data.lists;
-        var scheds = db_data.scheds;
+        self.lists = db_data.lists;
+        self.scheds = db_data.scheds;
 
         self.collections = {
             lists: self.db.collection('lists'),
             scheds: self.db.collection('scheds'),
         };
 
-        var ready = _.after(lists.length + scheds.length, function(){ done() });
+        var ready = _.after(self.lists.length + self.scheds.length, function(){ done() });
 
-        self.lists = [];
-        self.scheds = [];
-
-        lists.forEach(function(playlist) {
-            self.lists.push(playlist._id);
+        self.lists.forEach(function(playlist) {
             playlist._id = self.db.ObjectID(playlist._id);
             self.collections.lists.save(playlist, function(err, list) {
                 ready();
             });
         });
-        scheds.forEach(function(schedule) {
-            self.scheds.push(schedule._id);
+        self.scheds.forEach(function(schedule, ix) {
             self.collections.scheds.save(schedule, function(err, sched){
                 ready();
             });
@@ -101,9 +96,9 @@ describe('PlaylistMongoDriver', function(){
                 model: {
                     start: moment(new Date()).unix(),
                     end: moment(new Date()).add(5*60*1000).unix(),
-                    _id: self.scheds[0],
-                    list: self.lists[0],
-                    name: 'a playlist',
+                    _id: self.scheds[0]._id,
+                    list: self.lists[0]._id,
+                    title: 'title'
                 },
             };
         });
