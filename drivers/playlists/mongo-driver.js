@@ -154,7 +154,7 @@ function mongo_driver(conf) {
                 medias.push(new Media(type, file, length, parseFloat(fps)));
             });
 
-            var playlist = new Playlist(name, startDate, medias, endDate);
+            var playlist = new Playlist(name, startDate, medias, endDate, "snap");
             if( callback )
                 callback(err, playlist);
             else
