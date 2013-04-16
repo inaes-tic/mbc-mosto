@@ -35,7 +35,7 @@ describe('PlaylistMongoDriver', function(){
 
         self.lists.forEach(function(playlist) {
             playlist._id = self.db.ObjectID(playlist._id);
-            self.collections.lists.save(playlist, function(err, list) {
+        self.collections.lists.save(playlist, function(err, list) {
                 ready();
             });
         });
@@ -99,15 +99,15 @@ describe('PlaylistMongoDriver', function(){
             self.pubsub = mbc.pubsub();
 
             self.message = {
-                backend: 'schedbackend',
-                model: {
-                    start: moment(new Date()).unix(),
-                    end: moment(new Date()).add(5*60*1000).unix(),
+            backend: 'schedbackend',
+            model: {
+                start: moment(new Date()).unix(),
+                end: moment(new Date()).add(5*60*1000).unix(),
                     _id: self.scheds[0]._id,
                     list: self.lists[0]._id,
                     title: 'title'
-                },
-            };
+            },
+        };
         });
 
         this.timeout(15000);
