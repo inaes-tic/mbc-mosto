@@ -25,6 +25,7 @@
         "xmlbuilder"  : "0.3.x",
         "async"       : "0.2.x",
         "watchr"      : ">=2.3",
+        "moment"      : "*",
         "mubsub"      : "git://github.com/inaes-tic/mubsub.git",
         "mbc-common"  : "git://github.com/inaes-tic/mbc-common.git",
         "node-mlt"    : "git://github.com/inaes-tic/node-mlt.git"
