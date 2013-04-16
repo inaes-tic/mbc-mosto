@@ -118,7 +118,7 @@ describe('PlaylistMongoDriver', function(){
             self.driver.setWindow(new Date(), moment(new Date()).add(10 * 60 * 1000));
             self.driver.registerNewPlaylistListener(function(playlist) {
                 playlist.id.should.be.eql(message.model._id);
-                playlist.name.should.be.eql(message.model.name);
+                playlist.name.should.be.eql(message.model.title);
                 moment(playlist.startDate).valueOf().should.eql(message.model.start * 1000);
                 done();
             });
