@@ -1,7 +1,7 @@
 var fs           = require('fs'),
 moment           = require('moment'),
 Media            = require('./api/Media'),
-mvcp_server      = require('./drivers/mvcp/mvcp-driver'),   d
+mvcp_server      = require('./drivers/mvcp/mvcp-driver'),
 playlists_driver = require('./drivers/playlists/playlists-driver'),
 status_driver    = require('./drivers/status/pubsub'),
 config           = require('./drivers/mvcp/conf/melted-node-driver');
