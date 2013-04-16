@@ -8,9 +8,9 @@ var melted_node = require('melted-node'),
     
 function melted(host, port) {
     var self = this;
-    console.log("mbc-mosto: [INFO] Creating server instance [" + host + ":" + port + "]");
+    console.log("mbc-mosto: [INFO] Creating server instance [" + host + ":" + port + "]")
     this.mlt = new melted_node(host, port);
-    console.log("mbc-mosto: [INFO] Server instance created [" + this.mlt.host + ":" + this.mlt.port + "]");
+    console.log("mbc-mosto: [INFO] Server instance created [" + this.mlt.host + ":" + this.mlt.port + "]")
     
     melted.prototype.sendCommand = function(command, successCallback, errorCallback) {
         console.log("mbc-mosto: [INFO] Sending command: " + command);        
@@ -25,11 +25,13 @@ function melted(host, port) {
                 var split = data.split("\r\n");
                 var JSONresponse = {};
                 JSONresponse.medias = [];
-                for (var i = 0; i < split.length; i++) {
+                for (var i = 2; i < split.length; i++) {
                     var line = split[i];
-                    if (line.length > 20) {
-                        var media = {};
-                        var parse = line.split(" ");
+					var media = {};
+                    var parse = line.split(" ");
+
+                    if (parse.length >=7 ) {
+						console.log("getServerPlaylist:" + line );                        
                         media.index       = parse[0];
                         media.file        = parse[1];
                         media.in          = parse[2];
@@ -54,21 +56,26 @@ function melted(host, port) {
     melted.prototype.getServerStatus = function(successCallback, errorCallback) {
             self.mlt.sendCommand("usta u0", "202 OK", function(response) {
                 // HACK: Converting the promise object to a string :)
-                var data = "." + response;
-                
+                var data = new String("." + response);
                 var split = data.split("\r\n");
                 var media = {};
-                
-                var parse = split[1].split(" ");
-                media.status       = parse[1];
-                media.file         = parse[2];
-                media.currentFrame = parse[3];
-                media.fps          = parse[5];
-                media.in           = parse[6];
-                media.out          = parse[7];
-                media.length       = parse[8];
-                media.index        = parse[16];
-                successCallback(media);
+                if (split.length>=2) {
+		            var parse = split[1].split(" ");
+					if (parse.length>=17) {
+				        media.status       = parse[1];
+				        media.file         = parse[2];
+				        media.currentFrame = parse[3];
+				        media.fps          = parse[5];
+				        media.in           = parse[6];
+				        media.out          = parse[7];
+				        media.length       = parse[8];
+						media.clips        = parse[15];
+				        media.index        = parse[16];
+		                return successCallback(media);
+					}
+				}
+				var err = new Error("mbc-mosto: [ERROR] Error getting server status in response object: " + response)
+				errorCallback(err);
             }, function(error) {
                 var err = new Error("mbc-mosto: [ERROR] Error getting server status: " + error)
                 console.error(err);
