@@ -58,7 +58,7 @@ function json_driver() {
     };
     
     json_driver.prototype.getFileName = function(path) {
-        return path.substring(path.lastIndexOf("/"));
+        return path.substring(path.lastIndexOf("/") + 1);
     };
     
     json_driver.prototype.readPlaylists =  function() {
@@ -96,10 +96,15 @@ function json_driver() {
 
         var medias = [];
         aux.medias.forEach(function(element, index, array) {
-            var type   = undefined;
-            var file   = element.file;
-            var length = element.length;
-            var fps    = element.fps;
+            var id           = self.getFileName(element.file);
+            var orig_order   = index;
+            var actual_order = undefined;
+            var playlist_id  = name;
+            var clip_name    = id;
+            var type         = undefined;
+            var file         = element.file;
+            var length       = element.length;
+            var fps          = element.fps;
             if (element.type === undefined) {
                 //TODO: Where do we config the filters????
                 type = "default";
@@ -113,7 +118,7 @@ function json_driver() {
             } else if (length === undefined) {
                 console.warn("mbc-mosto: [WARNING] Cant add media [" + file + "] without the [fps] attribute, skipping...");
             } else {
-                medias.push(new Media(type, file, length, parseFloat(fps)));
+                medias.push(new Media(id, orig_order, actual_order, playlist_id, clip_name, type, file, length, parseFloat(fps)));
                 var clipLength = length.split(":");
 
                 var clipHours   = clipLength[0];
@@ -125,7 +130,7 @@ function json_driver() {
                 endDate.setHours(endDate.getHours() + parseInt(clipHours));
             }
             if (index === (array.length - 1)) {
-                var playlist = new Playlist(name, startDate, medias, endDate);
+                var playlist = new Playlist(name, name, startDate, medias, endDate);
                 callback(playlist);
             }
         });

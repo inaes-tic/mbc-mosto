@@ -142,19 +142,25 @@ function mongo_driver(conf) {
             console.log("Processing list:", list);
             var startDate = new Date(sched.start * 1000);
             var endDate   = new Date(sched.end * 1000);
-            var name = (sched._id.toHexString && sched._id.toHexString()) || sched._id;
+            var name = sched.name;
+            var playlist_id = (sched._id.toHexString && sched._id.toHexString()) || sched._id;
 
             var medias = [];
-            list.models.forEach(function(block) {
+            list.models.forEach(function(block, order) {
+                var block_id = (block._id.toHexString && block._id.toHexString()) || block._id;
+                var orig_order = order;
+                var actual_order = undefined;
+                var clip_name = block.name;
                 // TODO: don't know what goes in type
                 var type = "default";
                 var file = block.file;
                 var length = block.durationraw;
                 var fps = block.fps;
-                medias.push(new Media(type, file, length, parseFloat(fps)));
+                medias.push(new Media(block_id, orig_order, actual_order, playlist_id, clip_name, type, file, length, parseFloat(fps)));
             });
 
-            var playlist = new Playlist(name, startDate, medias, endDate);
+            var playlist = new Playlist(playlist_id, name, startDate, medias, endDate);
+
             if( callback )
                 callback(err, playlist);
             else
