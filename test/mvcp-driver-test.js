@@ -24,10 +24,6 @@ describe('commands', function() {
     var file1 = "../videos/SMPTE_Color_Bars_01.mp4";
     var file2 = "../videos/SMPTE_Color_Bars_02.mp4";
     var file3 = "../videos/SMPTE_Color_Bars_03.mp4";
-    var fileName1 = "1-1.xml";
-    var fileName2 = "1-2.xml";
-    var fileName3 = "1-3.xml";
-    var fileName4 = "1-4.xml";
     describe('#load', function() {
         var pl = undefined;
         var st = undefined;
@@ -39,7 +35,7 @@ describe('commands', function() {
                         server.getServerPlaylist(function(playlist) {
                             pl = playlist;
                             server.getServerStatus(function(status) {
-                                st = status;
+                               st = status;
                                 done();
                             }, function(err) {
                                 done();
@@ -60,21 +56,25 @@ describe('commands', function() {
             });
         });
         it('--List: Clips loaded: should return 1', function() {
-            assert.equal(pl.medias.length, 1);
+            assert.equal(pl.length, 1);
         });
         it('--List: Clip index: should return 0', function() {
-            assert.equal(pl.medias[0].index, 0);
+            assert.equal(pl[0].order, 0);
         });
-        it('--List: Clip filename: should return ' + fileName1, function() {
-            var fileNameAux = pl.medias[0].file.substring(pl.medias[0].file.lastIndexOf("/") + 1, pl.medias[0].file.length -1);
-            assert.equal(fileNameAux, fileName1);
+        it('--List: Clip playlist id: should return 1', function() {
+            assert.equal(pl[0].playlistId, 1);
         });
-        it('--Status: Clip index: should return 0', function() {
-            assert.equal(st.index, 0);
+        it('--List: Clip id: should return 1', function() {
+            assert.equal(pl[0].id, 1);
         });
-        it('--Status: Clip filename: should return ' + fileName1, function() {
-            var fileNameAux = st.file.substring(st.file.lastIndexOf("/") + 1, st.file.length -1);
-            assert.equal(fileNameAux, fileName1);
+        it('--Status: Clip order: should return 0', function() {
+            assert.equal(st.actualClip.order, 0);
+        });
+        it('--Status: Clip playlist id: should return 1', function() {
+            assert.equal(st.actualClip.playlistId, 1);
+        });
+        it('--Status: Clip id: should return 1', function() {
+            assert.equal(st.actualClip.id, 1);
         });
         it('--Status: Unit status: should return stopped', function() {
             assert.equal(st.status, "stopped");
@@ -103,21 +103,25 @@ describe('commands', function() {
             }) ;
         });
         it('--List: Clips loaded: should return 1', function() {
-            assert.equal(pl.medias.length, 1);
+            assert.equal(pl.length, 1);
         });
         it('--List: Clip index: should return 0', function() {
-            assert.equal(pl.medias[0].index, 0);
+            assert.equal(pl[0].order, 0);
         });
-        it('--List: Clip 1 filename: should return ' + fileName1, function() {
-            var fileNameAux = pl.medias[0].file.substring(pl.medias[0].file.lastIndexOf("/") + 1, pl.medias[0].file.length -1);
-            assert.equal(fileNameAux, fileName1);
+        it('--List: Clip playlist id: should return 1', function() {
+            assert.equal(pl[0].playlistId, 1);
         });
-        it('--Status: Clip index: should return 0', function() {
-            assert.equal(st.index, 0);
+        it('--List: Clip id: should return 1', function() {
+            assert.equal(pl[0].id, 1);
         });
-        it('--Status: Clip filename: should return ' + fileName1, function() {
-            var fileNameAux = st.file.substring(st.file.lastIndexOf("/") + 1, st.file.length -1);
-            assert.equal(fileNameAux, fileName1);
+        it('--Status: Clip order: should return 0', function() {
+            assert.equal(st.actualClip.order, 0);
+        });
+        it('--Status: Clip playlist id: should return 1', function() {
+            assert.equal(st.actualClip.playlistId, 1);
+        });
+        it('--Status: Clip id: should return 1', function() {
+            assert.equal(st.actualClip.id, 1);
         });
         it('--Status: Unit status: should return playing', function() {
             assert.equal(st.status, "playing");
@@ -147,25 +151,31 @@ describe('commands', function() {
             }) ;
         });
         it('--List: Clips loaded: should return 2', function() {
-            assert.equal(pl.medias.length, 2);
+            assert.equal(pl.length, 2);
         });
         it('--List: Clip index: should return 1', function() {
-            assert.equal(pl.medias[1].index, 1);
+            assert.equal(pl[1].order, 1);
         });
-        it('--List: Clip 1 filename: should return ' + fileName1, function() {
-            var fileNameAux = pl.medias[0].file.substring(pl.medias[0].file.lastIndexOf("/") + 1, pl.medias[0].file.length -1);
-            assert.equal(fileNameAux, fileName1);
+        it('--List: Clip 1 playlist id: should return 1', function() {
+            assert.equal(pl[0].playlistId, 1);
         });
-        it('--List: Clip 2 filename: should return ' + fileName2, function() {
-            var fileNameAux = pl.medias[1].file.substring(pl.medias[1].file.lastIndexOf("/") + 1, pl.medias[1].file.length -1);
-            assert.equal(fileNameAux, fileName2);
+        it('--List: Clip 1 id: should return 1', function() {
+            assert.equal(pl[0].id, 1);
         });
-        it('--Status: Clip index: should return 0', function() {
-            assert.equal(st.index, 0);
+        it('--List: Clip 2 playlist id: should return 1', function() {
+            assert.equal(pl[1].playlistId, 1);
         });
-        it('--Status: Clip filename: should return ' + fileName1, function() {
-            var fileNameAux = st.file.substring(st.file.lastIndexOf("/") + 1, st.file.length -1);
-            assert.equal(fileNameAux, fileName1);
+        it('--List: Clip 2 id: should return 2', function() {
+            assert.equal(pl[1].id, 2);
+        });
+        it('--Status: Clip order: should return 0', function() {
+            assert.equal(st.actualClip.order, 0);
+        });
+        it('--Status: Clip playlist id: should return 1', function() {
+            assert.equal(st.actualClip.playlistId, 1);
+        });
+        it('--Status: Clip id: should return 1', function() {
+            assert.equal(st.actualClip.id, 1);
         });
         it('--Status: Unit status: should return playing', function() {
             assert.equal(st.status, "playing");
@@ -195,29 +205,37 @@ describe('commands', function() {
             }) ;
         });
         it('--List: Clips loaded: should return 3', function() {
-            assert.equal(pl.medias.length, 3);
+            assert.equal(pl.length, 3);
         });
         it('--List: Clip index: should return 2', function() {
-            assert.equal(pl.medias[2].index, 2);
+            assert.equal(pl[2].order, 2);
         });
-        it('--List: Clip 1 filename: should return ' + fileName1, function() {
-            var fileNameAux = pl.medias[0].file.substring(pl.medias[0].file.lastIndexOf("/") + 1, pl.medias[0].file.length -1);
-            assert.equal(fileNameAux, fileName1);
+        it('--List: Clip 1 playlist id: should return 1', function() {
+            assert.equal(pl[0].playlistId, 1);
         });
-        it('--List: Clip 2 filename: should return ' + fileName3, function() {
-            var fileNameAux = pl.medias[1].file.substring(pl.medias[1].file.lastIndexOf("/") + 1, pl.medias[1].file.length -1);
-            assert.equal(fileNameAux, fileName3);
+        it('--List: Clip 1 id: should return 1', function() {
+            assert.equal(pl[0].id, 1);
         });
-        it('--List: Clip 3 filename: should return ' + fileName2, function() {
-            var fileNameAux = pl.medias[2].file.substring(pl.medias[2].file.lastIndexOf("/") + 1, pl.medias[2].file.length -1);
-            assert.equal(fileNameAux, fileName2);
+        it('--List: Clip 2 playlist id: should return 1', function() {
+            assert.equal(pl[1].playlistId, 1);
         });
-        it('--Status: Clip index: should return 0', function() {
-            assert.equal(st.index, 0);
+        it('--List: Clip 2 id: should return 3', function() {
+            assert.equal(pl[1].id, 3);
         });
-        it('--Status: Clip filename: should return ' + fileName1, function() {
-            var fileNameAux = st.file.substring(st.file.lastIndexOf("/") + 1, st.file.length -1);
-            assert.equal(fileNameAux, fileName1);
+        it('--List: Clip 3 playlist id: should return 1', function() {
+            assert.equal(pl[2].playlistId, 1);
+        });
+        it('--List: Clip 3 id: should return 2', function() {
+            assert.equal(pl[2].id, 2);
+        });
+        it('--Status: Clip order: should return 0', function() {
+            assert.equal(st.actualClip.order, 0);
+        });
+        it('--Status: Clip playlist id: should return 1', function() {
+            assert.equal(st.actualClip.playlistId, 1);
+        });
+        it('--Status: Clip id: should return 1', function() {
+            assert.equal(st.actualClip.id, 1);
         });
         it('--Status: Unit status: should return playing', function() {
             assert.equal(st.status, "playing");
@@ -246,29 +264,37 @@ describe('commands', function() {
             }) ;
         });
         it('--List: Clips loaded: should return 3', function() {
-            assert.equal(pl.medias.length, 3);
+            assert.equal(pl.length, 3);
         });
         it('--List: Clip index: should return 2', function() {
-            assert.equal(pl.medias[2].index, 2);
+            assert.equal(pl[2].order, 2);
         });
-        it('--List: Clip 1 filename: should return ' + fileName1, function() {
-            var fileNameAux = pl.medias[0].file.substring(pl.medias[0].file.lastIndexOf("/") + 1, pl.medias[0].file.length -1);
-            assert.equal(fileNameAux, fileName1);
+        it('--List: Clip 1 playlist id: should return 1', function() {
+            assert.equal(pl[0].playlistId, 1);
         });
-        it('--List: Clip 2 filename: should return ' + fileName2, function() {
-            var fileNameAux = pl.medias[1].file.substring(pl.medias[1].file.lastIndexOf("/") + 1, pl.medias[1].file.length -1);
-            assert.equal(fileNameAux, fileName2);
+        it('--List: Clip 1 id: should return 1', function() {
+            assert.equal(pl[0].id, 1);
         });
-        it('--List: Clip 3 filename: should return ' + fileName3, function() {
-            var fileNameAux = pl.medias[2].file.substring(pl.medias[2].file.lastIndexOf("/") + 1, pl.medias[2].file.length -1);
-            assert.equal(fileNameAux, fileName3);
+        it('--List: Clip 2 playlist id: should return 1', function() {
+            assert.equal(pl[1].playlistId, 1);
         });
-        it('--Status: Clip index: should return 0', function() {
-            assert.equal(st.index, 0);
+        it('--List: Clip 2 id: should return 2', function() {
+            assert.equal(pl[1].id, 2);
         });
-        it('--Status: Clip filename: should return ' + fileName1, function() {
-            var fileNameAux = st.file.substring(st.file.lastIndexOf("/") + 1, st.file.length -1);
-            assert.equal(fileNameAux, fileName1);
+        it('--List: Clip 3 playlist id: should return 1', function() {
+            assert.equal(pl[2].playlistId, 1);
+        });
+        it('--List: Clip 3 id: should return 3', function() {
+            assert.equal(pl[2].id, 3);
+        });
+        it('--Status: Clip order: should return 0', function() {
+            assert.equal(st.actualClip.order, 0);
+        });
+        it('--Status: Clip playlist id: should return 1', function() {
+            assert.equal(st.actualClip.playlistId, 1);
+        });
+        it('--Status: Clip id: should return 1', function() {
+            assert.equal(st.actualClip.id, 1);
         });
         it('--Status: Unit status: should return playing', function() {
             assert.equal(st.status, "playing");
@@ -297,25 +323,31 @@ describe('commands', function() {
             }) ;
         });
         it('--List: Clips loaded: should return 2', function() {
-            assert.equal(pl.medias.length, 2);
+            assert.equal(pl.length, 2);
         });
         it('--List: Clip index: should return 1', function() {
-            assert.equal(pl.medias[1].index, 1);
+            assert.equal(pl[1].order, 1);
         });
-        it('--List: Clip 1 filename: should return ' + fileName1, function() {
-            var fileNameAux = pl.medias[0].file.substring(pl.medias[0].file.lastIndexOf("/") + 1, pl.medias[0].file.length -1);
-            assert.equal(fileNameAux, fileName1);
+        it('--List: Clip 1 playlist id: should return 1', function() {
+            assert.equal(pl[0].playlistId, 1);
         });
-        it('--List: Clip 2 filename: should return ' + fileName3, function() {
-            var fileNameAux = pl.medias[1].file.substring(pl.medias[1].file.lastIndexOf("/") + 1, pl.medias[1].file.length -1);
-            assert.equal(fileNameAux, fileName3);
+        it('--List: Clip 1 id: should return 1', function() {
+            assert.equal(pl[0].id, 1);
         });
-        it('--Status: Clip index: should return 0', function() {
-            assert.equal(st.index, 0);
+        it('--List: Clip 2 playlist id: should return 1', function() {
+            assert.equal(pl[1].playlistId, 1);
         });
-        it('--Status: Clip filename: should return ' + fileName1, function() {
-            var fileNameAux = st.file.substring(st.file.lastIndexOf("/") + 1, st.file.length -1);
-            assert.equal(fileNameAux, fileName1);
+        it('--List: Clip 2 id: should return 3', function() {
+            assert.equal(pl[1].id, 3);
+        });
+        it('--Status: Clip order: should return 0', function() {
+            assert.equal(st.actualClip.order, 0);
+        });
+        it('--Status: Clip playlist id: should return 1', function() {
+            assert.equal(st.actualClip.playlistId, 1);
+        });
+        it('--Status: Clip id: should return 1', function() {
+            assert.equal(st.actualClip.id, 1);
         });
         it('--Status: Unit status: should return playing', function() {
             assert.equal(st.status, "playing");
@@ -345,29 +377,37 @@ describe('commands', function() {
             }) ;
         });
         it('--List: Clips loaded: should return 3', function() {
-            assert.equal(pl.medias.length, 3);
+            assert.equal(pl.length, 3);
         });
         it('--List: Clip index: should return 2', function() {
-            assert.equal(pl.medias[2].index, 2);
+            assert.equal(pl[2].order, 2);
         });
-        it('--List: Clip 1 filename: should return ' + fileName1, function() {
-            var fileNameAux = pl.medias[0].file.substring(pl.medias[0].file.lastIndexOf("/") + 1, pl.medias[0].file.length -1);
-            assert.equal(fileNameAux, fileName1);
+        it('--List: Clip 1 playlist id: should return 1', function() {
+            assert.equal(pl[0].playlistId, 1);
         });
-        it('--List: Clip 2 filename: should return ' + fileName3, function() {
-            var fileNameAux = pl.medias[1].file.substring(pl.medias[1].file.lastIndexOf("/") + 1, pl.medias[1].file.length -1);
-            assert.equal(fileNameAux, fileName3);
+        it('--List: Clip 1 id: should return 1', function() {
+            assert.equal(pl[0].id, 1);
         });
-        it('--List: Clip 3 filename: should return ' + fileName4, function() {
-            var fileNameAux = pl.medias[2].file.substring(pl.medias[2].file.lastIndexOf("/") + 1, pl.medias[2].file.length -1);
-            assert.equal(fileNameAux, fileName4);
+        it('--List: Clip 2 playlist id: should return 1', function() {
+            assert.equal(pl[1].playlistId, 1);
         });
-        it('--Status: Clip index: should return 0', function() {
-            assert.equal(st.index, 0);
+        it('--List: Clip 2 id: should return 3', function() {
+            assert.equal(pl[1].id, 3);
         });
-        it('--Status: Clip filename: should return ' + fileName1, function() {
-            var fileNameAux = st.file.substring(st.file.lastIndexOf("/") + 1, st.file.length -1);
-            assert.equal(fileNameAux, fileName1);
+        it('--List: Clip 3 playlist id: should return 1', function() {
+            assert.equal(pl[2].playlistId, 1);
+        });
+        it('--List: Clip 3 id: should return 4', function() {
+            assert.equal(pl[2].id, 4);
+        });
+        it('--Status: Clip order: should return 0', function() {
+            assert.equal(st.actualClip.order, 0);
+        });
+        it('--Status: Clip playlist id: should return 1', function() {
+            assert.equal(st.actualClip.playlistId, 1);
+        });
+        it('--Status: Clip id: should return 1', function() {
+            assert.equal(st.actualClip.id, 1);
         });
         it('--Status: Unit status: should return playing', function() {
             assert.equal(st.status, "playing");
@@ -396,29 +436,37 @@ describe('commands', function() {
             }) ;
         });
         it('--List: Clips loaded: should return 3', function() {
-            assert.equal(pl.medias.length, 3);
+            assert.equal(pl.length, 3);
         });
         it('--List: Clip index: should return 2', function() {
-            assert.equal(pl.medias[2].index, 2);
+            assert.equal(pl[2].order, 2);
         });
-        it('--List: Clip 1 filename: should return ' + fileName1, function() {
-            var fileNameAux = pl.medias[0].file.substring(pl.medias[0].file.lastIndexOf("/") + 1, pl.medias[0].file.length -1);
-            assert.equal(fileNameAux, fileName1);
+        it('--List: Clip 1 playlist id: should return 1', function() {
+            assert.equal(pl[0].playlistId, 1);
         });
-        it('--List: Clip 2 filename: should return ' + fileName3, function() {
-            var fileNameAux = pl.medias[1].file.substring(pl.medias[1].file.lastIndexOf("/") + 1, pl.medias[1].file.length -1);
-            assert.equal(fileNameAux, fileName3);
+        it('--List: Clip 1 id: should return 1', function() {
+            assert.equal(pl[0].id, 1);
         });
-        it('--List: Clip 3 filename: should return ' + fileName4, function() {
-            var fileNameAux = pl.medias[2].file.substring(pl.medias[2].file.lastIndexOf("/") + 1, pl.medias[2].file.length -1);
-            assert.equal(fileNameAux, fileName4);
+        it('--List: Clip 2 playlist id: should return 1', function() {
+            assert.equal(pl[1].playlistId, 1);
         });
-        it('--Status: Clip index: should return 1', function() {
-            assert.equal(st.index, 1);
+        it('--List: Clip 2 id: should return 3', function() {
+            assert.equal(pl[1].id, 3);
         });
-        it('--Status: Clip filename: should return ' + fileName3, function() {
-            var fileNameAux = st.file.substring(st.file.lastIndexOf("/") + 1, st.file.length -1);
-            assert.equal(fileNameAux, fileName3);
+        it('--List: Clip 3 playlist id: should return 1', function() {
+            assert.equal(pl[2].playlistId, 1);
+        });
+        it('--List: Clip 3 id: should return 4', function() {
+            assert.equal(pl[2].id, 4);
+        });
+        it('--Status: Clip order: should return 1', function() {
+            assert.equal(st.actualClip.order, 1);
+        });
+        it('--Status: Clip playlist id: should return 1', function() {
+            assert.equal(st.actualClip.playlistId, 1);
+        });
+        it('--Status: Clip id: should return 3', function() {
+            assert.equal(st.actualClip.id, 3);
         });
         it('--Status: Unit status: should return playing', function() {
             assert.equal(st.status, "playing");
@@ -447,29 +495,37 @@ describe('commands', function() {
             }) ;
         });
         it('--List: Clips loaded: should return 3', function() {
-            assert.equal(pl.medias.length, 3);
+            assert.equal(pl.length, 3);
         });
         it('--List: Clip index: should return 2', function() {
-            assert.equal(pl.medias[2].index, 2);
+            assert.equal(pl[2].order, 2);
         });
-        it('--List: Clip 1 filename: should return ' + fileName1, function() {
-            var fileNameAux = pl.medias[0].file.substring(pl.medias[0].file.lastIndexOf("/") + 1, pl.medias[0].file.length -1);
-            assert.equal(fileNameAux, fileName1);
+        it('--List: Clip 1 playlist id: should return 1', function() {
+            assert.equal(pl[0].playlistId, 1);
         });
-        it('--List: Clip 2 filename: should return ' + fileName3, function() {
-            var fileNameAux = pl.medias[1].file.substring(pl.medias[1].file.lastIndexOf("/") + 1, pl.medias[1].file.length -1);
-            assert.equal(fileNameAux, fileName3);
+        it('--List: Clip 1 id: should return 1', function() {
+            assert.equal(pl[0].id, 1);
         });
-        it('--List: Clip 3 filename: should return ' + fileName4, function() {
-            var fileNameAux = pl.medias[2].file.substring(pl.medias[2].file.lastIndexOf("/") + 1, pl.medias[2].file.length -1);
-            assert.equal(fileNameAux, fileName4);
+        it('--List: Clip 2 playlist id: should return 1', function() {
+            assert.equal(pl[1].playlistId, 1);
         });
-        it('--Status: Clip index: should return 1', function() {
-            assert.equal(st.index, 1);
+        it('--List: Clip 2 id: should return 3', function() {
+            assert.equal(pl[1].id, 3);
         });
-        it('--Status: Clip filename: should return ' + fileName3, function() {
-            var fileNameAux = st.file.substring(st.file.lastIndexOf("/") + 1, st.file.length -1);
-            assert.equal(fileNameAux, fileName3);
+        it('--List: Clip 3 playlist id: should return 1', function() {
+            assert.equal(pl[2].playlistId, 1);
+        });
+        it('--List: Clip 3 id: should return 4', function() {
+            assert.equal(pl[2].id, 4);
+        });
+        it('--Status: Clip order: should return 1', function() {
+            assert.equal(st.actualClip.order, 1);
+        });
+        it('--Status: Clip playlist id: should return 1', function() {
+            assert.equal(st.actualClip.playlistId, 1);
+        });
+        it('--Status: Clip id: should return 3', function() {
+            assert.equal(st.actualClip.id, 3);
         });
         it('--Status: Unit status: should return playing', function() {
             assert.equal(st.status, "paused");
@@ -498,81 +554,42 @@ describe('commands', function() {
             }) ;
         });
         it('--List: Clips loaded: should return 3', function() {
-            assert.equal(pl.medias.length, 3);
+            assert.equal(pl.length, 3);
         });
         it('--List: Clip index: should return 2', function() {
-            assert.equal(pl.medias[2].index, 2);
+            assert.equal(pl[2].order, 2);
         });
-        it('--List: Clip 1 filename: should return ' + fileName1, function() {
-            var fileNameAux = pl.medias[0].file.substring(pl.medias[0].file.lastIndexOf("/") + 1, pl.medias[0].file.length -1);
-            assert.equal(fileNameAux, fileName1);
+        it('--List: Clip 1 playlist id: should return 1', function() {
+            assert.equal(pl[0].playlistId, 1);
         });
-        it('--List: Clip 2 filename: should return ' + fileName3, function() {
-            var fileNameAux = pl.medias[1].file.substring(pl.medias[1].file.lastIndexOf("/") + 1, pl.medias[1].file.length -1);
-            assert.equal(fileNameAux, fileName3);
+        it('--List: Clip 1 id: should return 1', function() {
+            assert.equal(pl[0].id, 1);
         });
-        it('--List: Clip 3 filename: should return ' + fileName4, function() {
-            var fileNameAux = pl.medias[2].file.substring(pl.medias[2].file.lastIndexOf("/") + 1, pl.medias[2].file.length -1);
-            assert.equal(fileNameAux, fileName4);
+        it('--List: Clip 2 playlist id: should return 1', function() {
+            assert.equal(pl[1].playlistId, 1);
         });
-        it('--Status: Clip index: should return 1', function() {
-            assert.equal(st.index, 1);
+        it('--List: Clip 2 id: should return 3', function() {
+            assert.equal(pl[1].id, 3);
         });
-        it('--Status: Clip filename: should return ' + fileName3, function() {
-            var fileNameAux = st.file.substring(st.file.lastIndexOf("/") + 1, st.file.length -1);
-            assert.equal(fileNameAux, fileName3);
+        it('--List: Clip 3 playlist id: should return 1', function() {
+            assert.equal(pl[2].playlistId, 1);
+        });
+        it('--List: Clip 3 id: should return 4', function() {
+            assert.equal(pl[2].id, 4);
+        });
+        it('--Status: Clip order: should return 1', function() {
+            assert.equal(st.actualClip.order, 1);
+        });
+        it('--Status: Clip playlist id: should return 1', function() {
+            assert.equal(st.actualClip.playlistId, 1);
+        });
+        it('--Status: Clip id: should return 3', function() {
+            assert.equal(st.actualClip.id, 3);
         });
         it('--Status: Unit status: should return playing', function() {
             assert.equal(st.status, "playing");
         });
     });
-    /*describe('#wipe', function() {
-        var pl = undefined;
-        var st = undefined;
-        before(function(done) {
-            server.wipePlaylist(function() {
-                server.getServerPlaylist(function(playlist) {
-                    pl = playlist;
-                    server.getServerStatus(function(status) {
-                        st = status;
-                        done();
-                    }, function(err) {
-                        done();
-                        console.error(err);
-                    });
-                }, function(err) {
-                    done();
-                    console.error(err);
-                });
-            }, function(err) {
-                console.error(err);
-            }) ;
-        });
-        it('--List: Clips loaded: should return 2', function() {
-            assert.equal(pl.medias.length, 2);
-        });
-        it('--List: Clip index: should return 0', function() {
-            assert.equal(pl.medias[0].index, 0);
-        });
-        it('--List: Clip 1 filename: should return ' + fileName3, function() {
-            var fileNameAux = pl.medias[0].file.substring(pl.medias[0].file.lastIndexOf("/") + 1, pl.medias[0].file.length -1);
-            assert.equal(fileNameAux, fileName3);
-        });
-        it('--List: Clip 2 filename: should return ' + fileName2, function() {
-            var fileNameAux = pl.medias[1].file.substring(pl.medias[1].file.lastIndexOf("/") + 1, pl.medias[1].file.length -1);
-            assert.equal(fileNameAux, fileName2);
-        });
-        it('--Status: Clip index: should return 0', function() {
-            assert.equal(st.index, 0);
-        });
-        it('--Status: Clip filename: should return ' + fileName3, function() {
-            var fileNameAux = st.file.substring(st.file.lastIndexOf("/") + 1, st.file.length -1);
-            assert.equal(fileNameAux, fileName3);
-        });
-        it('--Status: Unit status: should return playing', function() {
-            assert.equal(st.status, "playing");
-        });
-    });*/
     describe('#clean', function() {
         var pl = undefined;
         var st = undefined;
@@ -596,21 +613,25 @@ describe('commands', function() {
             }) ;
         });
         it('--List: Clips loaded: should return 1', function() {
-            assert.equal(pl.medias.length, 1);
+            assert.equal(pl.length, 1);
         });
         it('--List: Clip index: should return 0', function() {
-            assert.equal(pl.medias[0].index, 0);
+            assert.equal(pl[0].order, 0);
         });
-        it('--List: Clip 1 filename: should return ' + fileName3, function() {
-            var fileNameAux = pl.medias[0].file.substring(pl.medias[0].file.lastIndexOf("/") + 1, pl.medias[0].file.length -1);
-            assert.equal(fileNameAux, fileName3);
+        it('--List: Clip playlist id: should return 1', function() {
+            assert.equal(pl[0].playlistId, 1);
         });
-        it('--Status: Clip index: should return 0', function() {
-            assert.equal(st.index, 0);
+        it('--List: Clip id: should return 3', function() {
+            assert.equal(pl[0].id, 3);
         });
-        it('--Status: Clip filename: should return ' + fileName3, function() {
-            var fileNameAux = st.file.substring(st.file.lastIndexOf("/") + 1, st.file.length -1);
-            assert.equal(fileNameAux, fileName3);
+        it('--Status: Clip order: should return 0', function() {
+            assert.equal(st.actualClip.order, 0);
+        });
+        it('--Status: Clip playlist id: should return 1', function() {
+            assert.equal(st.actualClip.playlistId, 1);
+        });
+        it('--Status: Clip id: should return 3', function() {
+            assert.equal(st.actualClip.id, 3);
         });
         it('--Status: Unit status: should return playing', function() {
             assert.equal(st.status, "playing");
@@ -639,21 +660,25 @@ describe('commands', function() {
             }) ;
         });
         it('--List: Clips loaded: should return 1', function() {
-            assert.equal(pl.medias.length, 1);
+            assert.equal(pl.length, 1);
         });
         it('--List: Clip index: should return 0', function() {
-            assert.equal(pl.medias[0].index, 0);
+            assert.equal(pl[0].order, 0);
         });
-        it('--List: Clip 1 filename: should return ' + fileName3, function() {
-            var fileNameAux = pl.medias[0].file.substring(pl.medias[0].file.lastIndexOf("/") + 1, pl.medias[0].file.length -1);
-            assert.equal(fileNameAux, fileName3);
+        it('--List: Clip playlist id: should return 1', function() {
+            assert.equal(pl[0].playlistId, 1);
         });
-        it('--Status: Clip index: should return 0', function() {
-            assert.equal(st.index, 0);
+        it('--List: Clip id: should return 3', function() {
+            assert.equal(pl[0].id, 3);
         });
-        it('--Status: Clip filename: should return ' + fileName3, function() {
-            var fileNameAux = st.file.substring(st.file.lastIndexOf("/") + 1, st.file.length -1);
-            assert.equal(fileNameAux, fileName3);
+        it('--Status: Clip order: should return 0', function() {
+            assert.equal(st.actualClip.order, 0);
+        });
+        it('--Status: Clip playlist id: should return 1', function() {
+            assert.equal(st.actualClip.playlistId, 1);
+        });
+        it('--Status: Clip id: should return 3', function() {
+            assert.equal(st.actualClip.id, 3);
         });
         it('--Status: Unit status: should return stopped', function() {
             assert.equal(st.status, "stopped");
@@ -682,28 +707,36 @@ describe('commands', function() {
             }) ;
         });
         it('--List: Clips loaded: should return 0', function() {
-            assert.equal(pl.medias.length, 0);
+            assert.equal(pl.length, 0);
         });
         it('--List: Clip index: should throw error', function() {
-            assert.throws(pl.medias[0], function(err) {
+            assert.throws(function() {
+                var i = pl[0].order;
+            }, function(err) {
                 console.error(err);
                 return err !== undefined;
             });
         });
-        it('--List: Clip 1 filename: should throw error', function() {
-            assert.throws(pl.medias[0], function(err) {
+        it('--List: Clip id: should throw error', function() {
+            assert.throws(function() {
+                var i = pl[0].id;
+            }, function(err) {
                 console.error(err);
                 return err !== undefined;
             });
         });
         it('--Status: Clip index: should throw error', function() {
-            assert.throws(st.index, function(err) {
+            assert.throws(function() {
+                var i = st.actualClip.order;
+            }, function(err) {
                 console.error(err);
                 return err !== undefined;
             });
         });
-        it('--Status: Clip filename: should throw error', function() {
-            assert.throws(st.file, function(err) {
+        it('--Status: Clip id: should throw error', function() {
+            assert.throws(function() {
+                var i = st.actualClip.id;
+            }, function(err) {
                 console.error(err);
                 return err !== undefined;
             });
