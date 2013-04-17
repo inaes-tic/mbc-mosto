@@ -129,7 +129,7 @@ function CaspaDriver() {
 util.inherits(CaspaDriver, events.EventEmitter);
 
 exports = module.exports = function() {
-    driver = new CaspaDriver();
+    var driver = new CaspaDriver();
     driver.setupAll();
 
     return driver;
