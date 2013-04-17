@@ -37,7 +37,7 @@ function playlists_driver(type, config) {
         self.removePlaylistCallback = removePlaylistCallback;
         self.driver.registerRemovePlaylistListener(self.removePlaylist);
     };
-    playlist_driver.prototype.setWindow = function(from, to) {
+    playlists_driver.prototype.setWindow = function(from, to) {
         /******************************************************************
          * this receives either a from=date, to=date or an object that is
          * interpreted as follows:
@@ -57,7 +57,7 @@ function playlists_driver(type, config) {
          *******************************************************************/
         return self.driver.setWindow(from, to);
     };
-    playlist_driver.prototype.getPlaylists = function(ops, callback) {
+    playlists_driver.prototype.getPlaylists = function(ops, callback) {
         /******************************************************************
          * ops is 
          * {
@@ -78,12 +78,6 @@ function playlists_driver(type, config) {
     };
     playlists_driver.prototype.removePlaylist = function(playlist) {
         self.removePlaylistCallback(playlist);
-    };
-    playlists_driver.prototype.readPlaylists = function(from, to, callback) {
-        self.driver.readPlaylists(from,to,callback);
-    };
-    playlists_driver.prototype.setBoundaries = function(from, to) {
-        self.driver.setBoundaries(from,to);
     };
     
 }
