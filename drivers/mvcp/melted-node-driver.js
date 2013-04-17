@@ -4,6 +4,7 @@ var melted_node = require('melted-node'),
     Media       = require('../../api/Media'),
     fs          = require('fs'), 
     config      = require('./conf/melted-node-driver'),
+    Q           = require('q'), 
     utils       = require('../../utils');
     
 function melted(host, port) {
@@ -36,7 +37,7 @@ function melted(host, port) {
                         media.out         = parse[3];
                         media.real_length = parse[4];
                         media.calc_length = parse[5];
-                        media.fps         = parse[6]
+                        media.fps         = parse[6];
                         JSONresponse.medias.push(media);
                     }
                 }
@@ -45,7 +46,7 @@ function melted(host, port) {
 //                console.log(aux);
                 successCallback(JSONresponse);
             }, function(error) {
-                var err = new Error("mbc-mosto: [ERROR] Error getting server playlist: " + error)
+                var err = new Error("mbc-mosto: [ERROR] Error getting server playlist: " + error);
                 console.error(err);
                 errorCallback(err);
             });
@@ -70,16 +71,39 @@ function melted(host, port) {
                 media.index        = parse[16];
                 successCallback(media);
             }, function(error) {
-                var err = new Error("mbc-mosto: [ERROR] Error getting server status: " + error)
+                var err = new Error("mbc-mosto: [ERROR] Error getting server status: " + error);
                 console.error(err);
                 errorCallback(err);
             });
     };
     
+    melted.prototype.isConnected = function() {
+        return self.mlt.connected;
+    };
+    
     melted.prototype.initServer = function() {
         console.log("mbc-mosto: [INFO] Connecting to server instance [" + self.mlt.host + ":" + self.mlt.port + "]");
+
+        var deferred = Q.defer();
+        
         var result = self.mlt.connect();
-        return result;
+        
+        result.then(function(response) {
+            var aux = self.mlt.sendPromisedCommand("ULS", "201 OK");
+            aux.then(function(response) {
+                if (response.indexOf("U0") === -1) {
+                    deferred.reject(new Error("mbc-mosto: [ERROR] Unit 0 not found"));
+                } else {
+                    deferred.resolve("OK");
+                }
+            }, function(error) {
+                deferred.reject(new Error("mbc-mosto: [ERROR] Could not query Unit status: ") + error);
+            });
+        }, function(error) {
+            deferred.reject(error);
+        });
+        
+        return deferred.promise;
     };
     
     melted.prototype.sendClip = function(clip, command, successCallback, errorCallback) {
