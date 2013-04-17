@@ -231,13 +231,12 @@ function mosto(configFile) {
     
     console.log("mbc-mosto: [INFO] Starting mbc-mosto... ") ;
     
-    self.startMvcpServer(function() {
-        self.startWatching();
-        self.initDriver();
-        setInterval(function() {
-            self.sendStatus();
-        }, 1000);
-    });
+    self.startMvcpServer(self.playPlaylists);
+    self.startWatching();
+    self.initDriver();
+    setInterval(function() {
+        self.sendStatus();
+    }, 1000);
     
 }
 
