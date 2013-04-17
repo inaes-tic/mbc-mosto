@@ -16,6 +16,10 @@ function mvcp_driver(type) {
         throw err;
     }
     
+    mvcp_driver.prototype.isConnected = function() {
+        return self.server.isConnected();
+    };
+    
     mvcp_driver.prototype.initServer = function() {
         return self.server.initServer();
     };
