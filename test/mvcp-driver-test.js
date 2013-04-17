@@ -35,7 +35,7 @@ describe('commands', function() {
                         server.getServerPlaylist(function(playlist) {
                             pl = playlist;
                             server.getServerStatus(function(status) {
-                               st = status;
+                                st = status;
                                 done();
                             }, function(err) {
                                 done();
