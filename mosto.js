@@ -134,33 +134,38 @@ function mosto(configFile) {
         var clip = {};
         var show = {};
         
-        var currentPlaylistId = serverStatus.actualClip.playlistId;
+        var currentPlaylistId = undefined;
+        var prevPlaylistId    = undefined;
+        var nextPlaylistId    = undefined;
+        var currentClip       = undefined;
+        var prevClip          = undefined;
+        var nextClip          = undefined;
         
-        var playlist = _.find(self.playlists, function(playlist) {
-            return playlist.id === currentPlaylistId;
-        });   
-        var index = _.indexOf(self.playlists, playlist, true);
-        
-        var prevPlaylistId = undefined;
-        if (index > 0) 
-            prevPlaylistId = self.playlists[index - 1].id;
-        var nextPlaylistId = undefined;
-        if (index < (self.playlists.length - 1))
-            nextPlaylistId = self.playlists[index + 1].id;
-        
-        var currentClip = serverStatus.actualClip;
-        
-        var prevClip = undefined;
-        if (parseInt(currentClip.order) > 0) {
-            prevClip = _.find(serverPlaylist, function(prevClip) {
-                return parseInt(prevClip.order) === (parseInt(currentClip.order) - 1);
-            });         
-        }
-        var nextClip = undefined;
-        if (parseInt(currentClip.order) < (serverPlaylist.length - 1)) {
-            nextClip = _.find(serverPlaylist, function(nextClip) {
-                return parseInt(nextClip.order) === (parseInt(currentClip.order) + 1);
-            }); 
+        if (serverStatus.actualClip !== undefined) {
+            currentPlaylistId = serverStatus.actualClip.playlistId;
+
+            var playlist = _.find(self.playlists, function(playlist) {
+                return playlist.id === currentPlaylistId;
+            });   
+            var index = _.indexOf(self.playlists, playlist, true);
+
+            if (index > 0) 
+                prevPlaylistId = self.playlists[index - 1].id;
+            if (index < (self.playlists.length - 1))
+                nextPlaylistId = self.playlists[index + 1].id;
+
+            currentClip = serverStatus.actualClip;
+
+            if (parseInt(currentClip.order) > 0) {
+                prevClip = _.find(serverPlaylist, function(prevClip) {
+                    return parseInt(prevClip.order) === (parseInt(currentClip.order) - 1);
+                });         
+            }
+            if (parseInt(currentClip.order) < (serverPlaylist.length - 1)) {
+                nextClip = _.find(serverPlaylist, function(nextClip) {
+                    return parseInt(nextClip.order) === (parseInt(currentClip.order) + 1);
+                }); 
+            }
         }
         
         clip.previous = prevClip;
@@ -171,12 +176,12 @@ function mosto(configFile) {
         show.current  = currentPlaylistId;
         show.next     = nextPlaylistId;
         
-        status.clip = clip;
-        status.show = show;
+        status.clip     = clip;
+        status.show     = show;
         status.position = serverStatus.currentPos;
-        status.clips = serverPlaylist;
+        status.clips    = serverPlaylist;
+        status.status   = serverStatus.status;
         
-//        console.log("Vuelve");
         return status;
     };
 
