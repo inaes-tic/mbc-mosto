@@ -33,9 +33,10 @@ function mosto(configFile) {
         
         console.log("mbc-mosto: [INFO] Adding playlist " + playlist.name);
         self.playlists.push(playlist);
-        console.log("mbc-mosto: [INFO] Added playlist:\nname: " + playlist.name 
-                    + "\nstartDate: " + playlist.startDate 
-                    + "\nendDate: " + playlist.endDate);
+        console.log("mbc-mosto: [INFO] Added playlist:\nid: " + playlist.id 
+                + "\nname: " + playlist.name 
+                + "\nstartDate: " + playlist.startDate 
+                + "\nendDate: " + playlist.endDate);
         self.orderPlaylists();
     };
     
@@ -49,7 +50,7 @@ function mosto(configFile) {
         console.log("mbc-mosto: [INFO] Updating playlist " + playlist.name);
         var i = -1;
         self.playlists.some(function(element, index, array) {
-            if (element.name === playlist.name) {
+            if (element.id === playlist.id) {
                 i = index;
                 return true;
             }
@@ -64,10 +65,10 @@ function mosto(configFile) {
             self.playlists[i] = playlist;
         }
         
-        console.log("mbc-mosto: [INFO] Updated playlist:\nname: " + playlist.name 
-                    + "\nstartDate: " + playlist.startDate 
-                    + "\nendDate: " + playlist.endDate);
-        
+        console.log("mbc-mosto: [INFO] Updated playlist:\nid: " + playlist.id 
+                + "\nname: " + playlist.name 
+                + "\nstartDate: " + playlist.startDate 
+                + "\nendDate: " + playlist.endDate);
         self.orderPlaylists();
     };
     
@@ -81,16 +82,17 @@ function mosto(configFile) {
         var i = -1;
         var playlist = undefined;
         self.playlists.some(function(element, index, array) {
-            if (element.name === name) {
+            if (element.id === id) {
                 i = index;
                 playlist = element;
                 return true;
             }
         });
         self.playlists.splice(i, 1);
-        console.log("mbc-mosto: [INFO] Removed playlist:\nname: " + playlist.name 
-                    + "\nstartDate: " + playlist.startDate 
-                    + "\nendDate: " + playlist.endDate);
+        console.log("mbc-mosto: [INFO] Removed playlist:\nid: " + playlist.id 
+                + "\nname: " + playlist.name 
+                + "\nstartDate: " + playlist.startDate 
+                + "\nendDate: " + playlist.endDate);
         self.orderPlaylists();
 
     };
@@ -112,9 +114,6 @@ function mosto(configFile) {
                 return 0;
         });
         console.log("mbc-mosto: [INFO] Finish ordering playlists");
-        //self.playPlaylists(); //this is a direct playout mode
-        //self.checkoutPlaylists();
-		//calling LOGIC (scheduler)
 		self.playlists_updated = true;
         self.convertPlaylistsToScheduledClips();
     };
@@ -390,8 +389,7 @@ function mosto(configFile) {
                 }); 
             }
         });
-    };   
-
+    };
     
     /** SYNC MODULE */
     /**     syncroCurrentPlaylist
