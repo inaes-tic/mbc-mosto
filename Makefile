@@ -10,7 +10,7 @@ NC=$(shell which nc netcat telnet | head -1)
 
 all: test serve
 
-serve: mosto.js server.js ${MOCHA}
+serve: mosto.js server.js
 	${NODE} server.js
 
 install:
