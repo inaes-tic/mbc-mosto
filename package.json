@@ -5,7 +5,7 @@
     "author": "Juan Martin Runge <jmrunge@gmail.com>",
     "contributors": [ "Niv Sardi <xaiki@inaes.gob.ar>", "hatcsh"],
     "scripts": {
-        "test": "./node_modules/.bin/mocha --reporter spec --timeout 3000 test.js"
+        "test": "make test"
     },
     "main": "mosto",
     "repository": {
@@ -25,7 +25,7 @@
         "xmlbuilder"  : "0.3.x",
         "async"       : "0.2.x",
         "watchr"      : ">=2.3",
-        "moment"      : "*",
+        "moment"      : "2.0.0",
         "mubsub"      : "git://github.com/inaes-tic/mubsub.git",
         "mbc-common"  : "git://github.com/inaes-tic/mbc-common.git",
         "node-mlt"    : "git://github.com/inaes-tic/node-mlt.git"

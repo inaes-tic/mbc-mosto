@@ -1,11 +1,13 @@
 var fs           = require('fs'),
+util             = require('util'),
+events           = require('events'),
 moment           = require('moment'),
 Media            = require('./api/Media'),
 mvcp_server      = require('./drivers/mvcp/mvcp-driver'),
 playlists_driver = require('./drivers/playlists/playlists-driver'),
 status_driver    = require('./drivers/status/pubsub'),
 config           = require('./drivers/mvcp/conf/melted-node-driver'),
-utils       = require('./utils');
+utils            = require('./utils');
 
 
 
@@ -94,7 +96,6 @@ function mosto(configFile) {
                     + "\nstartDate: " + playlist.startDate
                     + "\nendDate: " + playlist.endDate);
         self.orderPlaylists();
-
     };
 
     /** orderPlaylists
@@ -168,17 +169,16 @@ function mosto(configFile) {
 
         //TODO: If we are up to date, just return!! (important to avoid infinite recursions)
 
-    }
-
+    };
 
     mosto.prototype.convertFramesToSeconds = function ( frames, fps ) {
         return frames/fps;
-    }
+    };
 
     mosto.prototype.convertLengthToMilliseconds = function ( frames ) {
         var m = moment( frames, "HH:mm:ss.SS");
         return m.hours()*60*60*1000 + m.minutes()*60*1000 + m.seconds()*1000 + m.milliseconds();
-    }
+    };
 
     mosto.prototype.convertFramesToMilliseconds = function ( frames, fps ) {
         if (fps+""=="NaN" || fps==undefined || fps===false ) {
@@ -190,20 +190,20 @@ function mosto(configFile) {
             return undefined;
         }
         return frames * 1000.0 / (1.0 * fps);
-    }
+    };
 
     mosto.prototype.convertUnixToDate =  function ( unix_timestamp ) {
         //var date = new Date(unix_timestamp*1000);
         var date = new moment(unix_timestamp);
         return date.format("hh:mm:ss");
-    }
+    };
 
     mosto.prototype.convertDateToUnix =  function ( date_timestamp ) {
 
         var date = new moment(date_timestamp);
         return date.unix();
 
-    }
+    };
 
 
     /** LOGIC MODULE */
@@ -262,7 +262,7 @@ function mosto(configFile) {
         //or wait for timer synchronization
         //self.server.getServerPlaylist( self.syncroScheduledClips );
 
-    }
+    };
 
     /** preparePlaylist
      *       recursive convert for convertPlaylistsToScheduledClips
@@ -345,8 +345,78 @@ function mosto(configFile) {
         if (self.playlists.length==next_playlist_id) return;
 
         return self.preparePlaylist( next_playlist_id, lastTimeCode );
-    }
+    };
+    
+    mosto.prototype.sendStatus = function() {
+        //TODO: Fabricio should replace all invocations to this function with
+        //real invocations.  This is just an example
+console.log("FOFOFOFOFOFOFOF");
+        self.server.getServerStatus(function(resp1) {
+	console.log("SAKDLSKLDJSADJASKLDASJ");
+            var status = resp1;
+            self.server.getServerPlaylist(function(resp2) {
+                var playlist = resp2;
+                var st = self.buildStatus(playlist, status);
+                self.emit("status", st); 
+            });
+        });
+    };
 
+    mosto.prototype.buildStatus = function(serverPlaylist, serverStatus) {
+        var status = {};
+        var clip = {};
+        var show = {};
+
+        var currentPlaylistId = undefined;
+        var prevPlaylistId    = undefined;
+        var nextPlaylistId    = undefined;
+        var currentClip       = undefined;
+        var prevClip          = undefined;
+        var nextClip          = undefined;
+
+        if (serverStatus.actualClip !== undefined) {
+            currentPlaylistId = serverStatus.actualClip.playlistId;
+
+            var playlist = _.find(self.playlists, function(playlist) {
+                return playlist.id === currentPlaylistId;
+            });
+            var index = _.indexOf(self.playlists, playlist, true);
+
+            if (index > 0)
+                prevPlaylistId = self.playlists[index - 1].id;
+            if (index < (self.playlists.length - 1))
+                nextPlaylistId = self.playlists[index + 1].id;
+
+            currentClip = serverStatus.actualClip;
+
+            if (parseInt(currentClip.order) > 0) {
+                prevClip = _.find(serverPlaylist, function(prevClip) {
+                    return parseInt(prevClip.order) === (parseInt(currentClip.order) - 1);
+                });
+            }
+            if (parseInt(currentClip.order) < (serverPlaylist.length - 1)) {
+                nextClip = _.find(serverPlaylist, function(nextClip) {
+                    return parseInt(nextClip.order) === (parseInt(currentClip.order) + 1);
+                });
+            }
+        }
+
+        clip.previous = prevClip;
+        clip.current  = currentClip;
+        clip.next     = nextClip;
+
+        show.previous = prevPlaylistId;
+        show.current  = currentPlaylistId;
+        show.next     = nextPlaylistId;
+
+        status.clip     = clip;
+        status.show     = show;
+        status.position = serverStatus.currentPos;
+        status.clips    = serverPlaylist;
+        status.status   = serverStatus.status;
+
+        return status;
+    };
 
     mosto.prototype.validatePlaylist = function( playlist ) {
         for( i=0; i<playlist.length; i++) {
@@ -357,15 +427,15 @@ function mosto(configFile) {
             }
         };
         return true;
-    }
+    };
 
 
     mosto.prototype.convertMediaFileToXmlFile = function( media ) {
-        var root = "/media/DATA/_data/proyectos/SINESTESIA/GITHUB/MBC/mbc-mosto/";
+        var root = process.cwd();
         var fileName = utils.getXmlFileNameFromClip( media );
         var xmlFile = root + config.playlists_xml_dir + "/" + fileName;
         return '"'+xmlFile+'"';
-    }
+    };
 
 
 
@@ -632,10 +702,7 @@ function mosto(configFile) {
             console.log("mbc-mosto: [INFO] [WARNING] no expected clip ! ");
             self.sync_lock = false;
         }
-
-
-
-    }
+    };
 
     mosto.prototype.removePlayingClips = function( index_from, index_to, successCallback, errorCallback ) {
 
@@ -652,7 +719,7 @@ function mosto(configFile) {
                                 }
                               );
 
-    }
+    };
 
     mosto.prototype.appendScheduledClips = function( index_iteration ) {
 
@@ -684,7 +751,7 @@ function mosto(configFile) {
                                 }
                               );
 
-    }
+    };
 
     /** PLAY MODULE*/
     /**
@@ -769,7 +836,7 @@ function mosto(configFile) {
 
         self.server.getServerPlaylist( self.syncroScheduledClips, function() { console.log("mbc-mosto: [ERROR] timer_fun_status >  getServerPlaylist() " ); } );
 
-    }
+    };
 
     mosto.prototype.timer_fun = function() {
 
@@ -793,7 +860,7 @@ function mosto(configFile) {
                 self.sync_lock = false;
             }
         }
-    }
+    };
 
     mosto.prototype.play = function() {
         //TODO: check play state
@@ -812,17 +879,17 @@ function mosto(configFile) {
         //self.timer.resume();
         //console.log("mbc-mosto: [INFO] Start timer: " + self.timer.IsPaused() );
 
-    }
+    };
 
     mosto.prototype.stop = function() {
         self.timer.clear();
         self.timer = null;
-    }
+    };
 
     mosto.prototype.pause = function() {
         //TODO: need more testing...
         //self.timer.pause();
-    }
+    };
 
     mosto.prototype.startWatching = function() {
 
@@ -848,11 +915,17 @@ function mosto(configFile) {
     mosto.prototype.startMvcpServer = function(callback) {
         var result = self.server.initServer();
         result.then(function() {
-            callback();
+            "mbc-mosto: [INFO] MVCP server started";
+            self.server_started = true;
+            if (callback !== undefined) {
+                callback();
+            }
         }, function(err) {
-            var e = new Error("mbc-mosto: [ERROR] Error starting MVCP server: " + err);
+            var e = new Error("mbc-mosto: [ERROR] Error starting MVCP server: " + err + ".\nRetrying in 5 seconds...");
             console.error(e);
-            throw e;
+            setTimeout(function() {
+                self.startMvcpServer(callback);
+            }, 5000);
         });
     };
 
@@ -860,6 +933,7 @@ function mosto(configFile) {
     /** CONFIGURATION */
     this.configFile = configFile;
     this.config     = false;
+    this.server_started = false;
     this.default_config = {
         "fps": "30",
         "resolution": "hd",
@@ -931,15 +1005,19 @@ function mosto(configFile) {
     this.driver     = new playlists_driver(this.config.playlist_server);
     this.status_driver = status_driver();
 
-    self.startMvcpServer(function() {
-        self.startWatching();
-        self.initDriver();
-        self.play();
-    });
+    console.log("mbc-mosto: [INFO] Starting mbc-mosto... ") ;
 
+    self.startMvcpServer(self.play);
+    self.startWatching();
+    self.initDriver();
+    setInterval(function() {
+        self.sendStatus();
+    }, 1000);
+    
 }
 
 exports = module.exports = function(configFile) {
+    util.inherits(mosto, events.EventEmitter);
     var mosto_server = new mosto(configFile);
     return mosto_server;
 };

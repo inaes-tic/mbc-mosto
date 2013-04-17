@@ -2,8 +2,8 @@
     "startDate": "08/03/2013 02:00:00",
     "medias": 
         [
-            {"file": "./test/videos/SMPTE_Color_Bars_01.mp4", "in": "00:00:00","length": "00:00:30", "fps": "25"},
-            {"file": "./test/videos/SMPTE_Color_Bars_02.mp4", "in": "00:00:00","length": "00:00:30", "fps": "25"},
-            {"file": "./test/videos/SMPTE_Color_Bars_03.mp4", "in": "00:00:00","length": "00:00:30", "fps": "25"}
+            {"file": "../../test/videos/SMPTE_Color_Bars_01.mp4", "in": "00:00:00","length": "00:00:30", "fps": "25"},
+            {"file": "../../test/videos/SMPTE_Color_Bars_02.mp4", "in": "00:00:00","length": "00:00:30", "fps": "25"},
+            {"file": "../../test/videos/SMPTE_Color_Bars_03.mp4", "in": "00:00:00","length": "00:00:30", "fps": "25"}
         ]   
 }
