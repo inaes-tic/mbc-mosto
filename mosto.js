@@ -171,4 +171,3 @@ exports = module.exports = function(configFile) {
     var mosto_server = new mosto(configFile);
     return mosto_server;
 };
-var mosto_server = new mosto();
