@@ -4,7 +4,8 @@ var melted_node = require('melted-node'),
     Media       = require('../../api/Media'),
     fs          = require('fs'), 
     config      = require('./conf/melted-node-driver'),
-    Q           = require('q');
+    Q           = require('q'), 
+    utils       = require('../../utils');
     
 function melted(host, port) {
     var self = this;
