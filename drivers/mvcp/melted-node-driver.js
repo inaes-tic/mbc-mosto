@@ -1,7 +1,7 @@
 var melted_node = require('melted-node'),
     melted_xml  = require('node-mlt'), 
-    Playlist    = require('../../api/Playlist'),
-    Media       = require('../../api/Media'),
+    Status      = require('../../api/Status'),
+    StatusClip  = require('../../api/StatusClip'),
     fs          = require('fs'), 
     config      = require('./conf/melted-node-driver'),
     Q           = require('q'), 
@@ -24,27 +24,31 @@ function melted(host, port) {
                 var data = "." + response;
                 
                 var split = data.split("\r\n");
-                var JSONresponse = {};
-                JSONresponse.medias = [];
+                var clips = [];
                 for (var i = 0; i < split.length; i++) {
                     var line = split[i];
                     if (line.length > 20) {
-                        var media = {};
                         var parse = line.split(" ");
-                        media.index       = parse[0];
-                        media.file        = parse[1];
-                        media.in          = parse[2];
-                        media.out         = parse[3];
-                        media.real_length = parse[4];
-                        media.calc_length = parse[5];
-                        media.fps         = parse[6];
-                        JSONresponse.medias.push(media);
+                        
+                        var index       = parse[0];
+                        var file        = parse[1];
+                        var inFrame     = parse[2];
+                        var outFrame    = parse[3];
+                        var real_length = parse[4];
+                        var calc_length = parse[5];
+                        var fps         = parse[6];
+                        
+                        var aux         = file.split("/");
+                        var filename    = aux[aux.length - 1];
+                        var playlistId  = utils.getPlaylistIdFromXmlFileName(filename);
+                        var clipId      = utils.getClipIdFromXmlFileName(filename);
+                        
+                        var clip = new StatusClip(clipId, index, playlistId);
+
+                        clips.push(clip);
                     }
                 }
-//                var aux = JSON.stringify(JSONresponse, null, 4);                
-//                console.log("Esto volvio:");
-//                console.log(aux);
-                successCallback(JSONresponse);
+                successCallback(clips);
             }, function(error) {
                 var err = new Error("mbc-mosto: [ERROR] Error getting server playlist: " + error);
                 console.error(err);
@@ -58,18 +62,34 @@ function melted(host, port) {
                 var data = "." + response;
                 
                 var split = data.split("\r\n");
-                var media = {};
                 
                 var parse = split[1].split(" ");
-                media.status       = parse[1];
-                media.file         = parse[2];
-                media.currentFrame = parse[3];
-                media.fps          = parse[5];
-                media.in           = parse[6];
-                media.out          = parse[7];
-                media.length       = parse[8];
-                media.index        = parse[16];
-                successCallback(media);
+                
+                var status       = parse[1];
+                var file         = parse[2];
+                var currentFrame = parse[3];
+                var fps          = parse[5];
+                var inPoint      = parse[6];
+                var outPoint     = parse[7];
+                var length       = parse[8];
+                var index        = parse[16];
+                
+                var st = undefined;
+                
+                if (file.split(".").length > 1) {                
+                    var aux         = file.split("/");
+                    var filename    = aux[aux.length - 1];
+                    var playlistId  = utils.getPlaylistIdFromXmlFileName(filename);
+                    var clipId      = utils.getClipIdFromXmlFileName(filename);
+
+                    var clip = new StatusClip(clipId, index, playlistId);
+                    var pos = utils.getCurrentPosFromClip(currentFrame, length);
+                    st = new Status(status, clip, pos);                
+                } else {
+                    st = new Status(status, undefined, 0);
+                }
+                
+                successCallback(st);
             }, function(error) {
                 var err = new Error("mbc-mosto: [ERROR] Error getting server status: " + error);
                 console.error(err);
