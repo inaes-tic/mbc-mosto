@@ -3,7 +3,7 @@ var assert = require("assert"),
     mosto  = require('../mosto');
 
 // SILENCE LOG OUTPUT
-var util = require('util');
+/*var util = require('util');
 var fs = require('fs');
 var log = fs.createWriteStream('./stdout.log');
 
@@ -17,7 +17,7 @@ console.log = console.info = function(t) {
     out = Array.prototype.join.call(arguments, ' ');
   }
   out && log.write(out + '\n');
-};
+};*/
 // END SILENCE LOG OUTPUT
 
 describe('start without melted', function() {
