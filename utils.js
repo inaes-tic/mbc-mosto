@@ -8,6 +8,7 @@ exports = module.exports = {
     },
 
     getClipIdFromXmlFileName: function(filename) {
-        return filename.split("-")[1];
-    }    
+        var aux = filename.split("-")[1];
+        return aux.substring(0, aux.length - 5);
+    },
 };
