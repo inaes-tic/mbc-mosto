@@ -10,7 +10,7 @@ NC=$(shell which nc netcat telnet | head -1)
 
 all: test serve
 
-serve: mosto.js server.js
+serve: melted-restart mosto.js server.js
 	${NODE} server.js
 
 install:
@@ -40,8 +40,8 @@ endif
 
 melted-kill:
 	-killall -9 melted
-	
-melted-test-run: ${MELTED} melted-kill melted-run
+
+melted-restart: ${MELTED} melted-kill melted-run
 	m4 -DROOT=${ROOT} test/melted_setup.txt | ${NC} localhost 5250
 
 images: test/images/SMPTE_Color_Bars_01.png test/images/SMPTE_Color_Bars_02.png test/images/SMPTE_Color_Bars_03.png 
@@ -58,6 +58,6 @@ test/videos/%.avi: test/images/%.png
 test/videos/%.mp4: test/images/%.png
 	avconv -loop 1 -f image2 -i $< -t 30 $@ &> /dev/null
 
-test: videos ${MOCHA} melted-test-run
+test: videos ${MOCHA} melted-restart
 	${NODE} ${MOCHA}
 
