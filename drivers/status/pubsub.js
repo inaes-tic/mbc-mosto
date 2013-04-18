@@ -83,18 +83,35 @@ function CaspaDriver() {
                 _id: clip.id
             }
         }
+
         var clips = meltedStatus.clips;
+        var p_clip,c_clip,n_clip;
+        
+        if (0<=meltedStatus.clip.previous && meltedStatus.clip.previous<clips.length) {
+			p_clip = makePiece(clips[meltedStatus.clip.previous]);
+        } else p_clip = { name: '' };
+
+        if (0<=meltedStatus.clip.current && meltedStatus.clip.current<clips.length) {
+			c_clip = makePiece(clips[meltedStatus.clip.current]);
+        } else c_clip = { name: '', progress: '0%' };
+
+        if (0<=meltedStatus.clip.next && meltedStatus.clip.next<clips.length) {
+			n_clip = makePiece(clips[meltedStatus.clip.next]);
+        } else n_clip = { name: '' };
+
         var status = {
+            _id: 2,
             piece: {
-                previous: makePiece(clips[meltedStatus.previous]),
-                current:  makePiece(clips[meltedStatus.current]),
-                next:     makePiece(clips[meltedStatus.next]),
+                previous: p_clip,
+                current:  c_clip,
+                next:     n_clip,
             },
             show: {
-                previous: { _id: meltedStatus.show.previous.id },
-                current: { _id: meltedStatus.show.current.id },
-                next: { _id: meltedStatus.show.next.id },
+                previous: { _id: meltedStatus.show.previous },
+                current: { _id: meltedStatus.show.current },
+                next: { _id: meltedStatus.show.next },
             },
+            source: null,            
             on_air: true,
         };
         status.piece.current.progress = meltedStatus.position * 100 + "%";
