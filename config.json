@@ -1,4 +1,10 @@
-{	"fps": "30", "resolution": "hd", "playout_mode": "direct", "playlist_maxlength": "3 hours", "scheduled_playlist_maxlength": "04:00:00", "timer_interval": "1000",
+{	"fps": "25", 
+    "resolution": "hd", 
+    "playout_mode": "direct", 
+    "playlist_maxlength": "4 hours", 
+    "scheduled_playlist_maxlength": "04:00:00", 
+    "timer_interval": "1000",
+    "black": "../../images/black.png",
     "playlist_server": "mongo",
     "mvcp_server": "melted"
 }
