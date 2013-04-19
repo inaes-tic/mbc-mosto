@@ -3,7 +3,7 @@ var melted_node = require('melted-node'),
     Status      = require('../../api/Status'),
     StatusClip  = require('../../api/StatusClip'),
     fs          = require('fs'),
-    config      = require('./conf/melted-node-driver'),
+    config      = require('mbc-common').config.Mosto.Melted,
     Q           = require('q'),
     utils       = require('../../utils');
 

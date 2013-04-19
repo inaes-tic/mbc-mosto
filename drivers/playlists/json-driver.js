@@ -1,5 +1,5 @@
 var fs       = require('fs'),
-    config   = require("./conf/json-driver"), 
+    config   = require("mbc-common").config.Mosto.Json,
     Playlist = require('../../api/Playlist'),
     Media    = require('../../api/Media'),
     watchr   = require('watchr');
@@ -14,18 +14,18 @@ function json_driver() {
     console.log("mbc-mosto: [INFO] Creating json playlists driver");
     
     json_driver.prototype.start = function() {
-        console.log("mbc-mosto: [INFO] Start watching playlists dir " + config.playlists.to_read) ;
+        console.log("mbc-mosto: [INFO] Start watching playlists dir " + config.to_read) ;
         watchr.watch({
-            paths: [config.playlists.to_read],
+            paths: [config.to_read],
             listeners: {
                 error: function(err){
-                    console.log("mbc-mosto: [ERROR] Error while watching playlists dir " + config.playlists.to_read, err);
+                    console.log("mbc-mosto: [ERROR] Error while watching playlists dir " + config.to_read, err);
                 },
                 watching: function(err, watcherInstance, isWatching){
                     if (err) {
-                        console.log("mbc-mosto: [ERROR] Error while watching playlists dir " + config.playlists.to_read, err);
+                        console.log("mbc-mosto: [ERROR] Error while watching playlists dir " + config.to_read, err);
                     } else {
-                        console.log("mbc-mosto: [INFO] Finish watching playlists dir " + config.playlists.to_read);
+                        console.log("mbc-mosto: [INFO] Finish watching playlists dir " + config.to_read);
                     }
                 },
                 change: function(changeType, filePath, fileCurrentStat, filePreviousStat){
@@ -33,10 +33,10 @@ function json_driver() {
                     
                     if (changeType === "create") {
                         console.log("mbc-mosto: [INFO] Playlist added: " + name);
-                        self.createPlaylist(config.playlists.to_read, name, self.newPlaylistCallback);                    
+                        self.createPlaylist(config.to_read, name, self.newPlaylistCallback); 
                     } else if (changeType === "update") {
                         console.log("mbc-mosto: [INFO] Playlist updated: " + name);
-                        self.createPlaylist(config.playlists.to_read, name, self.updatePlaylistCallback);                    
+                        self.createPlaylist(config.to_read, name, self.updatePlaylistCallback);
                     } else if (changeType === "delete") {
                         console.log("mbc-mosto: [INFO] Playlist deleted: " + name);
                         self.removePlaylistCallback(name);
@@ -62,10 +62,10 @@ function json_driver() {
     };
     
     json_driver.prototype.readPlaylists =  function() {
-        console.log("mbc-mosto: [INFO] Start reading playlists from " + config.playlists.to_read);
-        var aux = fs.readdirSync(config.playlists.to_read);
+        console.log("mbc-mosto: [INFO] Start reading playlists from " + config.to_read);
+        var aux = fs.readdirSync(config.to_read);
         aux.forEach(function(element, index, array){
-            self.createPlaylist(config.playlists.to_read, element, self.newPlaylistCallback);
+            self.createPlaylist(config.to_read, element, self.newPlaylistCallback);
         });
     };
     
