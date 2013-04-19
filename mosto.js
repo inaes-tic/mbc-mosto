@@ -16,10 +16,10 @@ function mosto(configFile) {
     mosto.prototype.addPlaylist = function(playlist) {
         console.log("mbc-mosto: [INFO] Adding playlist " + playlist.name);
         self.playlists.push(playlist);
-        console.log("mbc-mosto: [INFO] Added playlist:\nid: " + playlist.id 
-                + "\nname: " + playlist.name 
-                + "\nstartDate: " + playlist.startDate 
-                + "\nendDate: " + playlist.endDate);
+        console.log("mbc-mosto: [INFO] Added playlist:\nid: " + playlist.id
+                    + "\nname: " + playlist.name
+                    + "\nstartDate: " + playlist.startDate
+                    + "\nendDate: " + playlist.endDate);
         self.orderPlaylists();
     };
     
