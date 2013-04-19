@@ -12,12 +12,12 @@ function melted(host, port) {
     console.log("mbc-mosto: [INFO] Creating server instance [" + host + ":" + port + "]");
     this.mlt = new melted_node(host, port);
     console.log("mbc-mosto: [INFO] Server instance created [" + this.mlt.host + ":" + this.mlt.port + "]");
-    
+
     melted.prototype.sendCommand = function(command, successCallback, errorCallback) {
         console.log("mbc-mosto: [INFO] Sending command: " + command);
         self.mlt.sendCommand(command, "200 OK", successCallback, errorCallback);
     };
-    
+
     melted.prototype.getServerPlaylist = function(successCallback, errorCallback) {
         self.mlt.sendCommand("list u0", "201 OK", function(response) {
             // HACK: Converting the promise object to a string :)
@@ -105,14 +105,14 @@ function melted(host, port) {
     melted.prototype.isConnected = function() {
         return self.mlt.connected;
     };
-    
+
     melted.prototype.initServer = function() {
         console.log("mbc-mosto: [INFO] Connecting to server instance [" + self.mlt.host + ":" + self.mlt.port + "]");
 
         var deferred = Q.defer();
-        
+
         var result = self.mlt.connect();
-        
+
         result.then(function(response) {
             var aux = self.mlt.sendPromisedCommand("ULS", "201 OK");
             aux.then(function(response) {
@@ -127,10 +127,10 @@ function melted(host, port) {
         }, function(error) {
             deferred.reject(error);
         });
-        
+
         return deferred.promise;
     };
-    
+
     melted.prototype.sendClip = function(clip, command, successCallback, errorCallback) {
         var xml = new melted_xml();
 
@@ -188,7 +188,7 @@ function melted(host, port) {
             }
         });
     };
-    
+
     melted.prototype.loadClip = function(clip, successCallback, errorCallback) {
         //Load clip removing the whole playlist and starting playback
         self.sendClip(clip, "LOAD U0 {xmlFile}", successCallback, errorCallback);
