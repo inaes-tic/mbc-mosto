@@ -78,22 +78,24 @@ function CaspaDriver() {
     CaspaDriver.prototype.setStatus = function(meltedStatus) {
         // this overrides this.status with the values passed by status
         function makePiece(clip) {
+            if (clip===undefined) return { name: '', _id: '' };
             return {
                 name: clip.name,
                 _id: clip.id
             }
         }
+
         var clips = meltedStatus.clips;
         var status = {
             piece: {
-                previous: makePiece(clips[meltedStatus.previous]),
-                current:  makePiece(clips[meltedStatus.current]),
-                next:     makePiece(clips[meltedStatus.next]),
+                previous: makePiece(clips[meltedStatus.clip.previous]),
+                current:  makePiece(clips[meltedStatus.clip.current]),
+                next:     makePiece(clips[meltedStatus.clip.next]),
             },
             show: {
-                previous: { _id: meltedStatus.show.previous.id },
-                current: { _id: meltedStatus.show.current.id },
-                next: { _id: meltedStatus.show.next.id },
+                previous: { _id: meltedStatus.show.previous },
+                current: { _id: meltedStatus.show.current },
+                next: { _id: meltedStatus.show.next },
             },
             on_air: true,
         };
@@ -129,7 +131,7 @@ function CaspaDriver() {
 util.inherits(CaspaDriver, events.EventEmitter);
 
 exports = module.exports = function() {
-    driver = new CaspaDriver();
+    var driver = new CaspaDriver();
     driver.setupAll();
 
     return driver;
