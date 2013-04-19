@@ -870,16 +870,16 @@ function mosto(configFile) {
     mosto.prototype.startMvcpServer = function(callback) {
         var result = self.server.initServer();
         result.then(function() {
-            "mbc-mosto: [INFO] MVCP server started";
+            console.log("mbc-mosto: [INFO] MVCP server started");
+            self.server_started = true;
             if (callback !== undefined) {
-                self.server_started = true;
                 callback();
             }
         }, function(err) {
             var e = new Error("mbc-mosto: [ERROR] Error starting MVCP server: " + err + ".\nRetrying in 5 seconds...");
             console.error(e);
             setTimeout(function() {
-                self.startMvcpServer(self.playPlaylists);
+                self.startMvcpServer(callback);
             }, 5000);
         });
     };
@@ -954,9 +954,7 @@ function mosto(configFile) {
 
     self.startWatching();
     self.initDriver();
-    setInterval(function() {
-        self.sendStatus();
-    }, 1000);
+    self.startMvcpServer(self.play);
     
 }
 
