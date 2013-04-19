@@ -155,7 +155,7 @@ function mosto(configFile) {
             //orderPaylists
             if (self.playlists.length==0) {
                 var sch_rightnow = moment(self.timer_clock).add( moment.duration({ milliseconds: 1000 }) ).format("DD/MM/YYYY HH:mm:ss.SSS");
-                self.startBlack( sch_rightnow, "00:00:00.500", sch_rightnow, moment( sch_rightnow,"DD/MM/YYYY HH:mm:ss.SSS").add(moment.duration({ milliseconds: 500 }) ).format('DD/MM/YYYY HH:mm:ss.SSS') );
+                self.startBlack( sch_rightnow, "00:00:02.000", sch_rightnow, moment( sch_rightnow,"DD/MM/YYYY HH:mm:ss.SSS").add(moment.duration({ milliseconds: 2000 }) ).format('DD/MM/YYYY HH:mm:ss.SSS') );
             }
             self.orderPlaylists();
 
@@ -338,7 +338,7 @@ function mosto(configFile) {
         if (self.playlists.length==next_playlist_id) {
             if (next_playlist_id > 0 && lastTimeCode!=-1 && pl.id!="black_id") {
                 //queue blackness to the end of the last playlist (no after a black media!)
-                self.queueBlack( "now", "00:00:00.500", lastTimeCode, moment( lastTimeCode,"DD/MM/YYYY HH:mm:ss.SSS").add(moment.duration({ milliseconds: 500 }) ).format('DD/MM/YYYY HH:mm:ss.SSS') );
+                self.queueBlack( "now", "00:00:02.000", lastTimeCode, moment( lastTimeCode,"DD/MM/YYYY HH:mm:ss.SSS").add(moment.duration({ milliseconds: 2000 }) ).format('DD/MM/YYYY HH:mm:ss.SSS') );
             }
             return;
         }
