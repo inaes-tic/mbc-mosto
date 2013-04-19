@@ -1,4 +1,4 @@
-var config   = require("./conf/mongo-driver"),
+var config   = require("mbc-common").config.Mosto.Mongo,
     Playlist = require('../../api/Playlist'),
     Media    = require('../../api/Media'),
     mubsub   = require("mubsub"),
