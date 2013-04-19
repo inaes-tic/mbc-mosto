@@ -944,10 +944,7 @@ function mosto(configFile) {
     
     console.log("mbc-mosto: [INFO] Reading configuration from " + this.configFile);
     
-    this.config = require(this.configFile);
-
-    this.server     = new mvcp_server(this.config.mvcp_server);
-    this.driver     = new playlists_driver(this.config.playlist_server);
+    this.config = require(this.configFile);     
     
     console.log("mbc-mosto: [INFO] Starting mbc-mosto... ") ;
     
