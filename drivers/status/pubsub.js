@@ -96,7 +96,7 @@ function CaspaDriver() {
                 previous: { _id: meltedStatus.show.previous },
                 current: { _id: meltedStatus.show.current },
                 next: { _id: meltedStatus.show.next },
-            },            
+            },
             on_air: true,
         };
         status.piece.current.progress = meltedStatus.position * 100 + "%";
