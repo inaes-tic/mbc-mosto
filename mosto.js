@@ -1,10 +1,15 @@
 var fs               = require('fs'),
-    mvcp_server      = require('./drivers/mvcp/mvcp-driver'), 
-    playlists_driver = require('./drivers/playlists/playlists-driver'), 
-    _                = require('underscore'), 
-    events           = require ('events'), 
-    util             = require ('util');
-    
+    util             = require('util'),
+    events           = require('events'),
+    moment           = require('moment'),
+    Playlist         = require('./api/Playlist'),
+    Media            = require('./api/Media'),
+    ScheduledMedia   = require('./api/ScheduledMedia'),
+    mvcp_server      = require('./drivers/mvcp/mvcp-driver'),
+    playlists_driver = require('./drivers/playlists/playlists-driver'),
+    status_driver    = require('./drivers/status/pubsub'),
+    utils            = require('./utils');
+
 function mosto(configFile) {
     var self = this;
     
