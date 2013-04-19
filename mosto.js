@@ -10,10 +10,21 @@ var fs               = require('fs'),
     status_driver    = require('./drivers/status/pubsub'),
     utils            = require('./utils');
 
+
 function mosto(configFile) {
     var self = this;
+
+
+    /** FETCH MODULE */
+
+    //TODO: testing json, then mongodb
     
+    /** addPlaylist
+     *
+     *       add a new playlist
+     */
     mosto.prototype.addPlaylist = function(playlist) {
+        
         console.log("mbc-mosto: [INFO] Adding playlist " + playlist.name);
         self.playlists.push(playlist);
         console.log("mbc-mosto: [INFO] Added playlist:\nid: " + playlist.id
@@ -23,7 +34,12 @@ function mosto(configFile) {
         self.orderPlaylists();
     };
     
+    /** updatePlaylist
+     *
+     *       update only if we are in range?! i dont want playlists scheduled for tomorrow nw!!!
+     */
     mosto.prototype.updatePlaylist = function(playlist) {
+        
         console.log("mbc-mosto: [INFO] Updating playlist " + playlist.name);
         var i = -1;
         self.playlists.some(function(element, index, array) {
@@ -50,7 +66,12 @@ function mosto(configFile) {
         self.orderPlaylists();
     };
     
+    /** removePlaylist
+     *       
+     *
+     */
     mosto.prototype.removePlaylist = function(name) {
+        
         console.log("mbc-mosto: [INFO] Removing playlist " + name);
         var i = -1;
         var playlist = undefined;
@@ -68,8 +89,14 @@ function mosto(configFile) {
                     + "\nendDate: " + playlist.endDate);
         self.orderPlaylists();
     };
-    
+
+    /** orderPlaylists
+     *       Sort playlists using startDate as key
+     *
+     *       
+     */
     mosto.prototype.orderPlaylists = function() {
+        
         console.log("mbc-mosto: [INFO] Start ordering playlists");
         self.playlists.sort(function (item1, item2) {
             if (item1.startDate < item2.startDate)
@@ -320,7 +347,6 @@ function mosto(configFile) {
     }
     
     mosto.prototype.sendStatus = function() {
-        //TODO: Fabricio should replace all invocations to this function with
         //real invocations.  This is just an example
         self.server.getServerStatus(function(resp1) {
             var status = resp1;
@@ -331,19 +357,19 @@ function mosto(configFile) {
             });
         });
     };
-    
+
     mosto.prototype.buildStatus = function(serverPlaylist, serverStatus) {
         var status = {};
         var clip = {};
         var show = {};
-        
+
         var currentPlaylistId = undefined;
         var prevPlaylistId    = undefined;
         var nextPlaylistId    = undefined;
         var currentClip       = undefined;
         var prevClip          = undefined;
         var nextClip          = undefined;
-        
+
         if (serverStatus.actualClip !== undefined) {
             currentPlaylistId = serverStatus.actualClip.playlistId;
 			if (self.playlists!==undefined && self.playlists.length>0) {
@@ -851,6 +877,7 @@ function mosto(configFile) {
     }
     
     mosto.prototype.startWatching = function() {
+        
         console.log("mbc-mosto: [INFO] Start watching config file " + self.configFile);
         fs.watch(self.configFile, function(event, filename) {
             if (event === 'rename')
@@ -860,10 +887,13 @@ function mosto(configFile) {
     };
     
     mosto.prototype.initDriver = function() {
+
         console.log("mbc-mosto: [INFO] Initializing playlists driver");
+
         self.driver.registerNewPlaylistListener(self.addPlaylist);
         self.driver.registerUpdatePlaylistListener(self.updatePlaylist);
         self.driver.registerRemovePlaylistListener(self.removePlaylist);
+
         self.driver.start();
     };
     
