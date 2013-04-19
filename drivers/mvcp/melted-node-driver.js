@@ -19,84 +19,89 @@ function melted(host, port) {
     };
     
     melted.prototype.getServerPlaylist = function(successCallback, errorCallback) {
-            self.mlt.sendCommand("list u0", "201 OK", function(response) {
-                // HACK: Converting the promise object to a string :)
-                var data = "." + response;
-                
-                var split = data.split("\r\n");
-                var clips = [];
-                for (var i = 0; i < split.length; i++) {
-                    var line = split[i];
-                    if (line.length > 20) {
-                        var parse = line.split(" ");
-                        
-                        var index       = parse[0];
-                        var file        = parse[1];
-                        var inFrame     = parse[2];
-                        var outFrame    = parse[3];
-                        var real_length = parse[4];
-                        var calc_length = parse[5];
-                        var fps         = parse[6];
-                        
-                        var aux         = file.split("/");
-                        var filename    = aux[aux.length - 1];
-                        var playlistId  = utils.getPlaylistIdFromXmlFileName(filename);
-                        var clipId      = utils.getClipIdFromXmlFileName(filename);
-                        
-                        var clip = new StatusClip(clipId, index, playlistId);
+        self.mlt.sendCommand("list u0", "201 OK", function(response) {
+            // HACK: Converting the promise object to a string :)
+            var data = "." + response;
 
-                        clips.push(clip);
-                    }
-                }
-                successCallback(clips);
-            }, function(error) {
-                var err = new Error("mbc-mosto: [ERROR] Error getting server playlist: " + error);
-                console.error(err);
-                errorCallback(err);
-            });
-    };
-    
-    melted.prototype.getServerStatus = function(successCallback, errorCallback) {
-            self.mlt.sendCommand("usta u0", "202 OK", function(response) {
-                // HACK: Converting the promise object to a string :)
-                var data = "." + response;
-                
-                var split = data.split("\r\n");
-                
-                var parse = split[1].split(" ");
-                
-                var status       = parse[1];
-                var file         = parse[2];
-                var currentFrame = parse[3];
-                var fps          = parse[5];
-                var inPoint      = parse[6];
-                var outPoint     = parse[7];
-                var length       = parse[8];
-                var index        = parse[16];
-                
-                var st = undefined;
-                
-                if (file.split(".").length > 1) {                
+            var split = data.split("\r\n");
+            var clips = [];
+            for (var i = 0; i < split.length; i++) {
+                var line = split[i];
+                var parse = line.split(" ");
+
+                if (parse.length >=7 ) {
+                    console.log("getServerPlaylist:" + line );
+                    var index       = parse[0];
+                    var file        = parse[1];
+                    var inFrame     = parse[2];
+                    var outFrame    = parse[3];
+                    var real_length = parse[4];
+                    var calc_length = parse[5];
+                    var fps         = parse[6];
+
                     var aux         = file.split("/");
                     var filename    = aux[aux.length - 1];
                     var playlistId  = utils.getPlaylistIdFromXmlFileName(filename);
                     var clipId      = utils.getClipIdFromXmlFileName(filename);
 
                     var clip = new StatusClip(clipId, index, playlistId);
-                    var pos = utils.getCurrentPosFromClip(currentFrame, length);
-                    st = new Status(status, clip, pos);                
-                } else {
-                    st = new Status(status, undefined, 0);
+
+                    clips.push(clip);
                 }
-                
-                successCallback(st);
-            }, function(error) {
-                var err = new Error("mbc-mosto: [ERROR] Error getting server status: " + error);
-                console.error(err);
-                errorCallback(err);
-            });
+            }
+            successCallback(clips);
+        }, function(error) {
+            var err = new Error("mbc-mosto: [ERROR] Error getting server playlist: " + error);
+            console.error(err);
+            errorCallback(err);
+        });
     };
-    
+
+    melted.prototype.getServerStatus = function(successCallback, errorCallback) {
+        self.mlt.sendCommand("usta u0", "202 OK", function(response) {
+            // HACK: Converting the promise object to a string :)
+            var data = "." + response;
+
+            var split = data.split("\r\n");
+
+            if (split.length>=2) {
+                var parse = split[1].split(" ");
+                if (parse.length>=17) {
+                    var status       = parse[1];
+                    var file         = parse[2];
+                    var currentFrame = parse[3];
+                    var fps          = parse[5];
+                    var inPoint      = parse[6];
+                    var outPoint     = parse[7];
+                    var length       = parse[8];
+                    var index        = parse[16];
+
+                    var st = undefined;
+
+                    if (file.split(".").length > 1) {
+                        var aux         = file.split("/");
+                        var filename    = aux[aux.length - 1];
+                        var playlistId  = utils.getPlaylistIdFromXmlFileName(filename);
+                        var clipId      = utils.getClipIdFromXmlFileName(filename);
+
+                        var clip = new StatusClip(clipId, index, playlistId);
+                        var pos = utils.getCurrentPosFromClip(currentFrame, length);
+                        st = new Status(status, clip, pos);
+                    } else {
+                        st = new Status(status, undefined, 0);
+                    }
+                    return successCallback(st);
+                }
+            }
+            var err = new Error("mbc-mosto: [ERROR] Error getting server status in response object: " + response)
+            errorCallback(err);
+        }, function(error) {
+            var err = new Error("mbc-mosto: [ERROR] Error getting server status: " + error);
+            console.error(err);
+            errorCallback(err);
+        });
+    };
+
     melted.prototype.isConnected = function() {
         return self.mlt.connected;
     };
