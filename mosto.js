@@ -948,7 +948,10 @@ function mosto(configFile) {
     
     console.log("mbc-mosto: [INFO] Starting mbc-mosto... ") ;
     
-    self.startMvcpServer(self.playPlaylists);
+    this.server     = new mvcp_server(this.config.mvcp_server);
+    this.driver     = new playlists_driver(this.config.playlist_server);
+	this.status_driver = status_driver();
+
     self.startWatching();
     self.initDriver();
     setInterval(function() {
