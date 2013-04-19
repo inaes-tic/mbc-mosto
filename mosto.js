@@ -32,12 +32,21 @@ function mosto(configFile) {
                 return true;
             }
         });
-        playlist.loaded = self.playlists[i].loaded;
-        self.playlists[i] = playlist;
-        console.log("mbc-mosto: [INFO] Updated playlist:\nid: " + playlist.id 
-                + "\nname: " + playlist.name 
-                + "\nstartDate: " + playlist.startDate 
-                + "\nendDate: " + playlist.endDate);
+        
+        //update may create if needed
+        //TODO: chech time window: startDate-endDate
+        if (i==-1) {
+            self.playlists.push(playlist);
+        } else {
+            //TODO: compare startDate and endDate with time window: if not in range, removePlaylist.
+            self.playlists[i] = playlist;
+        }
+
+        console.log("mbc-mosto: [INFO] Updated playlist:\nid: " + playlist.id
+                    + "\nname: " + playlist.name
+                    + "\nstartDate: " + playlist.startDate
+                    + "\nendDate: " + playlist.endDate);
+        
         self.orderPlaylists();
     };
     
