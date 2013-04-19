@@ -6,6 +6,8 @@ MELTED_INTREE=${MELTED_BUILD}/bin/melted
 MELTED = $(shell sh -c "which melted || echo ${MELTED_INTREE}")
 NC=$(shell which nc netcat telnet | head -1)
 
+export NODE_CONFIG_DIR ?= $(PWD)/node_modules/mbc-common/config
+
 .PHONY: test
 
 all: test serve
