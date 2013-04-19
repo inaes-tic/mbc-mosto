@@ -84,52 +84,240 @@ function mosto(configFile) {
         self.convertPlaylistsToScheduledClips();
     };
     
-    mosto.prototype.playPlaylists = function() {
-        if (self.server_started) {
-            console.log("mbc-mosto: [INFO] Start playing playlists");
-            self.playlists.forEach(function(element, index, array) {
-                if (!element.loaded) {
-                    self.appendClip(element.medias);
-                    element.loaded = true;
-                }
-            });
-        } else {
-            console.log("mbc-mosto: [WARNING] MVCP Server not yet started, waiting...");
-        }
-    };
+    /**     checkoutPlaylists       
+     *       checkout load next playlists if needed
+     *       each call to checkoutPlaylists advance the time_window
+     *
+     *       We are using a minimum memory overhead approach to store the playlists
+     *       Full playlist has a maximum of 4 hours total length starting from "now"
+     *       Any older playlist are removed from memory to release memory    
+     */      
+    mosto.prototype.checkoutPlaylists = function() {
+        console.log("mbc-mosto: checking out new playlists");   
+        
+        //TODO: We need here to retreive data form DB Driver... (ask for it)
+        // we retreive data when: we load for the first time...         
+
+		self.time_window_from = moment();
+		//var last_time_window_to = self.time_window_to.clone();
+		var last_time_window_to = self.time_window_from.clone();
+
+		self.time_window_to = self.time_window_from.clone();
+		self.time_window_to.add( moment.duration({ hours: 4 }) );
+
+		console.log("mbc-mosto: [INFO] [FETCH] checkoutPlaylists > from: " + self.time_window_from.format("DD/MM/YYYY HH:mm:ss") + " to:" + self.time_window_to.format("DD/MM/YYYY HH:mm:ss") );
+
+		//now we read playlists, between "last_time_window_to" and "time_window_to"
+        self.driver.getPlaylists( { from: last_time_window_to, to: self.time_window_to, setWindow: false }, function(playlists) { 
+			
+			//just import new ones....
+			console.log("mbc-mosto: [INFO] [LOGIC] checkoutPlaylists > receive playlists from: " + last_time_window_to.format("DD/MM/YYYY HH:mm:ss") + " to:" + self.time_window_to.format("DD/MM/YYYY HH:mm:ss") );
+            for( var p=0;p<playlists.length;p++) {			
+				var playlist = playlists[p];
+    		    var i = -1;
+	    	    self.playlists.some( function(element, index, array) {
+		            if (element.id === playlist.id) {
+     		            i = index;
+	    	            return true;
+		            }
+		        });
+    			if (i==-1) {
+    				self.playlists.push(playlist);
+    			}
+            }
+			//orderPaylists
+            if (self.playlists.length==0) {
+              var sch_rightnow = moment(self.timer_clock).add( moment.duration({ milliseconds: 1000 }) ).format("DD/MM/YYYY HH:mm:ss.SSS");
+              self.startBlack( sch_rightnow, "00:00:00.500", sch_rightnow, moment( sch_rightnow,"DD/MM/YYYY HH:mm:ss.SSS").add(moment.duration({ milliseconds: 500 }) ).format('DD/MM/YYYY HH:mm:ss.SSS') );
+            }
+            self.orderPlaylists();
+
+			//update the boundaries
+			self.driver.setWindow( self.time_window_from, self.time_window_to );
+		} );
+
+        //TODO: If we are up to date, just return!! (important to avoid infinite recursions)        
+        
+    }        
+
+    mosto.prototype.startBlack = function( schedule_time, sch_duration, sch_expect_start, sch_expect_end ) {
+         var BlackMedia = new Media( 'black_id' /*id*/, '0' /*orig_order*/, '0'/*actual_order*/, '0' /*playlist_id*/, 'black' /*name*/, 'file' /*type*/, self.config.black, sch_duration/*length*/, ''/*fps*/ );
+         console.log("mbc-mosto: [INFO] [LOGIC] startBlack > media:" + BlackMedia.file + " schedule_time:" + schedule_time + " sch_duration:" + sch_duration + " sch_expect_start:" + sch_expect_start + " sch_expect_end:" + sch_expect_end + " fps?:"+BlackMedia.fps );
+         var medias = [];
+         medias.push(BlackMedia);
+         self.playlists.push( new Playlist( BlackMedia.id, BlackMedia.id, moment( sch_expect_start, "DD/MM/YYYY HH:mm:ss.SSS" ).toDate(), medias, moment( sch_expect_end, "DD/MM/YYYY HH:mm:ss.SSS" ).toDate(), "snap" ) );
+    }
     
-    mosto.prototype.appendClip = function(clips) {
-        var clip = clips.shift();
-        if (clip !== undefined) {
-            self.server.appendClip(clip, function() {
-                console.log("mbc-mosto: [INFO] Loaded clip: " + clip.file);
-                self.appendClip(clips);
-            }, function(err) {
-                console.error("mbc-mosto: [ERROR] Error loading clip " + clip.file + "\n" + err);
-                throw err;
-            });
-        } else {
-            self.server.play(function() {
-                self.server.getServerPlaylist(function(data) {
-                    console.log("Playlist loaded: ") ;
-                    console.log(data);
-                    self.server.getServerStatus(function(data) {
-                        console.log("Currently playing: ") ;
-                        console.log(data);
-                    }, function (err) {
-                        console.error("mbc-mosto: [ERROR] Error obtaining MVCP Server Status");
-                        throw err;
-                    });
-                }, function(err) {
-                    console.error("mbc-mosto: [ERROR] Error obtaining MVCP Server Playlist");
-                    throw err;
-                }); 
-            }, function(err) {
-                console.error("mbc-mosto: [ERROR] Error starting playback");
-                throw err;
-            });
+    mosto.prototype.queueBlack = function( schedule_time, sch_duration, sch_expect_start, sch_expect_end ) {
+         //Media(id, orig_order, actual_order, playlist_id, name, type, file, length, fps)
+         var BlackMedia = new Media( 'black_id' /*id*/, '0' /*orig_order*/, '0'/*actual_order*/, '0' /*playlist_id*/, 'black' /*name*/, 'file' /*type*/, self.config.black, sch_duration/*length*/, ''/*fps*/ );
+         console.log("mbc-mosto: [INFO] [LOGIC] queueBlack > media:" + BlackMedia.file + " schedule_time:" + schedule_time + " sch_duration:" + sch_duration + " sch_expect_start:" + sch_expect_start + " sch_expect_end:" + sch_expect_end + " fps?:"+BlackMedia.fps );
+         self.scheduled_clips.push( new ScheduledMedia( BlackMedia, schedule_time, sch_duration, sch_expect_start, sch_expect_end ) );
+
+    }
+
+    /** LOGIC MODULE */
+    //TODO: testing moment.js, converting time, test recursion
+
+    /** convertPlaylistsToScheduledClips
+     *
+     * here we make all the necesarry calculations and update the current playlist
+     * maybe create some warning messages
+     * check coherence in scheduled playlists
+     * add playlist_attribute= {} in Playlist.js
+     *
+     * case 0: no playlist available
+     *       see modes: snap | fixed         
+     * case 1: next playlist is overlapped
+     *       see modes: snap | fixed
+     * case 2: next playlist start more than xx seconds after this one
+     *       see modes: snap | fixed
+     *
+     *       We use a recursive function preparePlaylist     
+     */
+    mosto.prototype.convertPlaylistsToScheduledClips = function( propagate ) {
+        
+        console.log("mbc-mosto: [INFO] [LOGIC] converting Playlists to scheduled clips");
+        
+        //Check if we need to make a checkout! (upstream syncro!! > sync_lock must be true )
+		//UPSTREAM 
+		if ( self.sync_lock==true ) {
+          if (self.playlists.length==0) {
+              //make a checkout... (not necesarry if DB Driver take care of it??
+              console.log("mbc-mosto: [INFO] [LOGIC] we have no playlists.");              
+              return  self.checkoutPlaylists();
+          }
+        
+          //if time_window advance for 1 hours (4 hours > 3 hours left ), we make a checkout...[FETCH]
+		  var rt_actual_window = self.time_window_to.diff( moment() );
+          var rt_min_window = moment.duration( { hours: 3 } ).asMilliseconds();
+		
+          console.log("mbc-mosto: [INFO] [LOGIC] converPlaylistsToScheduledClips() > rt_actual_window:" + rt_actual_window + " rt_min_window:" + rt_min_window );
+          if (  rt_actual_window < rt_min_window ) {
+            console.log("mbc-mosto: [INFO] [LOGIC] window advanced at least one hour... calling [FETCH] checkoutPlaylists actual:" + rt_actual_window + " min:" + rt_min_window);
+            return  self.checkoutPlaylists();
+          }
         }
-    };
+
+        //clean scheduled clips
+        if (self.playlists_updated) {
+	        self.scheduled_clips = [];              
+			if (self.playlists.length>0) {
+	    	    self.preparePlaylist( 0, -1 );
+			}
+			self.playlists_updated = false;
+    	}
+    
+        //TODO: try to syncro immediatelly
+        //or wait for timer synchronization
+        //self.server.getServerPlaylist( self.syncroScheduledClips );
+
+    }
+    
+    /** preparePlaylist
+     *       recursive convert for convertPlaylistsToScheduledClips
+     *
+     *       @see convertPlaylistsToScheduledClips
+     */
+    mosto.prototype.preparePlaylist = function( next_playlist_id, lastTimeCode ) {
+
+        var pl = self.playlists[next_playlist_id];
+		var milis,sch_duration_m;
+        var sch_duration, sch_time, sch_expect_start, sch_expect_end, schedule_time;
+        var i = 0,is = 0;
+        var pl_tc, last_tc, diff = 0;
+
+        /*
+        if (!self.validatePlaylist(pl)) {
+            console.log("mbc-mosto: [ERROR] in preparePlaylist: " + pl.name );
+        }
+        */
+        if (pl==undefined) return;
+    
+		pl_tc = moment( pl.startDate );
+
+		if  ( lastTimeCode!=-1 ) {
+          last_tc = moment( lastTimeCode,"DD/MM/YYYY HH:mm:ss.SSS");
+		  diff = last_tc.diff( pl_tc );
+        } else last_tc = pl_tc;
+
+		console.log("mbc-mosto: [INFO] [LOGIC] preparePlaylist() : next_playlist_id : " + next_playlist_id + " startDate:" + pl_tc.format("DD/MM/YYYY HH:mm:ss") + " lastTimeCode:" +  lastTimeCode + " diff:" + diff );
+
+        if ( lastTimeCode==-1 
+             || diff < 10000
+           ) {
+
+            if ( pl.mode == "snap") {
+                // just add all clips with schedule: "now" if diff is less than 10 seconds, else push with own timecode (sch_time = sch_expect_start
+				is = 0;
+				sch_expect_end = moment( pl_tc, "DD/MM/YYYY HH:mm:ss").format("DD/MM/YYYY HH:mm:ss.SSS");
+                for( i=0; i<pl.medias.length; i++) {
+					var sMedia = pl.medias[i];
+                    milis = utils.convertFramesToMilliseconds( sMedia.length, sMedia.fps );
+		        	sch_duration_m = moment.duration( { milliseconds: milis } );        			
+
+                    sch_time = moment( sch_expect_end, "DD/MM/YYYY HH:mm:ss.SSS").format("DD/MM/YYYY HH:mm:ss.SSS");				
+        			sch_duration = sch_duration_m.hours() + ":" + sch_duration_m.minutes() + ":" + sch_duration_m.seconds() + "." + sch_duration_m.milliseconds();
+                    sch_expect_start = sch_time;
+        			sch_expect_end = moment( sch_time ,"DD/MM/YYYY HH:mm:ss.SSS").add( sch_duration_m ).format("DD/MM/YYYY HH:mm:ss.SSS");
+
+					diff = last_tc.diff( moment( sch_time, "DD/MM/YYYY HH:mm:ss.SSS") );
+
+                    //choose if queue or schedule...
+					if ( (i==0 && Math.abs(diff)<10000 && next_playlist_id>0 ) // firt clip of queued playlists if diff <  10 seconds are queued
+                         ||
+                         ( i>0 && Math.abs(diff)<10000)  ) //clips >0 => all queued clips after first one
+                    {
+                        schedule_time = "now";
+					} else if ( 
+                          (next_playlist_id==0 && i==0) // first playlist we have always need a schedule time
+                          ||
+                          (Math.abs(diff)>10000) ) // if diff > 10 seconds > use schedule time... (maybe a warning)
+                    {						
+                        //check if we have unclosed playlists (without black end clip) before this new one... 
+                        if (next_playlist_id>0) {
+                           self.queueBlack( "now", "00:00:00.500", lastTimeCode, moment( lastTimeCode,"DD/MM/YYYY HH:mm:ss.SSS").add(moment.duration({ milliseconds: 500 }) ).format('DD/MM/YYYY HH:mm:ss.SSS') );
+                        } else if (next_playlist_id==0) {
+                           //if this is the first and only playlist, check if an empty void is left before it...., so we can put our blackmedia...
+                           var sch_time_mom = moment(sch_time, "DD/MM/YYYY HH:mm:ss.SSS");
+                           var sch_rightnow = moment(self.timer_clock).add( moment.duration({ milliseconds: 2000 }) ).format("DD/MM/YYYY HH:mm:ss.SSS");
+                           var diff_void_start = sch_time_mom.diff( self.timer_clock );
+                           console.log("mbc-mosto: [INFO] [LOGIC] preparePlaylist > empty space ? diff_void_start :" + diff_void_start );
+
+                           if (diff_void_start>4000) {
+                                self.queueBlack( sch_rightnow , "00:00:00.500", sch_rightnow, moment( sch_rightnow,"DD/MM/YYYY HH:mm:ss.SSS").add(moment.duration({ milliseconds: 2000 }) ).format('DD/MM/YYYY HH:mm:ss.SSS') );
+                           }
+
+                        }
+
+						schedule_time = sch_time;
+					}
+
+                    self.scheduled_clips.push( new ScheduledMedia( sMedia, schedule_time, sch_duration, sch_expect_start, sch_expect_end ) );
+					lastTimeCode = sch_expect_end;
+                    last_tc = moment( lastTimeCode,"DD/MM/YYYY HH:mm:ss.SSS");
+                }       
+
+
+
+            } else if ( pl.mode == "fixed") {
+                //just add these clips replacing and cutting others!!
+            }
+        }
+        
+        next_playlist_id++;             
+
+        //iteration ended because we have no more playlists !
+        if (self.playlists.length==next_playlist_id) {
+            if (next_playlist_id > 0 && lastTimeCode!=-1 && pl.id!="black_id") {
+                //queue blackness to the end of the last playlist (no after a black media!)
+                self.queueBlack( "now", "00:00:00.500", lastTimeCode, moment( lastTimeCode,"DD/MM/YYYY HH:mm:ss.SSS").add(moment.duration({ milliseconds: 500 }) ).format('DD/MM/YYYY HH:mm:ss.SSS') );
+            }
+            return;
+        }
+
+        return self.preparePlaylist( next_playlist_id, lastTimeCode );
+    }
     
     mosto.prototype.sendStatus = function() {
         //TODO: Fabricio should replace all invocations to this function with
