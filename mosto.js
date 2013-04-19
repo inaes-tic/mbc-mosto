@@ -883,11 +883,61 @@ function mosto(configFile) {
             }, 5000);
         });
     };
-    
-    this.configFile     = configFile;
-    this.config         = false;
-    this.playlists      = [];
+
+
+    /** CONFIGURATION */
+    this.configFile = configFile;
+    this.config     = false;
     this.server_started = false;
+    
+    /**     FETCH MODULE*/
+    this.playlists  = []; // this is the scheduled playlists....in a range between now and max_playlist_duration
+    this.time_window_from = "";
+    this.time_window_to = "";
+    this.playlists_updated = false;
+    
+    /** LOGIC MODULE*/
+    this.scheduled_clips = []; //here we must have the current playlist up to date...       
+    this.scheduled_clips_updated = false;
+    
+    /** SYNC MODULE */
+    this.actual_server_playlist = [];
+    this.cursor_playing_clip = -1;
+    this.cursor_next_clip = -1;
+    this.sync_lock = false;
+    this.scheduled_clips_index_last_to_queue = -1;
+    this.cursor_scheduled_clip = -1;
+    this.previous_cursor_scheduled_clip = -1;
+
+    
+    /** PLAY MODULE */
+    this.timer = null;
+    this.timer_clock = null;
+    this.timer_relative_clock = null;
+    this.timer_expected_clock = null;
+    this.timer_difference = 0;
+
+	this.sync_lock_start = 0;
+	this.sync_lock_time = 0;
+	this.sync_lock_diff = 0;
+
+    this.actual_playing_clip = null;
+    this.actual_playing_status = "";
+    this.actual_playing_index = -1;
+    this.previous_playing_index = -1;
+    this.actual_playing_frame = -1;
+    this.actual_playing_length = -1;
+    this.actual_playing_fps = -1;
+    this.actual_playing_progress = -1;
+    this.actual_position_millis = 0;
+    this.actual_expected_start = 0;
+    this.previous_expected_start = 0;
+    this.previous_position_millis = 0;
+    this.ref_sched_index = 0;
+
+    this.actual_status = null;
+    
+    /** ALL MODULES */
     
     if (!this.configFile)
         this.configFile = './config.json';
