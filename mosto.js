@@ -80,7 +80,8 @@ function mosto(configFile) {
                 return 0;
         });
         console.log("mbc-mosto: [INFO] Finish ordering playlists");
-        self.playPlaylists();
+        self.playlists_updated = true;
+        self.convertPlaylistsToScheduledClips();
     };
     
     mosto.prototype.playPlaylists = function() {
