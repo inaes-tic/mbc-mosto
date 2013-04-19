@@ -1,24 +1,15 @@
-var fs           = require('fs'),
-util             = require('util'),
-events           = require('events'),
-moment           = require('moment'),
-Playlist         = require('./api/Playlist'),
-Media            = require('./api/Media'),
-mvcp_server      = require('./drivers/mvcp/mvcp-driver'),
-playlists_driver = require('./drivers/playlists/playlists-driver'),
-status_driver    = require('./drivers/status/pubsub'),
-config           = require('./drivers/mvcp/conf/melted-node-driver'),
-utils            = require('./utils');
+var fs               = require('fs'),
+    util             = require('util'),
+    events           = require('events'),
+    moment           = require('moment'),
+    Playlist         = require('./api/Playlist'),
+    Media            = require('./api/Media'),
+    ScheduledMedia   = require('./api/ScheduledMedia'),
+    mvcp_server      = require('./drivers/mvcp/mvcp-driver'),
+    playlists_driver = require('./drivers/playlists/playlists-driver'),
+    status_driver    = require('./drivers/status/pubsub'),
+    utils            = require('./utils');
 
-
-
-function ScheduledMedia( media, schedule_time, schedule_duration, expected_start, expected_end ) {
-    this.media   = media;
-    this.schedule_time = schedule_time;
-    this.schedule_duration = schedule_duration;
-    this.expected_start = expected_start;
-    this.expected_end = expected_end;
-};
 
 function mosto(configFile) {
     var self = this;
@@ -45,7 +36,6 @@ function mosto(configFile) {
     
     /** updatePlaylist
      *
-     *       playlist.name is the playlist key or id!
      *       update only if we are in range?! i dont want playlists scheduled for tomorrow nw!!!
      */
     mosto.prototype.updatePlaylist = function(playlist) {
@@ -64,7 +54,7 @@ function mosto(configFile) {
         if (i==-1) {
             self.playlists.push(playlist);
         } else {
-            playlist.loaded = self.playlists[i].loaded;
+            //TODO: compare startDate and endDate with time window: if not in range, removePlaylist.
             self.playlists[i] = playlist;
         }
 
@@ -175,38 +165,7 @@ function mosto(configFile) {
 
         //TODO: If we are up to date, just return!! (important to avoid infinite recursions)        
         
-    }
-    
-    
-    mosto.prototype.convertFramesToSeconds = function ( frames, fps ) {
-        return frames/fps;
-    }
-
-    mosto.prototype.convertLengthToMilliseconds = function ( frames ) {
-        var m = moment( frames, "HH:mm:ss.SS");
-        return m.hours()*60*60*1000 + m.minutes()*60*1000 + m.seconds()*1000 + m.milliseconds();
-    }
-    
-    mosto.prototype.convertFramesToMilliseconds = function ( frames, fps ) {
-		if (fps+""=="NaN" || fps==undefined || fps===false || fps==0) {
-			return	self.convertLengthToMilliseconds(frames);
- 		}
-
-        return frames * 1000.0 / (1.0 * fps);
-    }       
-    
-    mosto.prototype.convertUnixToDate =  function ( unix_timestamp ) {
-        //var date = new Date(unix_timestamp*1000);     
-        var date = new moment(unix_timestamp);
-        return date.format("hh:mm:ss");
-    }
-
-    mosto.prototype.convertDateToUnix =  function ( date_timestamp ) {
-        
-        var date = new moment(date_timestamp);
-        return date.unix();
-        
-    }
+    }        
 
     mosto.prototype.startBlack = function( schedule_time, sch_duration, sch_expect_start, sch_expect_end ) {
          var BlackMedia = new Media( 'black_id' /*id*/, '0' /*orig_order*/, '0'/*actual_order*/, '0' /*playlist_id*/, 'black' /*name*/, 'file' /*type*/, self.config.black, sch_duration/*length*/, ''/*fps*/ );
@@ -291,7 +250,7 @@ function mosto(configFile) {
 
         var pl = self.playlists[next_playlist_id];
 		var milis,sch_duration_m;
-        var sch_duration, sch_expect_start, sch_expect_end, schedule_time;
+        var sch_duration, sch_time, sch_expect_start, sch_expect_end, schedule_time;
         var i = 0,is = 0;
         var pl_tc, last_tc, diff = 0;
 
@@ -321,7 +280,7 @@ function mosto(configFile) {
 				sch_expect_end = moment( pl_tc, "DD/MM/YYYY HH:mm:ss").format("DD/MM/YYYY HH:mm:ss.SSS");
                 for( i=0; i<pl.medias.length; i++) {
 					var sMedia = pl.medias[i];
-                    milis = self.convertFramesToMilliseconds( sMedia.length, sMedia.fps );
+                    milis = utils.convertFramesToMilliseconds( sMedia.length, sMedia.fps );
 		        	sch_duration_m = moment.duration( { milliseconds: milis } );        			
 
                     sch_time = moment( sch_expect_end, "DD/MM/YYYY HH:mm:ss.SSS").format("DD/MM/YYYY HH:mm:ss.SSS");				
@@ -388,11 +347,8 @@ function mosto(configFile) {
     }
     
     mosto.prototype.sendStatus = function() {
-        //TODO: Fabricio should replace all invocations to this function with
         //real invocations.  This is just an example
-console.log("FOFOFOFOFOFOFOF");
         self.server.getServerStatus(function(resp1) {
-	console.log("SAKDLSKLDJSADJASKLDASJ");
             var status = resp1;
             self.server.getServerPlaylist(function(resp2) {
                 var playlist = resp2;
@@ -506,23 +462,11 @@ console.log("FOFOFOFOFOFOFOF");
             }
         };
         return true;
-    }
-
-
-    mosto.prototype.convertMediaFileToXmlFile = function( media ) {
-        var root = process.cwd();
-        var fileName = utils.getXmlFileNameFromClip( media );
-        var xmlFile = root + config.playlists_xml_dir + "/" + fileName;
-        
-        return '"'+xmlFile+'"';
     };
 
     mosto.prototype.convertMediaFileToClipId = function( media ) {
         return media.id;
     };
-
-
-
     
     /** playPlaylists
      *
@@ -670,7 +614,7 @@ console.log("FOFOFOFOFOFOFOF");
 			// NOW COMPARE EXPECTED WITH ACTUAL
 			// Conditions of timer_difference may trigger
             if ( 
-				 Math.abs(self.timer_difference)<20000
+				 Math.abs(self.timer_difference)<self.config.reload_timer_diff
 				 && self.actual_playing_clip != ""
                  && (self.actual_playing_status == "playing" || self.actual_playing_status == "paused")
                  && self.actual_playing_clip == self.convertMediaFileToClipId(expected_clip.media) 
@@ -862,23 +806,10 @@ console.log("FOFOFOFOFOFOFOF");
         self.actual_playing_status = self.actual_status.status;
 
 		if (self.actual_playing_status=="playing") {
-	        //self.actual_playing_clips = self.actual_status.clips;
             self.actual_playing_clip = self.actual_status.actualClip.id;
         	self.actual_playing_index = self.actual_status.actualClip.order;
 			self.actual_playing_frame = self.actual_status.actualClip.currentPos;
             self.actual_playing_progress = self.actual_status.actualClip.currentPos;
-/*
-	        self.actual_playing_length = self.actual_status.length;
-		    self.actual_playing_fps = new Number( self.actual_status.fps.replace(",",".") );
-			if (self.actual_playing_fps>0) {
-			    position_millis = self.convertFramesToMilliseconds( self.actual_playing_frame, self.actual_playing_fps);
-			    if (position_millis!=undefined) self.actual_position_millis = moment.duration( { milliseconds: position_millis } );
-			}
-		    if (self.actual_playing_length>0) 
-		      self.actual_playing_progress = (1.0 * self.actual_playing_frame) / (1.0 * self.actual_playing_length);
-		    else
-		      self.actual_playing_progress = 0.0;
-*/
 		} else {
            self.actual_playing_frame = -1;
            self.actual_playing_index = -1;
@@ -887,47 +818,6 @@ console.log("FOFOFOFOFOFOFOF");
 
 
         console.log("mbc-mosto: [INFO] timer_fun_status status: " + self.actual_playing_status + " clip: " + self.actual_playing_clip );
-
-/*		
-		 meltedStatus = {
-
-			  clip: {
-				  previous = position in list
-				  current = position in list
-				  next = position in list
-			  },
-
-			  show: {
-				  previous = Playlist
-				  current = Playlist
-				  next = Playlist
-			  }
-
-			  position = playback % of current
-
-			  clips = [clip list]
-		  };
-*/	
-/*
-meltedStatus = {
-  clip: {
-    previous: posicion en la lista,
-    current: posicion en la lista,
-    next: posicion en la lista
-  },
-  show: {
-    previous = Playlist
-    current = Playlist
-    next = Playlist
-  }
-  position = playback % of current
-  clips = [clip list]
-};
-*/
-		//self.status_driver.setStatus( meltedStatus );
-
-        //we have a status let's get synchronized...
-        //TODO: check errors !
 
         self.server.getServerPlaylist( self.syncroScheduledClips, function() { console.log("mbc-mosto: [ERROR] timer_fun_status >  getServerPlaylist() " ); } );                
         
@@ -1029,14 +919,6 @@ meltedStatus = {
     this.configFile = configFile;
     this.config     = false;
     this.server_started = false;
-    this.default_config = {
-        "fps": "30",
-        "resolution": "hd",
-        "playout_mode": "direct",
-        "playlists_maxlength": "24:00:00",
-        "scheduled_playlist_maxlength": "04:00:00",
-        "timer_interval": "00:00:00"
-    };
     
     /**     FETCH MODULE*/
     this.playlists  = []; // this is the scheduled playlists....in a range between now and max_playlist_duration

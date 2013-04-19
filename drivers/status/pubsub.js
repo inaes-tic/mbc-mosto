@@ -78,6 +78,7 @@ function CaspaDriver() {
     CaspaDriver.prototype.setStatus = function(meltedStatus) {
         // this overrides this.status with the values passed by status
         function makePiece(clip) {
+            if (clip===undefined) return { name: '', _id: '' };
             return {
                 name: clip.name,
                 _id: clip.id
@@ -85,33 +86,17 @@ function CaspaDriver() {
         }
 
         var clips = meltedStatus.clips;
-        var p_clip,c_clip,n_clip;
-        
-        if (0<=meltedStatus.clip.previous && meltedStatus.clip.previous<clips.length) {
-			p_clip = makePiece(clips[meltedStatus.clip.previous]);
-        } else p_clip = { name: '' };
-
-        if (0<=meltedStatus.clip.current && meltedStatus.clip.current<clips.length) {
-			c_clip = makePiece(clips[meltedStatus.clip.current]);
-        } else c_clip = { name: '', progress: '0%' };
-
-        if (0<=meltedStatus.clip.next && meltedStatus.clip.next<clips.length) {
-			n_clip = makePiece(clips[meltedStatus.clip.next]);
-        } else n_clip = { name: '' };
-
         var status = {
-            _id: 2,
             piece: {
-                previous: p_clip,
-                current:  c_clip,
-                next:     n_clip,
+                previous: makePiece(clips[meltedStatus.clip.previous]),
+                current:  makePiece(clips[meltedStatus.clip.current]),
+                next:     makePiece(clips[meltedStatus.clip.next]),
             },
             show: {
                 previous: { _id: meltedStatus.show.previous },
                 current: { _id: meltedStatus.show.current },
                 next: { _id: meltedStatus.show.next },
-            },
-            source: null,            
+            },            
             on_air: true,
         };
         status.piece.current.progress = meltedStatus.position * 100 + "%";
