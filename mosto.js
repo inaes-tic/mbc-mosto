@@ -62,10 +62,10 @@ function mosto(configFile) {
             }
         });
         self.playlists.splice(i, 1);
-        console.log("mbc-mosto: [INFO] Removed playlist:\nid: " + playlist.id 
-                + "\nname: " + playlist.name 
-                + "\nstartDate: " + playlist.startDate 
-                + "\nendDate: " + playlist.endDate);
+        console.log("mbc-mosto: [INFO] Removed playlist:\nid: " + playlist.id
+                    + "\nname: " + playlist.name
+                    + "\nstartDate: " + playlist.startDate
+                    + "\nendDate: " + playlist.endDate);
         self.orderPlaylists();
     };
     
