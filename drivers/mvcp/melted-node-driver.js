@@ -1,12 +1,12 @@
 var melted_node = require('melted-node'),
-    melted_xml  = require('node-mlt'), 
+    melted_xml  = require('node-mlt'),
     Status      = require('../../api/Status'),
     StatusClip  = require('../../api/StatusClip'),
-    fs          = require('fs'), 
+    fs          = require('fs'),
     config      = require('./conf/melted-node-driver'),
-    Q           = require('q'), 
+    Q           = require('q'),
     utils       = require('../../utils');
-    
+
 function melted(host, port) {
     var self = this;
     console.log("mbc-mosto: [INFO] Creating server instance [" + host + ":" + port + "]");
