@@ -346,45 +346,84 @@ function mosto(configFile) {
         
         if (serverStatus.actualClip !== undefined) {
             currentPlaylistId = serverStatus.actualClip.playlistId;
+			if (self.playlists!==undefined && self.playlists.length>0) {
+                var i;
+				for(i = 0; i< self.playlists.length; i++) {
+                    playlist = self.playlists[i];
+                    if (playlist.id===currentPlaylistId) {
+		               break;
+                    }
+                }
+                var index = i;
+		        if (index > 0)
+		            prevPlaylistId = self.playlists[index - 1].id;
+		        if (0<=index && index < (self.playlists.length - 1))
+		            nextPlaylistId = self.playlists[index + 1].id;
+			}
+/*
+			if (self.playlists!==undefined && self.playlists.length>0) {
+		        var playlist = _.find(self.playlists, function(pplaylist) {
+		            if (pplaylist!==undefined && currentPlaylistId!==undefined) 
+		               return pplaylist.id === currentPlaylistId;
+		            else
+		               return false;
+		        });
+		        var index = _.indexOf(self.playlists, playlist, true);
 
-            var playlist = _.find(self.playlists, function(playlist) {
-                return playlist.id === currentPlaylistId;
-            });   
-            var index = _.indexOf(self.playlists, playlist, true);
+		        if (index > 0)
+		            prevPlaylistId = self.playlists[index - 1].id;
+		        if (index < (self.playlists.length - 1))
+		            nextPlaylistId = self.playlists[index + 1].id;
 
-            if (index > 0) 
-                prevPlaylistId = self.playlists[index - 1].id;
-            if (index < (self.playlists.length - 1))
-                nextPlaylistId = self.playlists[index + 1].id;
-
-            currentClip = serverStatus.actualClip;
-
-            if (parseInt(currentClip.order) > 0) {
-                prevClip = _.find(serverPlaylist, function(prevClip) {
-                    return parseInt(prevClip.order) === (parseInt(currentClip.order) - 1);
-                });         
-            }
-            if (parseInt(currentClip.order) < (serverPlaylist.length - 1)) {
-                nextClip = _.find(serverPlaylist, function(nextClip) {
-                    return parseInt(nextClip.order) === (parseInt(currentClip.order) + 1);
-                }); 
-            }
+			}
+*/
         }
-        
+
+        currentClip = serverStatus.actualClip;
+		if (serverPlaylist!==undefined && serverPlaylist.length>0) {
+                var i;
+				for(i = 0; i< serverPlaylist.length; i++) {
+                    var prevxClip = serverPlaylist[i];
+                    if (parseInt(prevxClip.order) === (parseInt(currentClip.order) - 1)) {
+                       prevClip = prevxClip;
+                       break;
+                    }
+                }
+
+				for(i = 0; i< serverPlaylist.length; i++) {
+                    var nextxClip = serverPlaylist[i];
+                    if (parseInt(nextxClip.order) === (parseInt(currentClip.order) + 1)) {
+                       nextClip = nextxClip;
+                       break;
+                    }
+                }
+		}
+/*
+		    if (parseInt(currentClip.order) > 0) {
+		        prevClip = _.find(serverPlaylist, function(prevClip) {
+		            return parseInt(prevClip.order) === (parseInt(currentClip.order) - 1);
+		        });
+		    }
+		    if (parseInt(currentClip.order) < (serverPlaylist.length - 1)) {
+		        nextClip = _.find(serverPlaylist, function(nextClip) {
+		            return parseInt(nextClip.order) === (parseInt(currentClip.order) + 1);
+		        });
+		    }
+*/
         clip.previous = prevClip;
         clip.current  = currentClip;
         clip.next     = nextClip;
-        
+
         show.previous = prevPlaylistId;
         show.current  = currentPlaylistId;
         show.next     = nextPlaylistId;
-        
+
         status.clip     = clip;
         status.show     = show;
         status.position = serverStatus.currentPos;
         status.clips    = serverPlaylist;
         status.status   = serverStatus.status;
-        
+
         return status;
     };
 
