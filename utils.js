@@ -14,12 +14,8 @@ exports = module.exports = {
     },
 
     getClipIdFromXmlFileName: function(filename) {
-        var aux = filename.split("-");
-        if ( aux.length > 1 ) {
-            aux = aux[1];
-            filename = aux.substring(0, aux.length - 5);
-        }
-        return filename;
+        // return everything between the first - and .xml
+        return filename.match(/^[^-]+-(.*)\.xml$/)[1];
     },
 
     getTimeLengthFromFrames: function(frames, fps) {
