@@ -32,7 +32,8 @@ function melted(host, port) {
                 if (parse.length >=7 ) {
                     console.log("getServerPlaylist:" + line );
                     var index       = parse[0];
-                    var file        = parse[1];
+                    // remove sorrounding " from filename
+                    var file        = parse[1].replace(/^"|"$/g,'');
                     var inFrame     = parse[2];
                     var outFrame    = parse[3];
                     var real_length = parse[4];
@@ -68,7 +69,8 @@ function melted(host, port) {
                 var parse = split[1].split(" ");
                 if (parse.length>=17) {
                     var status       = parse[1];
-                    var file         = parse[2];
+                    // remove sorrounding " from filename
+                    var file         = parse[2].replace(/^"|"$/g,'');
                     var currentFrame = parse[3];
                     var fps          = parse[5];
                     var inPoint      = parse[6];
