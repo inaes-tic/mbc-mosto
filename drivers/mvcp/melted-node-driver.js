@@ -14,7 +14,7 @@ function melted(host, port) {
     console.log("mbc-mosto: [INFO] Server instance created [" + this.mlt.host + ":" + this.mlt.port + "]");
     
     melted.prototype.sendCommand = function(command, successCallback, errorCallback) {
-        console.log("mbc-mosto: [INFO] Sending command: " + command);        
+        console.log("mbc-mosto: [INFO] Sending command: " + command);
         self.mlt.sendCommand(command, "200 OK", successCallback, errorCallback);
     };
     
@@ -138,7 +138,7 @@ function melted(host, port) {
         var file     = clip.file;
         var filename = utils.getXmlFileNameFromClip(clip);
 
-//            var filters = self.config.types[type].filters;
+        //            var filters = self.config.types[type].filters;
 
         console.log("mbc-mosto: [INFO] Generating file " + filename);
 
@@ -159,23 +159,23 @@ function melted(host, port) {
         multitrack.addTrack(track);
 
         console.log("mbc-mosto: [INFO] Creating tractor xml object for file " + filename);
-        var tractor = new melted_xml.Tractor; 
+        var tractor = new melted_xml.Tractor;
         tractor.push(multitrack);
 
-//            console.log("mbc-mosto: [INFO] Creating filter xml objects for file " + filename);
-//            console.log("mbc-mosto: [INFO] Filters: " + filters);
-//            filters.forEach(function(element, index, array){
-//                var filter = self.config.filters[element];
-//                var filterObj = new melted_xml.Filter[filter.filter.charAt(0).toUpperCase() + filter.filter.slice(1)](filter.properties);
-//                console.log("mbc-mosto: [INFO] Adding filter " + filter.filter);
-//                console.log(filter.properties);
-//                tractor.push(filterObj);
-//            });
+        //            console.log("mbc-mosto: [INFO] Creating filter xml objects for file " + filename);
+        //            console.log("mbc-mosto: [INFO] Filters: " + filters);
+        //            filters.forEach(function(element, index, array){
+        //                var filter = self.config.filters[element];
+        //                var filterObj = new melted_xml.Filter[filter.filter.charAt(0).toUpperCase() + filter.filter.slice(1)](filter.properties);
+        //                console.log("mbc-mosto: [INFO] Adding filter " + filter.filter);
+        //                console.log(filter.properties);
+        //                tractor.push(filterObj);
+        //            });
 
         console.log("mbc-mosto: [INFO] Pushing xml for file " + filename);
         xml.push(tractor);
 
-//        var fileName = file.substring(file.lastIndexOf("/") + 1);
+        //        var fileName = file.substring(file.lastIndexOf("/") + 1);
         var xmlFile = config.playlists_xml_dir + "/" + filename;
 
         console.log("mbc-mosto: [INFO] Writing file " + xmlFile);
@@ -209,10 +209,10 @@ function melted(host, port) {
         //Removes all clips but playing clip
         self.sendCommand("CLEAN U0", successCallback, errorCallback);
     };
-//    melted.prototype.wipePlaylist = function(successCallback, errorCallback) {
-//        //Removes all clips before playing clip
-//        self.sendCommand("WIPE U0", successCallback, errorCallback);
-//    };
+    //    melted.prototype.wipePlaylist = function(successCallback, errorCallback) {
+    //        //Removes all clips before playing clip
+    //        self.sendCommand("WIPE U0", successCallback, errorCallback);
+    //    };
     melted.prototype.clearPlaylist = function(successCallback, errorCallback) {
         //Removes all clips, including playing clip
         self.sendCommand("CLEAR U0", successCallback, errorCallback);
