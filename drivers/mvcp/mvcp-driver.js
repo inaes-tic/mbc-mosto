@@ -1,5 +1,5 @@
 var melted_node_driver = require("./melted-node-driver"),
-    conf               = require("./conf/mvcp-driver");
+    conf               = require('mbc-common').config.Mosto.Mvcp;
 
 function mvcp_driver(type) {
     var self = this;

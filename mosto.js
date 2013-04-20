@@ -8,10 +8,11 @@ var fs               = require('fs'),
     mvcp_server      = require('./drivers/mvcp/mvcp-driver'),
     playlists_driver = require('./drivers/playlists/playlists-driver'),
     status_driver    = require('./drivers/status/pubsub'),
-    utils            = require('./utils');
+    utils            = require('./utils'),
+    config           = require('mbc-common').config.Mosto.General;
 
 
-function mosto(configFile) {
+function mosto(customConfig) {
     var self = this;
 
 
@@ -876,16 +877,6 @@ function mosto(configFile) {
         //self.timer.pause();
     }
 
-    mosto.prototype.startWatching = function() {
-
-        console.log("mbc-mosto: [INFO] Start watching config file " + self.configFile);
-        fs.watch(self.configFile, function(event, filename) {
-            if (event === 'rename')
-                throw new Error("mbc-mosto: [ERROR] Config file renaming is not supported");
-            this.config = require(this.configFile);
-        });
-    };
-
     mosto.prototype.initDriver = function() {
 
         console.log("mbc-mosto: [INFO] Initializing playlists driver");
@@ -916,7 +907,6 @@ function mosto(configFile) {
 
 
     /** CONFIGURATION */
-    this.configFile = configFile;
     this.config     = false;
     this.server_started = false;
 
@@ -969,12 +959,7 @@ function mosto(configFile) {
 
     /** ALL MODULES */
 
-    if (!this.configFile)
-        this.configFile = './config.json';
-
-    console.log("mbc-mosto: [INFO] Reading configuration from " + this.configFile);
-
-    this.config = require(this.configFile);
+    this.config = customConfig || config;
 
     console.log("mbc-mosto: [INFO] Starting mbc-mosto... ") ;
 
@@ -982,14 +967,13 @@ function mosto(configFile) {
     this.driver     = new playlists_driver(this.config.playlist_server);
     this.status_driver = status_driver();
 
-    self.startWatching();
     self.initDriver();
     self.startMvcpServer(self.play);
 
 }
 
-exports = module.exports = function(configFile) {
+exports = module.exports = function(customConfig) {
     util.inherits(mosto, events.EventEmitter);
-    var mosto_server = new mosto(configFile);
+    var mosto_server = new mosto(customConfig);
     return mosto_server;
 };
