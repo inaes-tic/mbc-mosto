@@ -88,9 +88,9 @@ function CaspaDriver() {
         var clips = meltedStatus.clips;
         var status = {
             piece: {
-                previous: makePiece(clips[meltedStatus.clip.previous]),
-                current:  makePiece(clips[meltedStatus.clip.current]),
-                next:     makePiece(clips[meltedStatus.clip.next]),
+                previous: makePiece(meltedStatus.clip.previous),
+                current:  makePiece(meltedStatus.clip.current),
+                next:     makePiece(meltedStatus.clip.next),
             },
             show: {
                 previous: { _id: meltedStatus.show.previous },
