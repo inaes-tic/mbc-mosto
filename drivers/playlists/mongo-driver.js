@@ -62,25 +62,10 @@ function mongo_driver(conf) {
         self.removePlaylistCallback = removePlaylistCallback;
     };
 
-    mongo_driver.prototype.validTimes = function() {
-        if( self.window ) {
-            return self.window;
-        } else {
-            var now = moment(new Date());
-            var until = moment(new Date());
-            var timeSpan = config.load_time * 60 * 1000;
-            until.add(timeSpan);
-            return {
-                from: now,
-                to: until,
-                timeSpan: timeSpan
-            };
-        }
-    };
-
     mongo_driver.prototype.getWindow = function(from, to) {
         // Notice that if from = to = undefined then time window is
         // set to undefined, and settings file is used again
+
         if( to === undefined ) {
             // assume from = { from: date, to: date }
             var window = from;
@@ -125,11 +110,11 @@ function mongo_driver(conf) {
 
     mongo_driver.prototype.setWindow = function(from, to) {
         self.window = self.getWindow(from, to);
-        return self.validTimes()
+        return self.window;
     };
 
     mongo_driver.prototype.inTime = function(sched) {
-        var window = self.validTimes();
+        var window = self.getWindow();
         return (sched.start <= window.to.unix() &&
                 sched.end >= window.from.unix());
     };
