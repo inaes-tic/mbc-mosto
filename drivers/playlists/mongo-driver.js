@@ -40,12 +40,23 @@ function mongo_driver(conf) {
 
         channel.subscribe({backend: 'schedbackend', method: 'create'}, function(msg) {
             if( self.inTime(msg.model) ) {
-                self.createPlaylist(msg.model, 'create');
+                self.createPlaylist(msg.model, function(err, playlist) {
+                    if( err )
+                        // the 'error' is already emitted
+                        console.error("mongo-driver [ERROR]:", err);
+                    else
+                        self.emit('create', playlist);
+                });
             }
         });
         channel.subscribe({backend: 'schedbackend', method: 'update'}, function(msg) {
             // I forward all create messages
-            self.createPlaylist(msg.model, 'update');
+            self.createPlaylist(msg.model, function(err, playlist) {
+                if( err )
+                    console.error("mongo-driver [ERROR]:", err);
+                else
+                    self.emit('create', playlist)
+            });
         });
         channel.subscribe({backend: 'schedbackend', method: 'delete'}, function(msg) {
             self.emit ("delete", msg.model._id);
@@ -165,20 +176,13 @@ function mongo_driver(conf) {
         });
     };
 
-    mongo_driver.prototype.createPlaylist = function(sched, method) {
-        // method can be either an event name to emit, or a callback.
-        // If it's a callback, no signal will be emitted (except 'error')
-        var callback = undefined;
-        if( typeof(method) == 'function' ) {
-            callback = method;
-        }
+    mongo_driver.prototype.createPlaylist = function(sched, callback) {
 
         console.log("mongo-driver: [INFO] Create Playlist:", sched);
         self.lists.findById(sched.list, function(err, list) {
             if( err ) {
                 self.emit ("error", err);
-                if( callback )
-                    callback(err);
+                callback(err);
                 return err;
             }
 
@@ -204,10 +208,7 @@ function mongo_driver(conf) {
 
             var playlist = new Playlist(playlist_id, name, startDate, medias, endDate, "snap");
 
-            if( callback )
-                callback(err, playlist);
-            else
-                self.emit(method, playlist);
+            callback(err, playlist);
         });
     };
 }
