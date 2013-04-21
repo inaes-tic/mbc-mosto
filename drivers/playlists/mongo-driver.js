@@ -57,36 +57,49 @@ function mongo_driver(conf) {
         // set to undefined, and settings file is used again
 
         if( to === undefined ) {
-            // assume from = { from: date, to: date }
-            var window = from;
-            var ret = _.clone(window);
-            if( window.from === undefined ) {
-                // I assume from = now
-                ret.from = new moment();
+            if( from === undefined ) {
+                // use defaults from config file
+                var now = moment(new Date());
+                var until = moment(new Date());
+                var timeSpan = config.load_time * 60 * 1000;
+                until.add(timeSpan);
+                return {
+                    from: now,
+                    to: until,
+                    timeSpan: timeSpan
+                };
             } else {
-                ret.from = moment(window.from);
+                // assume from = { from: date, to: date }
+                var window = from;
+                var ret = _.clone(window);
+                if( window.from === undefined ) {
+                    // I assume from = now
+                    ret.from = new moment();
+                } else {
+                    ret.from = moment(window.from);
+                }
+                if( !(window.to || window.timeSpan) ) {
+                    // if neither is present, we use the currently set
+                    // value, or default to the config file
+                    ret.timeSpan = self.window.timeSpan || config.load_time * 60 * 1000;
+                }
+                if( window.to === undefined ) {
+                    // we asume timeSpan is present and calculate it
+                    ret.to = new moment(ret.from);
+                    ret.to.add(ret.timeSpan);
+                } else {
+                    ret.to = moment(window.to);
+                }
+                if( ret.timeSpan === undefined ) {
+                    // if we got here, it means window.to was defined
+                    // we calculate it using from and to
+                    ret.timeSpan = ret.to.diff(ret.from);
+                } else {
+                    // this got copied in the _.clone, but it's in minutes
+                    ret.timeSpan = window.timeSpan * 60 * 1000;
+                }
+                return ret;
             }
-            if( !(window.to || window.timeSpan) ) {
-                // if neither is present, we use the currently set
-                // value, or default to the config file
-                ret.timeSpan = self.window.timeSpan || config.load_time * 60 * 1000;
-            }
-            if( window.to === undefined ) {
-                // we asume timeSpan is present and calculate it
-                ret.to = new moment(ret.from);
-                ret.to.add(ret.timeSpan);
-            } else {
-                ret.to = moment(window.to);
-            }
-            if( ret.timeSpan === undefined ) {
-                // if we got here, it means window.to was defined
-                // we calculate it using from and to
-                ret.timeSpan = ret.to.diff(ret.from);
-            } else {
-                // this got copied in the _.clone, but it's in minutes
-                ret.timeSpan = window.timeSpan * 60 * 1000;
-            }
-            return ret;
         } else {
 
             var window = {
