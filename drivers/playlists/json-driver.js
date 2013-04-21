@@ -14,7 +14,7 @@ function json_driver() {
     json_driver.prototype.start = function() {
         console.log("json-driver: [INFO] Start watching playlists dir " + config.to_read) ;
         watchr.watch({
-            paths: [config.playlists.to_read],
+            paths: [config.to_read],
             listeners: {
                 error: function(err){
                     console.log("json-driver: [ERROR] Error while watching playlists dir " + config.to_read, err);
