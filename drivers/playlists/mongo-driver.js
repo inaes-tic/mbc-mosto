@@ -165,7 +165,14 @@ function mongo_driver(conf) {
         });
     };
 
-    mongo_driver.prototype.createPlaylist = function(sched, callback, method) {
+    mongo_driver.prototype.createPlaylist = function(sched, method) {
+        // method can be either an event name to emit, or a callback.
+        // If it's a callback, no signal will be emitted (except 'error')
+        var callback = undefined;
+        if( typeof(method) == 'function' ) {
+            callback = method;
+        }
+
         console.log("mongo-driver: [INFO] Create Playlist:", sched);
         self.lists.findById(sched.list, function(err, list) {
             if( err ) {
@@ -196,12 +203,11 @@ function mongo_driver(conf) {
             });
 
             var playlist = new Playlist(playlist_id, name, startDate, medias, endDate, "snap");
-            self.emit (method, playlist);
 
             if( callback )
                 callback(err, playlist);
             else
-                return playlist;
+                self.emit(method, playlist);
         });
     };
 }
