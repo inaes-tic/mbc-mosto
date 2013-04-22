@@ -158,7 +158,5 @@ exports.take = semaphore.take;
  *
  * Leave execution to other melted taked.
  *
- * @callback: callback function to process while take melted.
- *
  */
 exports.leave = semaphore.leave;
