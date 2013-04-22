@@ -40,29 +40,34 @@ mongo_driver.prototype.start = function(timeSpan) {
 
     self.setWindow({timeSpan: timeSpan});
 
-    channel.subscribe({backend: 'schedbackend', method: 'create'}, function(msg) {
-        if( self.inTime(msg.model) ) {
-                self.createPlaylist(msg.model, function(err, playlist) {
-                    if( err )
-                        return console.error("mongo-driver [ERROR]:", err);
-
-                    self.emit('create', playlist);
-                });
-        }
-    });
-    channel.subscribe({backend: 'schedbackend', method: 'update'}, function(msg) {
-        // I forward all create messages
-            self.createPlaylist(msg.model, function(err, playlist) {
-                if( err )
-                    return  console.error("mongo-driver [ERROR]:", err);
-
-                self.emit('update', playlist)
-            });
-    });
-    channel.subscribe({backend: 'schedbackend', method: 'delete'}, function(msg) {
-        self.emit ("delete", msg.model._id);
+    channel.on('JSONmessage', function(chan, msg) {
+        var handler = self.pubsub_handler[chan];
+        return handler && (handler.bind(self))(msg);
     });
 };
+
+mongo_driver.prototype.pubsub_handler = {
+    create: function(msg) {
+        if( self.inTime(msg.model) ) {
+            self.createPlaylist(msg.model, function(err, playlist) {
+                if( err )
+                    return console.error("mongo-driver [ERROR]:", err);
+
+                self.emit('create', playlist);
+            });}},
+    update: function(msg) {
+        // I forward all create messages
+        self.createPlaylist(msg.model, function(err, playlist) {
+            if( err )
+                return  console.error("mongo-driver [ERROR]:", err);
+
+            self.emit('update', playlist)
+        });
+    },
+    delete: function(msg) {
+        self.emit ("delete", msg.model._id);
+    },
+}
 
 mongo_driver.prototype.getWindow = function(from, to) {
     // Notice that if from = to = undefined then time window is
