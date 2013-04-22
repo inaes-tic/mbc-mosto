@@ -54,7 +54,7 @@ function mongo_driver(conf) {
                 if( err )
                     return  console.error("mongo-driver [ERROR]:", err);
 
-                self.emit('create', playlist)
+                self.emit('update', playlist)
             });
         });
         channel.subscribe({backend: 'schedbackend', method: 'delete'}, function(msg) {
