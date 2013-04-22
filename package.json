@@ -26,11 +26,10 @@
         "async"       : "0.2.x",
         "watchr"      : ">=2.3",
         "moment"      : "2.0.0",
-        "execSync"    : "*",
         "mubsub"      : "git://github.com/inaes-tic/mubsub.git",
         "mbc-common"  : "git://github.com/inaes-tic/mbc-common.git",
         "node-mlt"    : "git://github.com/inaes-tic/node-mlt.git",
-        "mbc-waitpid" : "git://github.com/inaes-tic/mbc-waitpid.git"
+        "semaphore"   : "*"
     },
     "devDependencies": {
         "mocha"    :  "1.7.x",
