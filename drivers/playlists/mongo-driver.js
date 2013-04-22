@@ -44,6 +44,10 @@ mongo_driver.prototype.start = function(timeSpan) {
         var handler = self.pubsub_handler[chan];
         return handler && (handler.bind(self))(msg);
     });
+
+    channel.subscribe('schedbackend.create');
+    channel.subscribe('schedbackend.update');
+    channel.subscribe('schedbackend.delete');
 };
 
 mongo_driver.prototype.pubsub_handler = {
