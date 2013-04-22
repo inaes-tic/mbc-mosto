@@ -101,11 +101,10 @@ exports.start = function(callback) {
 		if (pid) {
 			callback(pid);
 		} else {
-			console.log("Start:", conf.bin);
-			melted_proc = spawn(conf.bin, []); //, {detached: true, stdio: [ 'ignore', 'ignore', 'ignore' ]});
-			pid = melted_proc.pid;
-			//melted_proc.unref()
-			setTimeout(function() { callback(pid); }, 1000);
+			var melted_proc = spawn(conf.bin, [], {detached: true, stdio: [ 'ignore', 'ignore', 'ignore' ]});
+			var pid = melted_proc.pid;
+			melted_proc.unref()
+			setTimeout(function() { callback(pid); }, 100);
 		}
 	})
 };
@@ -122,7 +121,7 @@ exports.setup = function(root, output, callback) {
 	output = output || conf.output;
 	_do(function(pid) {
 		if (pid) {
-			conn = net.createConnection(conf.port, conf.host);
+			var conn = net.createConnection(conf.port, conf.host);
 			conn.setEncoding('ascii');
 			var commands = [ 'NLS', 'SET root='+root, 'UADD '+output, 'BYE' ];
 			var s = 0;
