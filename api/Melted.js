@@ -1,38 +1,164 @@
-var sys = require('util');
 var spawn = require('child_process').spawn;
-var exec = require('child_process').exec;
-var execSync = require('execSync');
-var event_emitter = require('events').EventEmitter;
-var waitpid = require('waitpid');
+var net = require('net');
+var semaphore = require('semaphore')(1);
 
-var child;
-var melted;
-var killed = false
+var conf = {
+	bin: process.env.MELTED || "melted",
+	root: process.env.MELTED_ROOT || process.env.PWD,
+	host: process.env.MELTED_HOST || "localhost",
+	port: process.env.MELTED_PORT || 5250,
+	output: process.env.MELTED_OUTPUT || "sdl"
+}
 
-melted = process.env.MELTED || "melted";
-console.info("Melted:", melted)
+/**
+ * _do
+ *
+ * Private function to connect to melted.
+ *
+ * @callback: Callback function to do to melted.
+ */
+_do = function(callback) {
+	var pgrep = spawn('pgrep', ['-x', conf.bin]);
+	var pid;
 
-exports.start = function() {
-	child = spawn(melted,["-test"]);
-	child.on('exit', function() { console.log('Ahh!'); killed = true;})
+	pgrep.stdout.on('data', function (data) {
+		pid = data;
+	});
+
+	pgrep.on('exit', function (code) {
+		callback(parseInt(pid));
+	});
 };
 
-exports.is_running = function() {
-	var psgrep = execSync.exec('pgrep -x ' + melted);
-	return (psgrep.code == 0);
+/**
+ * update_config
+ *
+ * Setup following melted attributes:
+ *
+ *   - bin: path to binary file.
+ *   - root: path to videos files.
+ *   - host: host where melted is running.
+ *   - port: port where melted is running.
+ *   - output: output device.
+ *
+ * @conf: Map with melted basic configuration.
+ */
+exports.update_config = function(new_config) {
+	conf.bin   = new_config.bin || conf.bin;
+	conf.root  = new_config.root || conf.root;
+	conf.host  = new_config.host || conf.host;
+	conf.port  = new_config.port || conf.port;
+	conf.output= new_config.output || conf.output;
 };
 
-exports.stop = function() {
-	child.kill("SIGKILL");
-	waitpid(child.pid);
+/**
+ * get_config
+ *
+ * Return config object.
+ */
+exports.get_config = function() {
+	return conf;
 };
 
-exports.ListActiveNodes = function() {
+
+/**
+ * is_running
+ *
+ * @callback: callback function when known if running or not.
+ */
+exports.is_running = function(callback) {
+	_do(function(pid) {
+		callback(!isNaN(pid));
+	})
+}
+
+/**
+ * stop
+ *
+ * Stop melted.
+ *
+ * @callback : callback function when process is stopped.
+ */
+exports.stop = function(callback) {
+	_do(function(pid) {
+		if (pid) { 
+			var kill = spawn('kill',[pid]);
+			kill.on('close', function(state) { return callback(pid) });
+		} else
+			callback(pid);
+	})
 };
 
-exports.CreateNode = function() {
+/**
+ * start
+ *
+ * Start melted deamon.
+ *
+ * @callback : callback function when process is ready.
+ */
+exports.start = function(callback) {
+	_do(function(pid) {
+		if (pid) {
+			callback(pid);
+		} else {
+			console.log("Start:", conf.bin);
+			melted_proc = spawn(conf.bin, []); //, {detached: true, stdio: [ 'ignore', 'ignore', 'ignore' ]});
+			pid = melted_proc.pid;
+			//melted_proc.unref()
+			setTimeout(function() { callback(pid); }, 1000);
+		}
+	})
 };
 
-exports.setPath = function() {
+/**
+ * setup
+ *
+ * Setup melted deamon.
+ *
+ * @callback : callback function when process is ready.
+ */
+exports.setup = function(root, output, callback) {
+	root = root || conf.root;
+	output = output || conf.output;
+	_do(function(pid) {
+		if (pid) {
+			conn = net.createConnection(conf.port, conf.host);
+			conn.setEncoding('ascii');
+			var commands = [ 'NLS', 'SET root='+root, 'UADD '+output, 'BYE' ];
+			var s = 0;
+			conn.on('connect', function() {
+				conn.on('data', function(data) {
+					if (s < commands.length && data.indexOf("\n") > -1) {
+						conn.write(commands[s]+"\n");
+						s = s + 1;
+					}
+				});
+			});
+			conn.on('close', function(had_err) {
+				callback(had_err);
+			});
+		} else {
+			console.log("Can't connect to server. Server is not running!")
+		};
+	})
 };
 
+/**
+ * take
+ *
+ * Take melted and not leave execution to other melted taked.
+ *
+ * @callback: callback function to process while take melted.
+ *
+ */
+exports.take = semaphore.take;
+
+/**
+ * leave
+ *
+ * Leave execution to other melted taked.
+ *
+ * @callback: callback function to process while take melted.
+ *
+ */
+exports.leave = semaphore.leave;
