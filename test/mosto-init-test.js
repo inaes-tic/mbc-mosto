@@ -53,7 +53,7 @@ describe('start without melted', function() {
     });
     describe('#setup melted', function() {
         before(function(done) {
-            exec("make melted-test-run", {"timeout": "1000"}, function(error, stdout, stderr) {
+            exec("make melted-restart", {"timeout": "1000"}, function(error, stdout, stderr) {
                 setTimeout(function() {
                     if (error)
                         console.error(error);
