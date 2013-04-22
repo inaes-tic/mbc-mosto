@@ -42,10 +42,9 @@ function mongo_driver(conf) {
             if( self.inTime(msg.model) ) {
                 self.createPlaylist(msg.model, function(err, playlist) {
                     if( err )
-                        // the 'error' is already emitted
-                        console.error("mongo-driver [ERROR]:", err);
-                    else
-                        self.emit('create', playlist);
+                        return console.error("mongo-driver [ERROR]:", err);
+
+                    self.emit('create', playlist);
                 });
             }
         });
@@ -53,9 +52,9 @@ function mongo_driver(conf) {
             // I forward all create messages
             self.createPlaylist(msg.model, function(err, playlist) {
                 if( err )
-                    console.error("mongo-driver [ERROR]:", err);
-                else
-                    self.emit('create', playlist)
+                    return  console.error("mongo-driver [ERROR]:", err);
+
+                self.emit('create', playlist)
             });
         });
         channel.subscribe({backend: 'schedbackend', method: 'delete'}, function(msg) {
