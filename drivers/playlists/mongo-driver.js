@@ -29,9 +29,8 @@ function mongo_driver(conf) {
 util.inherits (mongo_driver, events.EventEmitter);
 
 mongo_driver.prototype.start = function(timeSpan) {
-    var conf = this.conf;
     var self = this;
-    var db = mbc.db(conf && conf.db);
+    var db = mbc.db(this.conf && this.conf.db);
     var channel = mbc.pubsub();
 
     console.log("mongo-driver: [INFO] Starting mongo playlists driver");
