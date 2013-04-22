@@ -5,6 +5,8 @@ MELTED_BUILD=${ROOT}/melted/BUILD
 MELTED_INTREE=${MELTED_BUILD}/bin/melted
 MELTED = $(shell sh -c "which melted || echo ${MELTED_INTREE}")
 NC=$(shell which nc netcat telnet | head -1)
+AVCONV=$(shell which avconv ffmpeg | head -1)
+TEST_VIDEOS=test/videos/SMPTE_Color_Bars_01.mp4 test/videos/SMPTE_Color_Bars_02.mp4 test/videos/SMPTE_Color_Bars_03.mp4
 
 export NODE_CONFIG_DIR ?= $(PWD)/node_modules/mbc-common/config
 
@@ -58,8 +60,10 @@ test/videos/%.avi: test/images/%.png
 	avconv -loop 1 -f image2 -i $< -t 30 $@ &> /dev/null
 
 test/videos/%.mp4: test/images/%.png
-	avconv -loop 1 -f image2 -i $< -t 30 $@ &> /dev/null
+	${AVCONV} -loop 1 -f image2 -i $< -t 30 $@ &> /dev/null
 
 test: videos ${MOCHA} melted-restart
 	${NODE} ${MOCHA}
 
+clean-test:
+	rm ${TEST_VIDEOS}
