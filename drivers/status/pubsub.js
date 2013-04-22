@@ -41,8 +41,8 @@ function CaspaDriver() {
 
     CaspaDriver.prototype.setupAll = function() {
         var setups = [
-            this.setupStatus,
-            this.setupMessages,
+            this.setupStatus.bind(this),
+            this.setupMessages.bind(this),
         ];
         var sendReady = _.after(setups.length, function() {
             self.emit('ready');
