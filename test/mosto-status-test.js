@@ -27,7 +27,7 @@ describe('Mosto status', function() {
     });
 
     describe('suscribe to status and wait 5 seconds', function() {
-        before(function(done) {
+        it('--should have received 5 status events', function(done) {
             var id = setInterval(function() {
                 server.sendStatus();
             }, 1000);
@@ -35,14 +35,12 @@ describe('Mosto status', function() {
             server.on('status', function(status) {
                 self.mosto_status = status;
                 self.rec++;
-                if(self.rec === 5) {
-                    clearInterval(id);
-                    done();
-                }
             });
-        });
-        it('--should have received 5 status events', function() {
-            assert.equal(self.rec, 5);
+            setTimeout(function() {
+                clearInterval(id);
+                assert.equal(self.rec, 5);
+                done();
+            }, 5500);
         });
         it('--status object should not be undefined', function() {
             assert.notEqual(self.mosto_status, undefined);
