@@ -9,7 +9,8 @@ var fs               = require('fs'),
     playlists_driver = require('./drivers/playlists/playlists-driver'),
     status_driver    = require('./drivers/status/pubsub'),
     utils            = require('./utils'),
-    config           = require('mbc-common').config.Mosto.General;
+    config           = require('mbc-common').config.Mosto.General,
+    _                = require('underscore');
 
 
 function mosto(customConfig) {
@@ -372,71 +373,35 @@ function mosto(customConfig) {
         var nextClip          = undefined;
 
         if (serverStatus.actualClip !== undefined) {
-            currentPlaylistId = serverStatus.actualClip.playlistId;
             if (self.playlists!==undefined && self.playlists.length>0) {
-                var i;
-                for(i = 0; i< self.playlists.length; i++) {
-                    var playlist = self.playlists[i];
-                    if (playlist.id===currentPlaylistId) {
-                        break;
-                    }
-                }
-                var index = i;
+                // map the playlists list to their ids (converted to string)
+                var index = _.chain(self.playlists).map(function(playlist) {
+                    return playlist.id.toString() }).indexOf(
+                        serverStatus.actualClip.playlistId.toString() ).value();
+
+                if (index >= 0)
+                    currentPlaylistId = self.playlists[index].id;
                 if (index > 0)
                     prevPlaylistId = self.playlists[index - 1].id;
                 if (0<=index && index < (self.playlists.length - 1))
                     nextPlaylistId = self.playlists[index + 1].id;
             }
-            /*
-              if (self.playlists!==undefined && self.playlists.length>0) {
-              var playlist = _.find(self.playlists, function(pplaylist) {
-              if (pplaylist!==undefined && currentPlaylistId!==undefined)
-              return pplaylist.id === currentPlaylistId;
-              else
-              return false;
-              });
-              var index = _.indexOf(self.playlists, playlist, true);
-
-              if (index > 0)
-              prevPlaylistId = self.playlists[index - 1].id;
-              if (index < (self.playlists.length - 1))
-              nextPlaylistId = self.playlists[index + 1].id;
-
-              }
-            */
         }
 
         currentClip = serverStatus.actualClip;
         if (serverPlaylist!==undefined && serverPlaylist.length>0) {
-            var i;
-            for(i = 0; i< serverPlaylist.length; i++) {
-                var prevxClip = serverPlaylist[i];
-                if (parseInt(prevxClip.order) === (parseInt(currentClip.order) - 1)) {
-                    prevClip = prevxClip;
-                    break;
-                }
+            var currentClipOrder = parseInt(currentClip.order);
+            if ( currentClipOrder > 0 ) {
+                prevClip = _.find(serverPlaylist, function(walkClip) {
+                    return (parseInt(walkClip.order) == (currentClipOrder - 1));
+                });
             }
-
-            for(i = 0; i< serverPlaylist.length; i++) {
-                var nextxClip = serverPlaylist[i];
-                if (parseInt(nextxClip.order) === (parseInt(currentClip.order) + 1)) {
-                    nextClip = nextxClip;
-                    break;
-                }
+            if( currentClipOrder < (serverPlaylist.length - 1) ) {
+                nextClip = _.find(serverPlaylist, function(walkClip) {
+                    return (parseInt(walkClip.order) == (currentClipOrder + 1));
+                });
             }
         }
-        /*
-          if (parseInt(currentClip.order) > 0) {
-          prevClip = _.find(serverPlaylist, function(prevClip) {
-          return parseInt(prevClip.order) === (parseInt(currentClip.order) - 1);
-          });
-          }
-          if (parseInt(currentClip.order) < (serverPlaylist.length - 1)) {
-          nextClip = _.find(serverPlaylist, function(nextClip) {
-          return parseInt(nextClip.order) === (parseInt(currentClip.order) + 1);
-          });
-          }
-        */
         clip.previous = prevClip;
         clip.current  = currentClip;
         clip.next     = nextClip;
