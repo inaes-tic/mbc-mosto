@@ -186,7 +186,7 @@ mongo_driver.prototype.createPlaylist = function(sched, callback) {
     self.lists.findById(sched.list, function(err, list) {
         if( err ) {
             self.emit ("error", err);
-                callback(err);
+            callback(err);
             return err;
         }
 
@@ -197,22 +197,22 @@ mongo_driver.prototype.createPlaylist = function(sched, callback) {
         var playlist_id = (sched._id.toHexString && sched._id.toHexString()) || sched._id;
 
         var medias = [];
-            list.models.forEach(function(block, order) {
-                var block_id = (block._id.toHexString && block._id.toHexString()) || block._id;
-                var orig_order = order;
-                var actual_order = undefined;
-                var clip_name = block.name;
-                // TODO: don't know what goes in type
-                var type = "default";
-                var file = block.file;
-                var length = block.durationraw;
-                var fps = block.fps;
-                medias.push(new Media(block_id, orig_order, actual_order, playlist_id, clip_name, type, file, length, parseFloat(fps)));
-            });
+        list.models.forEach(function(block, order) {
+            var block_id = (block._id.toHexString && block._id.toHexString()) || block._id;
+            var orig_order = order;
+            var actual_order = undefined;
+            var clip_name = block.name;
+            // TODO: don't know what goes in type
+            var type = "default";
+            var file = block.file;
+            var length = block.durationraw;
+            var fps = block.fps;
+            medias.push(new Media(block_id, orig_order, actual_order, playlist_id, clip_name, type, file, length, parseFloat(fps)));
+        });
 
         var playlist = new Playlist(playlist_id, name, startDate, medias, endDate, "snap");
 
-            callback(err, playlist);
+        callback(err, playlist);
     });
 };
 
