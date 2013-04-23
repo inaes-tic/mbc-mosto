@@ -12,6 +12,11 @@ describe('Mosto status', function() {
         server = new mosto();
         done();
     });
+    
+    after(function(done) {
+        console.log('Status: ', self.mosto_status);
+        done();
+    });
 
     describe('init mosto', function() {
         describe('#mosto server up', function() {
