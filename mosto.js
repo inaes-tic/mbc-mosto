@@ -722,19 +722,31 @@ function mosto(customConfig) {
                 // LOAD EVERYTHING STARTING FROM THE EXPECTED CLIP
 
                 //clean playlist (doesnt matter, we are stopped)... then populate...
-                self.server.clearPlaylist( function(response) {
-                    console.log("clearPlaylist ok! " + response );
-                    sched_clip = self.scheduled_clips[self.cursor_scheduled_clip];
-                    self.server.loadClip( sched_clip.media, function(response) {
+                self.server.cleanPlaylist( function(response) {
+                    console.log("cleanPlaylist ok! " + response );
+                    var sched_clip = self.scheduled_clips[self.cursor_scheduled_clip];
+                    self.server.appendClip( sched_clip.media, function(response) {
+                    //self.server.loadClip( sched_clip.media, function(response) {
                         //EASY only C from CRUD
-                        self.server.play(  function(response) {
-                            console.log("LOADED start playing!");
-                            self.actual_expected_start = sched_clip.expected_start;
-                            self.actual_playing_index = 0;
-                            self.previous_playing_index = 0;
-                            self.ref_sched_index = self.cursor_scheduled_clip;
-                            self.previous_cursor_scheduled_clip = -1;
-                            self.appendScheduledClips( self.cursor_scheduled_clip+1 );
+                        var next_index = 0;
+                        if (self.actual_playing_index>-1) {
+                            next_index = self.actual_playing_index+1;
+                        }
+                        self.server.goto( next_index, expected_frame, function(response) {                            
+                            self.server.play(  function(response) {
+                                console.log("mbc-mosto: [INFO] [SYNC] LOADED start playing!");
+                                self.actual_expected_start = sched_clip.expected_start;
+                                self.actual_playing_index = next_index;
+                                self.previous_playing_index = next_index;
+                                self.ref_sched_index = self.cursor_scheduled_clip;
+                                self.previous_cursor_scheduled_clip = -1;
+                                setTimeout( self.appendScheduledClips( self.cursor_scheduled_clip+1 ), 1000);
+                            },
+                                           function(error) {
+                                               console.error("error goto :"+error);
+                                               self.sync_lock = false;
+                                           } );
+
                         },
                                            function(error) {
                                                console.error("error start playing:"+error);
@@ -748,7 +760,7 @@ function mosto(customConfig) {
                                           } );
                 },
                                            function(error) {
-                                               console.error("error clearing playlist:"+error);
+                                               console.error("error cleaning playlist:"+error);
                                                self.sync_lock = false;
                                            } );
 
