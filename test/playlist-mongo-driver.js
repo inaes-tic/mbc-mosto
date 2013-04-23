@@ -84,18 +84,19 @@ describe('PlaylistMongoDriver', function(){
         it('should accept two parameters and save them in window = {from, to}', function() {
             self.driver.setWindow(self.from, self.to);
             var window = self.driver.window;
-            window.should.have.property('from');
-            window.should.have.property('to');
+            window.from.valueOf().should.equal(self.from.valueOf());
+            window.to.valueOf().should.equal(self.to.valueOf());
         });
-        it('should accept an object', function() {
+        it('should accept an object with {from, to}', function() {
             self.driver.setWindow({from: self.from, to: self.to})
             var window = self.driver.window;
-            window.should.have.property('from');
-            window.should.have.property('to');
+            window.from.valueOf().should.equal(self.from.valueOf());
+            window.to.valueOf().should.equal(self.to.valueOf());
         });
         it('should accept only a "to" object and assume "from" is now', function() {
             self.driver.setWindow({to: self.to});
             self.driver.window.should.have.property('from');
+            self.driver.window.from.valueOf().should.approximately((new moment()).valueOf(), 10);
         });
         it('should accept dates and transform them to moments', function() {
             self.driver.setWindow(new Date(), new Date());
