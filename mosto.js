@@ -390,35 +390,18 @@ function mosto(customConfig) {
 
         currentClip = serverStatus.actualClip;
         if (serverPlaylist!==undefined && serverPlaylist.length>0) {
-            var i;
-            for(i = 0; i< serverPlaylist.length; i++) {
-                var prevxClip = serverPlaylist[i];
-                if (parseInt(prevxClip.order) === (parseInt(currentClip.order) - 1)) {
-                    prevClip = prevxClip;
-                    break;
-                }
+            var currentClipOrder = parseInt(currentClip.order);
+            if ( currentClipOrder > 0 ) {
+                prevClip = _.find(serverPlaylist, function(walkClip) {
+                    return (parseInt(walkClip.order) == (currentClipOrder - 1));
+                });
             }
-
-            for(i = 0; i< serverPlaylist.length; i++) {
-                var nextxClip = serverPlaylist[i];
-                if (parseInt(nextxClip.order) === (parseInt(currentClip.order) + 1)) {
-                    nextClip = nextxClip;
-                    break;
-                }
+            if( currentClipOrder < (serverPlaylist.length - 1) ) {
+                nextClip = _.find(serverPlaylist, function(walkClip) {
+                    return (parseInt(walkClip.order) == (currentClipOrder + 1));
+                });
             }
         }
-        /*
-          if (parseInt(currentClip.order) > 0) {
-          prevClip = _.find(serverPlaylist, function(prevClip) {
-          return parseInt(prevClip.order) === (parseInt(currentClip.order) - 1);
-          });
-          }
-          if (parseInt(currentClip.order) < (serverPlaylist.length - 1)) {
-          nextClip = _.find(serverPlaylist, function(nextClip) {
-          return parseInt(nextClip.order) === (parseInt(currentClip.order) + 1);
-          });
-          }
-        */
         clip.previous = prevClip;
         clip.current  = currentClip;
         clip.next     = nextClip;
