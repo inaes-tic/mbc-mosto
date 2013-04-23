@@ -106,8 +106,9 @@ describe('PlaylistMongoDriver', function(){
                     _id: self.scheds[0]._id,
                     list: self.lists[0]._id,
                     title: 'title'
-            },
-        };
+                },
+                channel: function() { return [this.backend, this.method].join('.') }
+            };
         });
 
         this.timeout(15000);
