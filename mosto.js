@@ -307,6 +307,7 @@ function mosto(customConfig) {
                                 self.queueBlack( "now", "00:00:00.500", lastTimeCode, moment( lastTimeCode,"DD/MM/YYYY HH:mm:ss.SSS").add(moment.duration({ milliseconds: 500 }) ).format('DD/MM/YYYY HH:mm:ss.SSS') );
                             } else if (next_playlist_id==0) {
                                 //if this is the first and only playlist, check if an empty void is left before it...., so we can put our blackmedia...
+                                if (self.timer_clock==null) self.timer_clock = moment();
                                 var sch_time_mom = moment(sch_time, "DD/MM/YYYY HH:mm:ss.SSS");
                                 var sch_rightnow = moment(self.timer_clock).add( moment.duration({ milliseconds: 2000 }) ).format("DD/MM/YYYY HH:mm:ss.SSS");
                                 var diff_void_start = sch_time_mom.diff( self.timer_clock );
