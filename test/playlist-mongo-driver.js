@@ -24,7 +24,9 @@ describe('PlaylistMongoDriver', function(){
                 self.db = mbc.db(conf.db);
                 self.driver.start();
                 self.from = moment();
-                self.to = moment((self.from.unix() + 120 * 60) * 1000); // add 2hs
+        self.span = 120;
+        self.to = moment((self.from.unix() + self.span * 60) * 1000); // add 2hs
+
 
                 var db_data = require('./playlists/db-data');
                 self.lists = db_data.lists;
