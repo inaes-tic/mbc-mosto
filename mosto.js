@@ -373,13 +373,14 @@ function mosto(customConfig) {
         var nextClip          = undefined;
 
         if (serverStatus.actualClip !== undefined) {
-            currentPlaylistId = serverStatus.actualClip.playlistId;
             if (self.playlists!==undefined && self.playlists.length>0) {
                 // map the playlists list to their ids (converted to string)
                 var index = _.chain(self.playlists).map(function(playlist) {
                     return playlist.id.toString() }).indexOf(
                         serverStatus.actualClip.playlistId.toString() ).value();
 
+                if (index >= 0)
+                    currentPlaylistId = self.playlists[index].id;
                 if (index > 0)
                     prevPlaylistId = self.playlists[index - 1].id;
                 if (0<=index && index < (self.playlists.length - 1))
