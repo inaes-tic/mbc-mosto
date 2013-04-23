@@ -45,7 +45,7 @@ function melted(host, port) {
                     var playlistId  = utils.getPlaylistIdFromXmlFileName(filename);
                     var clipId      = utils.getClipIdFromXmlFileName(filename);
 
-                    var clip = new StatusClip(clipId, index, playlistId);
+                    var clip = new StatusClip(clipId, index, playlistId, fps, 0, real_length);
 
                     clips.push(clip);
                 }
@@ -86,7 +86,7 @@ function melted(host, port) {
                         var playlistId  = utils.getPlaylistIdFromXmlFileName(filename);
                         var clipId      = utils.getClipIdFromXmlFileName(filename);
 
-                        var clip = new StatusClip(clipId, index, playlistId);
+                        var clip = new StatusClip(clipId, index, playlistId, fps, currentFrame, length);
                         var pos = utils.getCurrentPosFromClip(currentFrame, length);
                         st = new Status(status, clip, pos);
                     } else {

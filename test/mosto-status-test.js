@@ -1,24 +1,20 @@
 var assert = require("assert");
+var mosto  = require('../mosto.js');
 
-var mosto = require('../mosto.js');
 var server = undefined;
-var config = {
-            fps: "25",
-            resolution: "hd",
-            playout_mode: "direct",
-            playlist_maxlength: "4 hours",
-            scheduled_playlist_maxlength: "04:00:00",
-            timer_interval: "1000",
-            black: '../images/black.png',
-            reload_timer_diff: "20000",
-            playlist_server: "json",
-            mvcp_server: "melted"
-        };
 
 //TODO: This test should be rewritten after @fabriciocosta merges his part with more usefull data!
 describe('Mosto status', function() {
+    var self = this;
+    self.rec = 0;
+    self.mosto_status = undefined;
     before(function(done) {
-        server = new mosto(config);
+        server = new mosto();
+        done();
+    });
+    
+    after(function(done) {
+        console.log('Status: ', self.mosto_status);
         done();
     });
 
@@ -31,14 +27,32 @@ describe('Mosto status', function() {
     });
 
     describe('suscribe to status and wait 5 seconds', function() {
-        it('--should have received 5 status events', function() {
+        it('--should have received 5 status events', function(done) {
+            var id = setInterval(function() {
+                server.sendStatus();
+            }, 1000);
             this.timeout(6000);
-            var rec = 0;
             server.on('status', function(status) {
-                if(++rec == 5) {
-                    done();
-                }
+                self.mosto_status = status;
+                self.rec++;
             });
+            setTimeout(function() {
+                clearInterval(id);
+                assert.equal(self.rec, 5);
+                done();
+            }, 5500);
+        });
+        it('--status object should not be undefined', function() {
+            assert.notEqual(self.mosto_status, undefined);
+        });
+        it('--status.actualClip.fps should be = 25', function() {
+            assert.equal(parseInt(self.mosto_status.clip.current.fps), 25);
+        });
+        it('--status.actualClip.currentFrame should be = 0', function() {
+            assert.equal(parseInt(self.mosto_status.clip.current.currentFrame), 0);
+        });
+        it('--status.actualClip.totalFrames should be = 1', function() {
+            assert.equal(parseInt(self.mosto_status.clip.current.totalFrames), 1);
         });
     });
 });

@@ -376,7 +376,7 @@ function mosto(customConfig) {
             if (self.playlists!==undefined && self.playlists.length>0) {
                 var i;
                 for(i = 0; i< self.playlists.length; i++) {
-                    playlist = self.playlists[i];
+                    var playlist = self.playlists[i];
                     if (playlist.id===currentPlaylistId) {
                         break;
                     }
@@ -584,10 +584,10 @@ function mosto(customConfig) {
 
         //NOW CHECK FOR SCHEDULED CLIP EXPECTED TO RUN NOW ( based on selected reference clock, always relative, but absolute must be needed to ensure reync)
         for( i=0; i<self.scheduled_clips.length; i++) {
-            sched_clip = self.scheduled_clips[i];
+            var sched_clip = self.scheduled_clips[i];
             if (sched_clip) {
-                ex_start = moment(sched_clip.expected_start,"DD/MM/YYYY HH:mm:ss.SSS");
-                ex_end = moment(sched_clip.expected_end,"DD/MM/YYYY HH:mm:ss.SSS");
+                var ex_start = moment(sched_clip.expected_start,"DD/MM/YYYY HH:mm:ss.SSS");
+                var ex_end = moment(sched_clip.expected_end,"DD/MM/YYYY HH:mm:ss.SSS");
                 if ( ex_start < reference_clock
                      && reference_clock < ex_end ) {
                     self.cursor_scheduled_clip = i;
