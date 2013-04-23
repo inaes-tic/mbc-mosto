@@ -71,23 +71,29 @@ function mosto(customConfig) {
      *
      *
      */
-    mosto.prototype.removePlaylist = function(name) {
+    mosto.prototype.removePlaylist = function(id) {
 
-        console.log("mbc-mosto: [INFO] Removing playlist " + name);
+        console.log("mbc-mosto: [INFO] Removing playlist id: " + id);
         var i = -1;
         var playlist = undefined;
-        self.playlists.some(function(element, index, array) {
-            if (element.id === id) {
-                i = index;
-                playlist = element;
-                return true;
-            }
-        });
-        self.playlists.splice(i, 1);
-        console.log("mbc-mosto: [INFO] Removed playlist:\nid: " + playlist.id
-                    + "\nname: " + playlist.name
-                    + "\nstartDate: " + playlist.startDate
-                    + "\nendDate: " + playlist.endDate);
+        if (self.playlists.length>0) {
+            self.playlists.some(function(element, index, array) {
+                if (element!==undefined) {
+                    if (element.id === id) {
+                        i = index;
+                        playlist = element;
+                        return true;
+                    }
+                }
+            });
+        }
+        if (i!=-1) self.playlists.splice(i, 1);
+        if (playlist!=undefined) {
+            console.log("mbc-mosto: [INFO] Removed playlist:\nid: " + playlist.id
+                        + "\nname: " + playlist.name
+                        + "\nstartDate: " + playlist.startDate
+                        + "\nendDate: " + playlist.endDate);
+        }
         self.orderPlaylists();
     };
 
