@@ -93,6 +93,14 @@ describe('PlaylistMongoDriver', function(){
             window.from.valueOf().should.equal(self.from.valueOf());
             window.to.valueOf().should.equal(self.to.valueOf());
         });
+        it('should accept an object with {from, timeSpan}', function() {
+            var window = self.driver.setWindow({from: self.from, timeSpan: self.span});
+            window.from.valueOf().should.equal(self.from.valueOf());
+            var to = moment(self.from.valueOf());
+            to.add(self.span * 60 * 1000);
+            console.log('popop', window.to.valueOf(), to.valueOf())
+            window.to.valueOf().should.equal(to.valueOf());
+        });
         it('should accept only a "to" object and assume "from" is now', function() {
             self.driver.setWindow({to: self.to});
             self.driver.window.should.have.property('from');
