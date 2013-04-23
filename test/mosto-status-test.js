@@ -5,6 +5,9 @@ var server = undefined;
 
 //TODO: This test should be rewritten after @fabriciocosta merges his part with more usefull data!
 describe('Mosto status', function() {
+    var self = this;
+    self.rec = 0;
+    self.mosto_status = undefined;
     before(function(done) {
         server = new mosto();
         done();
@@ -19,14 +22,22 @@ describe('Mosto status', function() {
     });
 
     describe('suscribe to status and wait 5 seconds', function() {
-        it('--should have received 5 status events', function() {
+        before(function(done) {
+            var id = setInterval(function() {
+                server.sendStatus();
+            }, 1000);
             this.timeout(6000);
-            var rec = 0;
             server.on('status', function(status) {
-                if(++rec == 5) {
+                self.mosto_status = status;
+                self.rec++;
+                if(self.rec === 5) {
+                    clearInterval(id);
                     done();
                 }
             });
+        });
+        it('--should have received 5 status events', function() {
+            assert.equal(self.rec, 5);
         });
     });
 });
