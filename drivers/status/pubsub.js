@@ -107,7 +107,7 @@ function CaspaDriver() {
         this.publishStatus(status);
     };
     CaspaDriver.prototype.publishStatus = function(status) {
-        this.publisher.publish({backend: "mostoStatus", model: status})
+        this.publisher.publishJSON("mostoStatus", status)
     };
 
     CaspaDriver.prototype.publishMessage = function(code, description, message, sticky) {
@@ -118,14 +118,13 @@ function CaspaDriver() {
             message.stickId = (new moment()).valueOf();
             method = 'create';
         }
-        this.publisher.publish({backend: "mostoMessage", method: method,
-                                model: message});
+        this.publisher.publishJSON(["mostoMessage", method].join('.'),
+                                   { model: message });
         return message;
     };
 
     CaspaDriver.prototype.dropMessage = function(message) {
-        this.publisher.publish({backend: "mostoMessage", method: 'delete',
-                                model: message});
+        this.publisher.publish("mostoMessage.delete", { model: message });
     };
 }
 

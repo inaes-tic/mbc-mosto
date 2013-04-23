@@ -123,7 +123,7 @@ describe('PlaylistMongoDriver', function(){
                 moment(playlist.startDate).valueOf().should.eql(message.model.start * 1000);
                 done();
             });
-            self.pubsub.publish(message);
+            self.pubsub.publishJSON(message.channel(), message);
         });
         it('should respond to update messages', function(done) {
             var message = self.message;
@@ -131,7 +131,7 @@ describe('PlaylistMongoDriver', function(){
             self.driver.on('update', function(playlist) {
                 done();
             });
-            self.pubsub.publish(message);
+            self.pubsub.publishJSON(message.channel(), message);
         });
         it('should respond to remove messages', function(done) {
             var message = self.message;
@@ -140,7 +140,7 @@ describe('PlaylistMongoDriver', function(){
                 id.should.be.eql(message.model._id);
                 done();
             });
-            self.pubsub.publish(message);
+            self.pubsub.publishJSON(message.channel(), message);
         });
     });
     describe("#getPlaylists()", function() {
