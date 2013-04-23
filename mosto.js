@@ -548,6 +548,7 @@ function mosto(customConfig) {
         var expected_clip = null;
         var next_expected_clip = null;
         var next_expected_start = null;
+        var expected_frame = 0;
         var reference_clock = null;
         self.previous_cursor_scheduled_clip = self.cursor_scheduled_clip;
         self.cursor_scheduled_clip = -1;
@@ -605,6 +606,10 @@ function mosto(customConfig) {
                      && reference_clock < ex_end ) {
                     self.cursor_scheduled_clip = i;
                     expected_clip = sched_clip;
+                    // TODO: calculate frame position! based on length.
+                    expected_frame = utils.getFramePositionFromClock( reference_clock, ex_start, 0, 25.00 );
+                    if ( expected_frame == undefined) expected_frame = 0;
+                    self.actual_expected_start = expected_clip.expected_start;
                     break;
                 }
             }
