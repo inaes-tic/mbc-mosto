@@ -39,5 +39,17 @@ describe('Mosto status', function() {
         it('--should have received 5 status events', function() {
             assert.equal(self.rec, 5);
         });
+        it('--status object should not be undefined', function() {
+            assert.notEqual(self.mosto_status, undefined);
+        });
+        it('--status.actualClip.fps should be = 25', function() {
+            assert.equal(parseInt(self.mosto_status.clip.current.fps), 25);
+        });
+        it('--status.actualClip.currentFrame should be = 0', function() {
+            assert.equal(parseInt(self.mosto_status.clip.current.currentFrame), 0);
+        });
+        it('--status.actualClip.totalFrames should be = 1', function() {
+            assert.equal(parseInt(self.mosto_status.clip.current.totalFrames), 1);
+        });
     });
 });
