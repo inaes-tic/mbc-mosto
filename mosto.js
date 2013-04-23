@@ -546,6 +546,8 @@ function mosto(customConfig) {
         // 1) if video server is playing the expected clip
         // 2) if queue clips are correct
         var expected_clip = null;
+        var next_expected_clip = null;
+        var next_expected_start = null;
         var reference_clock = null;
         self.previous_cursor_scheduled_clip = self.cursor_scheduled_clip;
         self.cursor_scheduled_clip = -1;
@@ -589,6 +591,16 @@ function mosto(customConfig) {
             if (sched_clip) {
                 var ex_start = moment(sched_clip.expected_start,"DD/MM/YYYY HH:mm:ss.SSS");
                 var ex_end = moment(sched_clip.expected_end,"DD/MM/YYYY HH:mm:ss.SSS");
+                if ( reference_clock < ex_start ) {
+                    if (next_expected_start==null) {
+                        next_expected_start = ex_start;
+                    }
+                    if ( ex_start <= next_expected_start ) {
+                        next_expected_clip = sched_clip;
+                        next_expected_start = ex_start;
+                    }
+                }
+
                 if ( ex_start < reference_clock
                      && reference_clock < ex_end ) {
                     self.cursor_scheduled_clip = i;
@@ -598,6 +610,9 @@ function mosto(customConfig) {
             }
         }
 
+        if (next_expected_clip) {
+            console.log("mbc-mosto: [INFO] next expected clip: " + next_expected_clip.media.file +" from:" + next_expected_clip.expected_start + " to:" + next_expected_clip.expected_end );
+        }
 
         //MANDATORY TO HAVE AN EXPECTED CLIP!!! IF NOT, WE DO NOTHING
         if (    expected_clip
