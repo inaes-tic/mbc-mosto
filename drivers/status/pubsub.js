@@ -122,6 +122,7 @@ function CaspaDriver() {
                                 model: message});
         return message;
     };
+
     CaspaDriver.prototype.dropMessage = function(message) {
         this.publisher.publish({backend: "mostoMessage", method: 'delete',
                                 model: message});
