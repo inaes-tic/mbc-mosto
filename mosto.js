@@ -637,8 +637,7 @@ function mosto(customConfig) {
             // NOW COMPARE EXPECTED WITH ACTUAL
             // Conditions of timer_difference may trigger
             if (
-                Math.abs(self.timer_difference)<self.config.reload_timer_diff
-                    && self.actual_playing_clip != ""
+                    self.actual_playing_clip != ""
                     && (self.actual_playing_status == "playing" || self.actual_playing_status == "paused")
                     && self.actual_playing_clip == self.convertMediaFileToClipId(expected_clip.media)
             ) {
