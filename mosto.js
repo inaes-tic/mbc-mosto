@@ -826,12 +826,19 @@ function mosto(customConfig) {
         if (self.actual_playing_status=="playing") {
             self.actual_playing_clip = self.actual_status.actualClip.id;
             self.actual_playing_index = self.actual_status.actualClip.order;
-            self.actual_playing_frame = self.actual_status.actualClip.currentPos;
-            self.actual_playing_progress = self.actual_status.actualClip.currentPos;
+            self.actual_playing_progress = self.actual_status.currentPos;
+            self.actual_playing_frame = self.actual_status.actualClip.currentFrame;
+            self.actual_playing_length = self.actual_status.actualClip.totalFrames;
+            self.actual_playing_fps =  self.actual_status.actualClip.fps;
+
+            self.actual_position_millis = utils.convertFramesToMilliseconds( self.actual_playing_frame, self.actual_playing_fps );
+            self.actual_position_millis_length = self.actual_status.actualClip.totalFrames;
         } else {
             self.actual_playing_frame = -1;
             self.actual_playing_index = -1;
             self.actual_position_millis = -1;
+            self.actual_playing_clip = -1;
+            self.actual_playing_progress = -1;
         }
 
 
