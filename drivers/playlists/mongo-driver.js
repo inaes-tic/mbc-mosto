@@ -51,25 +51,25 @@ mongo_driver.prototype.start = function(timeSpan) {
 };
 
 mongo_driver.prototype.pubsub_handler = {
-    create: function(msg) {
-        if( self.inTime(msg.model) ) {
-            self.createPlaylist(msg.model, function(err, playlist) {
+    'schedbackend.create': function(msg) {
+        if( this.inTime(msg.model) ) {
+            this.createPlaylist(msg.model, (function(err, playlist) {
                 if( err )
                     return console.error("mongo-driver [ERROR]:", err);
 
-                self.emit('create', playlist);
-            });}},
-    update: function(msg) {
+                this.emit('create', playlist);
+            }).bind(this));}},
+    'schedbackend.update': function(msg) {
         // I forward all create messages
-        self.createPlaylist(msg.model, function(err, playlist) {
+        this.createPlaylist(msg.model, (function(err, playlist) {
             if( err )
                 return  console.error("mongo-driver [ERROR]:", err);
 
-            self.emit('update', playlist)
-        });
+            this.emit('update', playlist)
+        }).bind(this));
     },
-    delete: function(msg) {
-        self.emit ("delete", msg.model._id);
+    'schedbackend.delete': function(msg) {
+        this.emit ("delete", msg.model._id);
     },
 }
 
