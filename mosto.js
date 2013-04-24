@@ -875,7 +875,8 @@ function mosto(customConfig) {
 
         self.actual_playing_status = self.actual_status.status;
 
-        if (self.actual_playing_status=="playing") {
+        if (    self.actual_playing_status=="playing" 
+                || (self.actual_playing_status=="paused" && self.actual_status.actualClip.id=="black_id") ) {
             self.actual_playing_clip = self.actual_status.actualClip.id;
             self.actual_playing_index = self.actual_status.actualClip.order;
             self.actual_playing_progress = self.actual_status.currentPos;
@@ -910,7 +911,8 @@ function mosto(customConfig) {
             self.sync_lock = true;
             self.sync_lock_start = moment();
 
-            console.log("mbc-mosto: [INFO] timer_fun called: " + self.timer_clock.format("hh:mm:ss") );
+            console.log("mbc-mosto: [INFO] [PLAY] timer_fun called: " + self.timer_clock.format("hh:mm:ss") );
+            console.log("mbc-mosto: [INFO] [PLAY] time_window from: "  + self.time_window_from.format("DD/MM/YYYY HH:mm:ss") + " to: " + self.time_window_to.format("DD/MM/YYYY HH:mm:ss") );
 
             //get status
             self.server.getServerStatus( self.timer_fun_status, function( error ) { console.log("mbc-mosto: [ERROR] mosto.timer_fun > getServerStatus failed: " + error ); } );
