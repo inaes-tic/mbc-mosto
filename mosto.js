@@ -390,7 +390,7 @@ function mosto(customConfig) {
         if (self.playlists.length==next_playlist_id) {
             if (next_playlist_id > 0 && lastTimeCode!=-1 && pl.id!="black_id") {
                 //queue blackness to the end of the last playlist (no after a black media!)
-                self.queueBlack( "now", "00:00:00.100", lastTimeCode, moment( lastTimeCode,"DD/MM/YYYY HH:mm:ss.SSS").add(moment.duration({ milliseconds: 10 }) ).format('DD/MM/YYYY HH:mm:ss.SSS') );
+                self.queueBlack( "now", "00:00:00.100", lastTimeCode, moment( lastTimeCode,"DD/MM/YYYY HH:mm:ss.SSS").add(moment.duration({ milliseconds: 100 }) ).format('DD/MM/YYYY HH:mm:ss.SSS') );
             }
             return;
         }
