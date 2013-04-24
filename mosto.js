@@ -31,7 +31,7 @@ function mosto(customConfig) {
         console.log("mbc-mosto: [INFO] Added playlist:\nid: " + playlist.id
                     + "\nname: " + playlist.name
                     + "\nstartDate: " + playlist.startDate
-                    + "\nendDate: " + playlist.endDate);        
+                    + "\nendDate: " + playlist.endDate);
         self.orderPlaylists();
     };
 
@@ -50,8 +50,7 @@ function mosto(customConfig) {
             }
         });
 
-        //update may create if needed
-        //TODO: chech time window: startDate-endDate
+        //update may create or delete if needed
         if (i==-1) {
             return self.addPlaylist(playlist);
         } else {
