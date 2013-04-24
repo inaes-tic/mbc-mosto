@@ -129,6 +129,24 @@ function mosto(customConfig) {
         self.convertPlaylistsToScheduledClips();
     };
 
+    
+    /** trimPlaylists
+     *       remove any playlist that is out of our time window
+     *
+     *
+     */
+    mosto.prototype.trimPlaylists = function() {
+        var newplaylists = [];
+        for(var i=0; i<self.playlists.length;i++) {
+            var playlist = self.playlists[i];
+            if ( (moment(playlist.startDate)<= self.time_window_from && self.time_window_from <= moment(playlist.endDate))  
+                 || (moment(playlist.startDate)<= self.time_window_to && self.time_window_to <= moment(playlist.endDate))
+                 || ( self.time_window_from <= moment(playlist.startDate) && moment(playlist.endDate) <= self.time_window_to ) ) {
+                newplaylists.push(playlist);
+            }
+        }
+        self.playlists = newplaylists;
+    }
 
     mosto.prototype.removeBlackPlaylist = function() {
         var i = -1;
