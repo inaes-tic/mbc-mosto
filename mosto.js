@@ -349,7 +349,7 @@ function mosto(customConfig) {
                         {
                             schedule_time = "now";
                         } else if (
-                            (next_playlist_id==0 && i==0) // first playlist we have always need a schedule time
+                            (next_playlist_id==0 && i==0) // first playlist we have, it always need a schedule time
                                 ||
                                 (Math.abs(diff)>10000) ) // if diff > 10 seconds > use schedule time... (maybe a warning)
                         {
