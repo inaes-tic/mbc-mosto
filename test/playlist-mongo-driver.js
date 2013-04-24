@@ -19,7 +19,7 @@ describe('PlaylistMongoDriver', function(){
         self.driver = new mongo_driver(conf);
         self.db = mbc.db(conf.db);
         self.driver.start();
-        self.from = moment(new Date());
+        self.from = moment();
         self.to = moment((self.from.unix() + 120 * 60) * 1000); // add 2hs
 
         var db_data = require('./playlists/db-data');
@@ -99,30 +99,31 @@ describe('PlaylistMongoDriver', function(){
             self.pubsub = mbc.pubsub();
 
             self.message = {
-            backend: 'schedbackend',
-            model: {
-                start: moment(new Date()).unix(),
-                end: moment(new Date()).add(5*60*1000).unix(),
+                backend: 'schedbackend',
+                model: {
+                    start: moment().unix(),
+                    end: moment().add(5 * 60 * 1000).unix(),
                     _id: self.scheds[0]._id,
                     list: self.lists[0]._id,
                     title: 'title'
-            },
-        };
+                },
+                channel: function() { return [this.backend, this.method].join('.') }
+            };
         });
 
-        this.timeout(15000);
+        this.timeout(500);
         it('should respond to create messages',function(done){
             // set window from now to 10 minutes
             var message = self.message;
             message.method = 'create';
-            self.driver.setWindow(new Date(), moment(new Date()).add(10 * 60 * 1000));
+            self.driver.setWindow(moment(), moment().add(10 * 60 * 1000));
             self.driver.on('create', function(playlist) {
                 playlist.id.should.be.eql(message.model._id);
                 playlist.name.should.be.eql(message.model.title);
                 moment(playlist.startDate).valueOf().should.eql(message.model.start * 1000);
                 done();
             });
-            self.pubsub.publish(message);
+            self.pubsub.publishJSON(message.channel(), message);
         });
         it('should respond to update messages', function(done) {
             var message = self.message;
@@ -130,7 +131,7 @@ describe('PlaylistMongoDriver', function(){
             self.driver.on('update', function(playlist) {
                 done();
             });
-            self.pubsub.publish(message);
+            self.pubsub.publishJSON(message.channel(), message);
         });
         it('should respond to remove messages', function(done) {
             var message = self.message;
@@ -139,7 +140,7 @@ describe('PlaylistMongoDriver', function(){
                 id.should.be.eql(message.model._id);
                 done();
             });
-            self.pubsub.publish(message);
+            self.pubsub.publishJSON(message.channel(), message);
         });
     });
     describe("#getPlaylists()", function() {
