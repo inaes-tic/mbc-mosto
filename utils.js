@@ -64,6 +64,10 @@ exports = module.exports = {
         return frames * 1000.0 / (1.0 * fps);
     },
 
+    convertDurationToString: function( moment_duration ) {
+        return moment_duration.hours()+":"+moment_duration.minutes()+":"+moment_duration.seconds()+"."+moment_duration.milliseconds();
+    },
+
     convertUnixToDate:  function ( unix_timestamp ) {
         //var date = new Date(unix_timestamp*1000);
         var date = new moment(unix_timestamp);
