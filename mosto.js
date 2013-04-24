@@ -32,7 +32,7 @@ function mosto(customConfig) {
         console.log("mbc-mosto: [INFO] Added playlist:\nid: " + playlist.id
                     + "\nname: " + playlist.name
                     + "\nstartDate: " + playlist.startDate
-                    + "\nendDate: " + playlist.endDate);
+                    + "\nendDate: " + playlist.endDate);        
         self.orderPlaylists();
     };
 
@@ -54,10 +54,13 @@ function mosto(customConfig) {
         //update may create if needed
         //TODO: chech time window: startDate-endDate
         if (i==-1) {
-            self.playlists.push(playlist);
+            return self.addPlaylist(playlist);
         } else {
-            //TODO: compare startDate and endDate with time window: if not in range, removePlaylist.
-            self.playlists[i] = playlist;
+            if ( (moment(playlist.startDate)<= self.time_window_from && self.time_window_from <= moment(playlist.endDate))  
+                 || (moment(playlist.startDate)<= self.time_window_to && self.time_window_to <= moment(playlist.endDate))
+                 || ( self.time_window_from <= moment(playlist.startDate) && moment(playlist.endDate) <= self.time_window_to ) ) {
+                self.playlists[i] = playlist;            
+            } else return self.removePlaylist(playlist.id);
         }
 
         console.log("mbc-mosto: [INFO] Updated playlist:\nid: " + playlist.id
@@ -72,23 +75,29 @@ function mosto(customConfig) {
      *
      *
      */
-    mosto.prototype.removePlaylist = function(name) {
+    mosto.prototype.removePlaylist = function(id) {
 
-        console.log("mbc-mosto: [INFO] Removing playlist " + name);
+        console.log("mbc-mosto: [INFO] Removing playlist id: " + id);
         var i = -1;
         var playlist = undefined;
-        self.playlists.some(function(element, index, array) {
-            if (element.id === id) {
-                i = index;
-                playlist = element;
-                return true;
-            }
-        });
-        self.playlists.splice(i, 1);
-        console.log("mbc-mosto: [INFO] Removed playlist:\nid: " + playlist.id
-                    + "\nname: " + playlist.name
-                    + "\nstartDate: " + playlist.startDate
-                    + "\nendDate: " + playlist.endDate);
+        if (self.playlists.length>0) {
+            self.playlists.some(function(element, index, array) {
+                if (element!==undefined) {
+                    if (element.id === id) {
+                        i = index;
+                        playlist = element;
+                        return true;
+                    }
+                }
+            });
+        }
+        if (i!=-1) self.playlists.splice(i, 1);
+        if (playlist!=undefined) {
+            console.log("mbc-mosto: [INFO] Removed playlist:\nid: " + playlist.id
+                        + "\nname: " + playlist.name
+                        + "\nstartDate: " + playlist.startDate
+                        + "\nendDate: " + playlist.endDate);
+        }
         self.orderPlaylists();
     };
 
@@ -98,6 +107,13 @@ function mosto(customConfig) {
      *
      */
     mosto.prototype.orderPlaylists = function() {
+    
+        self.removeBlackPlaylist();
+
+        if (self.playlists.length==0) {
+            var sch_rightnow = moment(self.timer_clock).add( moment.duration({ milliseconds: 0 }) ).format("DD/MM/YYYY HH:mm:ss.SSS");
+            self.startBlack( sch_rightnow, "00:00:50.000", sch_rightnow, moment( sch_rightnow,"DD/MM/YYYY HH:mm:ss.SSS").add(moment.duration({ milliseconds: 50000 }) ).format('DD/MM/YYYY HH:mm:ss.SSS') );
+        }
 
         console.log("mbc-mosto: [INFO] Start ordering playlists");
         self.playlists.sort(function (item1, item2) {
@@ -112,6 +128,43 @@ function mosto(customConfig) {
         self.playlists_updated = true;
         self.convertPlaylistsToScheduledClips();
     };
+
+    
+    /** trimPlaylists
+     *       remove any playlist that is out of our time window
+     *
+     *
+     */
+    mosto.prototype.trimPlaylists = function() {
+        var newplaylists = [];
+        for(var i=0; i<self.playlists.length;i++) {
+            var playlist = self.playlists[i];
+            if ( (moment(playlist.startDate)<= self.time_window_from && self.time_window_from <= moment(playlist.endDate))  
+                 || (moment(playlist.startDate)<= self.time_window_to && self.time_window_to <= moment(playlist.endDate))
+                 || ( self.time_window_from <= moment(playlist.startDate) && moment(playlist.endDate) <= self.time_window_to ) ) {
+                newplaylists.push(playlist);
+            }
+        }
+        self.playlists = newplaylists;
+    }
+
+    mosto.prototype.removeBlackPlaylist = function() {
+        var i = -1;
+        var playlist = undefined;
+        if (self.playlists.length>0) {
+            self.playlists.some(function(element, index, array) {
+                if (element!==undefined) {
+                    if (element.id === 'black_id') {
+                        i = index;
+                        playlist = element;
+                        return true;
+                    }
+                }
+            });
+        }
+        if (i!=-1) self.playlists.splice(i, 1);        
+    }
+
 
     /**     checkoutPlaylists
      *       checkout load next playlists if needed
@@ -154,11 +207,7 @@ function mosto(customConfig) {
                     self.playlists.push(playlist);
                 }
             }
-            //orderPaylists
-            if (self.playlists.length==0) {
-                var sch_rightnow = moment(self.timer_clock).add( moment.duration({ milliseconds: 1000 }) ).format("DD/MM/YYYY HH:mm:ss.SSS");
-                self.startBlack( sch_rightnow, "00:00:02.000", sch_rightnow, moment( sch_rightnow,"DD/MM/YYYY HH:mm:ss.SSS").add(moment.duration({ milliseconds: 2000 }) ).format('DD/MM/YYYY HH:mm:ss.SSS') );
-            }
+
             self.orderPlaylists();
 
             //update the boundaries
@@ -299,7 +348,7 @@ function mosto(customConfig) {
                         {
                             schedule_time = "now";
                         } else if (
-                            (next_playlist_id==0 && i==0) // first playlist we have always need a schedule time
+                            (next_playlist_id==0 && i==0) // first playlist we have, it always need a schedule time
                                 ||
                                 (Math.abs(diff)>10000) ) // if diff > 10 seconds > use schedule time... (maybe a warning)
                         {
@@ -308,13 +357,17 @@ function mosto(customConfig) {
                                 self.queueBlack( "now", "00:00:00.500", lastTimeCode, moment( lastTimeCode,"DD/MM/YYYY HH:mm:ss.SSS").add(moment.duration({ milliseconds: 500 }) ).format('DD/MM/YYYY HH:mm:ss.SSS') );
                             } else if (next_playlist_id==0) {
                                 //if this is the first and only playlist, check if an empty void is left before it...., so we can put our blackmedia...
+                                if (self.timer_clock==null) self.timer_clock = moment();
                                 var sch_time_mom = moment(sch_time, "DD/MM/YYYY HH:mm:ss.SSS");
-                                var sch_rightnow = moment(self.timer_clock).add( moment.duration({ milliseconds: 2000 }) ).format("DD/MM/YYYY HH:mm:ss.SSS");
+                                var sch_rightnow = moment(self.timer_clock).add( moment.duration({ milliseconds: 0 }) ).format("DD/MM/YYYY HH:mm:ss.SSS");
                                 var diff_void_start = sch_time_mom.diff( self.timer_clock );
+                                var black_duration = moment.duration( sch_time_mom - self.timer_clock );
+                                var black_duration_str = utils.convertDurationToString(black_duration);
+                                var sch_to_next_playlist = moment( sch_rightnow,"DD/MM/YYYY HH:mm:ss.SSS").add(black_duration).format('DD/MM/YYYY HH:mm:ss.SSS');
                                 console.log("mbc-mosto: [INFO] [LOGIC] preparePlaylist > empty space ? diff_void_start :" + diff_void_start );
 
-                                if (diff_void_start>4000) {
-                                    self.queueBlack( sch_rightnow , "00:00:00.500", sch_rightnow, moment( sch_rightnow,"DD/MM/YYYY HH:mm:ss.SSS").add(moment.duration({ milliseconds: 2000 }) ).format('DD/MM/YYYY HH:mm:ss.SSS') );
+                                if (diff_void_start>0) {
+                                    self.queueBlack( sch_rightnow, black_duration_str, sch_rightnow, sch_to_next_playlist );
                                 }
 
                             }
@@ -340,7 +393,7 @@ function mosto(customConfig) {
         if (self.playlists.length==next_playlist_id) {
             if (next_playlist_id > 0 && lastTimeCode!=-1 && pl.id!="black_id") {
                 //queue blackness to the end of the last playlist (no after a black media!)
-                self.queueBlack( "now", "00:00:02.000", lastTimeCode, moment( lastTimeCode,"DD/MM/YYYY HH:mm:ss.SSS").add(moment.duration({ milliseconds: 2000 }) ).format('DD/MM/YYYY HH:mm:ss.SSS') );
+                self.queueBlack( "now", "00:00:00.100", lastTimeCode, moment( lastTimeCode,"DD/MM/YYYY HH:mm:ss.SSS").add(moment.duration({ milliseconds: 10 }) ).format('DD/MM/YYYY HH:mm:ss.SSS') );
             }
             return;
         }
@@ -510,6 +563,9 @@ function mosto(customConfig) {
         // 1) if video server is playing the expected clip
         // 2) if queue clips are correct
         var expected_clip = null;
+        var next_expected_clip = null;
+        var next_expected_start = null;
+        var expected_frame = 0;
         var reference_clock = null;
         self.previous_cursor_scheduled_clip = self.cursor_scheduled_clip;
         self.cursor_scheduled_clip = -1;
@@ -553,15 +609,32 @@ function mosto(customConfig) {
             if (sched_clip) {
                 var ex_start = moment(sched_clip.expected_start,"DD/MM/YYYY HH:mm:ss.SSS");
                 var ex_end = moment(sched_clip.expected_end,"DD/MM/YYYY HH:mm:ss.SSS");
+                if ( reference_clock < ex_start ) {
+                    if (next_expected_start==null) {
+                        next_expected_start = ex_start;
+                    }
+                    if ( ex_start <= next_expected_start ) {
+                        next_expected_clip = sched_clip;
+                        next_expected_start = ex_start;
+                    }
+                }
+
                 if ( ex_start < reference_clock
                      && reference_clock < ex_end ) {
                     self.cursor_scheduled_clip = i;
                     expected_clip = sched_clip;
+                    // TODO: calculate frame position! based on length.
+                    expected_frame = utils.getFramePositionFromClock( reference_clock, ex_start, 0, 25.00 );
+                    if ( expected_frame == undefined) expected_frame = 0;
+                    self.actual_expected_start = expected_clip.expected_start;
                     break;
                 }
             }
         }
 
+        if (next_expected_clip) {
+            console.log("mbc-mosto: [INFO] next expected clip: " + next_expected_clip.media.file +" from:" + next_expected_clip.expected_start + " to:" + next_expected_clip.expected_end );
+        }
 
         //MANDATORY TO HAVE AN EXPECTED CLIP!!! IF NOT, WE DO NOTHING
         if (    expected_clip
@@ -581,8 +654,7 @@ function mosto(customConfig) {
             // NOW COMPARE EXPECTED WITH ACTUAL
             // Conditions of timer_difference may trigger
             if (
-                Math.abs(self.timer_difference)<self.config.reload_timer_diff
-                    && self.actual_playing_clip != ""
+                    self.actual_playing_clip != ""
                     && (self.actual_playing_status == "playing" || self.actual_playing_status == "paused")
                     && self.actual_playing_clip == self.convertMediaFileToClipId(expected_clip.media)
             ) {
@@ -667,19 +739,31 @@ function mosto(customConfig) {
                 // LOAD EVERYTHING STARTING FROM THE EXPECTED CLIP
 
                 //clean playlist (doesnt matter, we are stopped)... then populate...
-                self.server.clearPlaylist( function(response) {
-                    console.log("clearPlaylist ok! " + response );
-                    sched_clip = self.scheduled_clips[self.cursor_scheduled_clip];
-                    self.server.loadClip( sched_clip.media, function(response) {
+                self.server.cleanPlaylist( function(response) {
+                    console.log("cleanPlaylist ok! " + response );
+                    var sched_clip = self.scheduled_clips[self.cursor_scheduled_clip];
+                    self.server.appendClip( sched_clip.media, function(response) {
+                    //self.server.loadClip( sched_clip.media, function(response) {
                         //EASY only C from CRUD
-                        self.server.play(  function(response) {
-                            console.log("LOADED start playing!");
-                            self.actual_expected_start = sched_clip.expected_start;
-                            self.actual_playing_index = 0;
-                            self.previous_playing_index = 0;
-                            self.ref_sched_index = self.cursor_scheduled_clip;
-                            self.previous_cursor_scheduled_clip = -1;
-                            self.appendScheduledClips( self.cursor_scheduled_clip+1 );
+                        var next_index = 0;
+                        if (self.actual_playing_index>-1) {
+                            next_index = self.actual_playing_index+1;
+                        }
+                        self.server.goto( next_index, expected_frame, function(response) {                            
+                            self.server.play(  function(response) {
+                                console.log("mbc-mosto: [INFO] [SYNC] LOADED start playing!");
+                                self.actual_expected_start = sched_clip.expected_start;
+                                self.actual_playing_index = next_index;
+                                self.previous_playing_index = next_index;
+                                self.ref_sched_index = self.cursor_scheduled_clip;
+                                self.previous_cursor_scheduled_clip = -1;
+                                setTimeout( self.appendScheduledClips( self.cursor_scheduled_clip+1 ), 1000);
+                            },
+                                           function(error) {
+                                               console.error("error goto :"+error);
+                                               self.sync_lock = false;
+                                           } );
+
                         },
                                            function(error) {
                                                console.error("error start playing:"+error);
@@ -693,7 +777,7 @@ function mosto(customConfig) {
                                           } );
                 },
                                            function(error) {
-                                               console.error("error clearing playlist:"+error);
+                                               console.error("error cleaning playlist:"+error);
                                                self.sync_lock = false;
                                            } );
 
@@ -772,15 +856,23 @@ function mosto(customConfig) {
 
         self.actual_playing_status = self.actual_status.status;
 
-        if (self.actual_playing_status=="playing") {
+        if (    self.actual_playing_status=="playing" 
+                || (self.actual_playing_status=="paused" && self.actual_status.actualClip.id=="black_id") ) {
             self.actual_playing_clip = self.actual_status.actualClip.id;
             self.actual_playing_index = self.actual_status.actualClip.order;
-            self.actual_playing_frame = self.actual_status.actualClip.currentPos;
-            self.actual_playing_progress = self.actual_status.actualClip.currentPos;
+            self.actual_playing_progress = self.actual_status.currentPos;
+            self.actual_playing_frame = self.actual_status.actualClip.currentFrame;
+            self.actual_playing_length = self.actual_status.actualClip.totalFrames;
+            self.actual_playing_fps =  self.actual_status.actualClip.fps;
+
+            self.actual_position_millis = utils.convertFramesToMilliseconds( self.actual_playing_frame, self.actual_playing_fps );
+            self.actual_position_millis_length = self.actual_status.actualClip.totalFrames;
         } else {
             self.actual_playing_frame = -1;
             self.actual_playing_index = -1;
             self.actual_position_millis = -1;
+            self.actual_playing_clip = -1;
+            self.actual_playing_progress = -1;
         }
 
 
@@ -800,7 +892,8 @@ function mosto(customConfig) {
             self.sync_lock = true;
             self.sync_lock_start = moment();
 
-            console.log("mbc-mosto: [INFO] timer_fun called: " + self.timer_clock.format("hh:mm:ss") );
+            console.log("mbc-mosto: [INFO] [PLAY] timer_fun called: " + self.timer_clock.format("hh:mm:ss") );
+            console.log("mbc-mosto: [INFO] [PLAY] time_window from: "  + self.time_window_from.format("DD/MM/YYYY HH:mm:ss") + " to: " + self.time_window_to.format("DD/MM/YYYY HH:mm:ss") );
 
             //get status
             self.server.getServerStatus( self.timer_fun_status, function( error ) { console.log("mbc-mosto: [ERROR] mosto.timer_fun > getServerStatus failed: " + error ); } );
