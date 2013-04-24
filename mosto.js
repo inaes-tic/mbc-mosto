@@ -342,12 +342,15 @@ function mosto(customConfig) {
                                 //if this is the first and only playlist, check if an empty void is left before it...., so we can put our blackmedia...
                                 if (self.timer_clock==null) self.timer_clock = moment();
                                 var sch_time_mom = moment(sch_time, "DD/MM/YYYY HH:mm:ss.SSS");
-                                var sch_rightnow = moment(self.timer_clock).add( moment.duration({ milliseconds: 2000 }) ).format("DD/MM/YYYY HH:mm:ss.SSS");
+                                var sch_rightnow = moment(self.timer_clock).add( moment.duration({ milliseconds: 0 }) ).format("DD/MM/YYYY HH:mm:ss.SSS");
                                 var diff_void_start = sch_time_mom.diff( self.timer_clock );
+                                var black_duration = moment.duration( sch_time_mom - self.timer_clock );
+                                var black_duration_str = utils.convertDurationToString(black_duration);
+                                var sch_to_next_playlist = moment( sch_rightnow,"DD/MM/YYYY HH:mm:ss.SSS").add(black_duration).format('DD/MM/YYYY HH:mm:ss.SSS');
                                 console.log("mbc-mosto: [INFO] [LOGIC] preparePlaylist > empty space ? diff_void_start :" + diff_void_start );
 
-                                if (diff_void_start>4000) {
-                                    self.queueBlack( sch_rightnow , "00:00:00.500", sch_rightnow, moment( sch_rightnow,"DD/MM/YYYY HH:mm:ss.SSS").add(moment.duration({ milliseconds: 2000 }) ).format('DD/MM/YYYY HH:mm:ss.SSS') );
+                                if (diff_void_start>0) {
+                                    self.queueBlack( sch_rightnow, black_duration_str, sch_rightnow, sch_to_next_playlist );
                                 }
 
                             }
