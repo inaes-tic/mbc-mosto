@@ -55,9 +55,8 @@ function mosto(customConfig) {
         if (i==-1) {
             return self.addPlaylist(playlist);
         } else {
-            if ( (moment(playlist.startDate)<= self.time_window_from && self.time_window_from <= moment(playlist.endDate))  
-                 || (moment(playlist.startDate)<= self.time_window_to && self.time_window_to <= moment(playlist.endDate))
-                 || ( self.time_window_from <= moment(playlist.startDate) && moment(playlist.endDate) <= self.time_window_to ) ) {
+            if ( (moment(playlist.startDate) <= self.time_window_to &&
+                  moment(playlist.endDate) >= self.time_window_from ) ) {
                 self.playlists[i] = playlist;            
             } else return self.removePlaylist(playlist.id);
         }
@@ -138,9 +137,8 @@ function mosto(customConfig) {
         var newplaylists = [];
         for(var i=0; i<self.playlists.length;i++) {
             var playlist = self.playlists[i];
-            if ( (moment(playlist.startDate)<= self.time_window_from && self.time_window_from <= moment(playlist.endDate))  
-                 || (moment(playlist.startDate)<= self.time_window_to && self.time_window_to <= moment(playlist.endDate))
-                 || ( self.time_window_from <= moment(playlist.startDate) && moment(playlist.endDate) <= self.time_window_to ) ) {
+            if ( (moment(playlist.startDate) <= self.time_window_to &&
+                  moment(playlist.endDate) >= self.time_window_from ) ) {
                 newplaylists.push(playlist);
             }
         }
