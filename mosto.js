@@ -55,8 +55,11 @@ function mosto(customConfig) {
         if (i==-1) {
             self.playlists.push(playlist);
         } else {
-            //TODO: compare startDate and endDate with time window: if not in range, removePlaylist.
-            self.playlists[i] = playlist;
+            if ( (moment(playlist.startDate)<= self.time_window_from && self.time_window_from <= moment(playlist.endDate))  
+                 || (moment(playlist.startDate)<= self.time_window_to && self.time_window_to <= moment(playlist.endDate))
+                 || ( self.time_window_from <= moment(playlist.startDate) && moment(playlist.endDate) <= self.time_window_to ) ) {
+                self.playlists[i] = playlist;            
+            } else return self.removePlaylist(playlist.id);
         }
 
         console.log("mbc-mosto: [INFO] Updated playlist:\nid: " + playlist.id
