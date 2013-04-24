@@ -31,8 +31,7 @@ function mosto(customConfig) {
         console.log("mbc-mosto: [INFO] Added playlist:\nid: " + playlist.id
                     + "\nname: " + playlist.name
                     + "\nstartDate: " + playlist.startDate
-                    + "\nendDate: " + playlist.endDate);
-        self.removeBlackPlaylist();
+                    + "\nendDate: " + playlist.endDate);        
         self.orderPlaylists();
     };
 
@@ -54,7 +53,7 @@ function mosto(customConfig) {
         //update may create if needed
         //TODO: chech time window: startDate-endDate
         if (i==-1) {
-            self.playlists.push(playlist);
+            return self.addPlaylist(playlist);
         } else {
             if ( (moment(playlist.startDate)<= self.time_window_from && self.time_window_from <= moment(playlist.endDate))  
                  || (moment(playlist.startDate)<= self.time_window_to && self.time_window_to <= moment(playlist.endDate))
@@ -68,7 +67,6 @@ function mosto(customConfig) {
                     + "\nstartDate: " + playlist.startDate
                     + "\nendDate: " + playlist.endDate);
 
-        self.removeBlackPlaylist();
         self.orderPlaylists();
     };
 
@@ -99,7 +97,6 @@ function mosto(customConfig) {
                         + "\nstartDate: " + playlist.startDate
                         + "\nendDate: " + playlist.endDate);
         }
-        self.removeBlackPlaylist();
         self.orderPlaylists();
     };
 
@@ -109,6 +106,8 @@ function mosto(customConfig) {
      *
      */
     mosto.prototype.orderPlaylists = function() {
+    
+        self.removeBlackPlaylist();
 
         if (self.playlists.length==0) {
             var sch_rightnow = moment(self.timer_clock).add( moment.duration({ milliseconds: 0 }) ).format("DD/MM/YYYY HH:mm:ss.SSS");
@@ -208,7 +207,6 @@ function mosto(customConfig) {
                 }
             }
 
-            self.removeBlackPlaylist();
             self.orderPlaylists();
 
             //update the boundaries
