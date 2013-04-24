@@ -26,7 +26,7 @@ _do = function(callback) {
 	});
 
 	pgrep.on('exit', function (code) {
-		callback(parseInt(pid));
+		return callback(parseInt(pid));
 	});
 };
 
@@ -68,7 +68,7 @@ exports.get_config = function() {
  */
 exports.is_running = function(callback) {
 	_do(function(pid) {
-		callback(!isNaN(pid));
+		return callback(!isNaN(pid));
 	})
 }
 
@@ -81,7 +81,8 @@ exports.is_running = function(callback) {
  */
 exports.stop = function(callback) {
 	_do(function(pid) {
-		if (pid) { 
+		if (pid) {
+			// exports.connect(function(conn){ exports.push(conn, ['SHUTDOWN'], undefined, undefined); });
 			var kill = spawn('kill',[pid]);
 			kill.on('close', function(state) { return callback(pid) });
 		} else
@@ -110,6 +111,41 @@ exports.start = function(callback) {
 };
 
 /**
+ * connect
+ *
+ * Connect to melted daemon.
+ *
+ * @callback : callback function when process is ready.
+ */
+exports.connect = function(callback) {
+	var conn = net.createConnection(conf.port, conf.host);
+	conn.setEncoding('ascii');
+	callback(conn);
+};
+
+/**
+ * push
+ *
+ * Push commands to melted daemon.
+ *
+ * @commands : list of commands to send.
+ * @callback : callback function when process is ready.
+ */
+exports.push = function(conn, commands, command_callback, close_callback) {
+	var s = 0;
+	conn.on('connect', function() {
+		conn.on('data', function(data) {
+			if (command_callback) command_callback(data);
+			if (s < commands.length && data.indexOf("\n") > -1) {
+				conn.write(commands[s]+"\n");
+				s = s + 1;
+			};
+		});
+	});
+	if (close_callback) conn.on('close', function(had_err) { close_callback(had_err); });
+};
+
+/**
  * setup
  *
  * Setup melted deamon.
@@ -121,23 +157,10 @@ exports.setup = function(root, output, callback) {
 	output = output || conf.output;
 	_do(function(pid) {
 		if (pid) {
-			var conn = net.createConnection(conf.port, conf.host);
-			conn.setEncoding('ascii');
 			var commands = [ 'NLS', 'SET root='+root, 'UADD '+output, 'BYE' ];
-			var s = 0;
-			conn.on('connect', function() {
-				conn.on('data', function(data) {
-					if (s < commands.length && data.indexOf("\n") > -1) {
-						conn.write(commands[s]+"\n");
-						s = s + 1;
-					}
-				});
-			});
-			conn.on('close', function(had_err) {
-				callback(had_err);
-			});
+			exports.connect(function(conn){ exports.push(conn, commands, undefined, callback)});
 		} else {
-			console.log("Can't connect to server. Server is not running!")
+			Err("Can't connect to server. Server is not running!")
 		};
 	})
 };
