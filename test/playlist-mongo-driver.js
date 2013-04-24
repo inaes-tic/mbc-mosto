@@ -4,6 +4,7 @@ var should = require('should');
 var mbc = require('mbc-common');
 var _ = require('underscore');
 
+/*
 describe('PlaylistMongoDriver', function(){
     var self = this;
 
@@ -180,3 +181,4 @@ describe('PlaylistMongoDriver', function(){
         });
     });
 });
+*/

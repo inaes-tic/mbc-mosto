@@ -4,6 +4,9 @@ var melted = require('../api/Melted');
 describe('Melted', function(){
 	describe('#take - #leave', function(){
 		var serie = "";
+		it('Semaphore leaved', function(done) {
+			melted.leave();
+		});
 		it('Async semaphore checking', function(done) {
 			melted.take(function() {
 				serie = serie + ["1"];
@@ -18,8 +21,8 @@ describe('Melted', function(){
 				setTimeout(function(){serie = serie + "3"; melted.leave();},10);
 			});
 			melted.take(function() {
-				assert.equal(serie, "112233");
 				melted.leave();
+				assert.equal(serie, "112233");
 				done();
 			});
 		});
@@ -30,8 +33,8 @@ describe('Melted', function(){
 			melted.take(function() {
 				melted.start(function(pid) {
 					melted.is_running(function(is) {
-						assert.equal(true, is);
 						melted.leave();
+						assert.equal(true, is);
 						done();
 					})
 				});
@@ -44,8 +47,8 @@ describe('Melted', function(){
 			melted.take(function() {
 				melted.stop(function(pid) {
 					melted.is_running(function(is) {
-						assert.equal(false, is);
 						melted.leave();
+						assert.equal(false, is);
 						done();
 					})
 				});
@@ -65,8 +68,8 @@ describe('Melted', function(){
 			melted.take(function() {
 				melted.start(function(pid) {
 					melted.setup(undefined, undefined, function(had_err) {
-						assert.equal(had_err, false);
 						melted.leave();
+						assert.equal(had_err, false);
 						done();
 					});
 				});

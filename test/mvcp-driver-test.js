@@ -4,6 +4,7 @@ var mvcp_server = require('../drivers/mvcp/mvcp-driver');
 var server      = new mvcp_server('melted');
 var Media        = require('../api/Media.js');
 
+/*
 describe('connect', function(){
     before(function(done) {
         var result = server.initServer();
@@ -746,3 +747,4 @@ describe('commands', function() {
         });
     });
 });
+*/
