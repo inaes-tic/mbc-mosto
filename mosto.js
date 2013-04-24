@@ -32,6 +32,7 @@ function mosto(customConfig) {
                     + "\nname: " + playlist.name
                     + "\nstartDate: " + playlist.startDate
                     + "\nendDate: " + playlist.endDate);
+        self.removeBlackPlaylist();
         self.orderPlaylists();
     };
 
@@ -67,6 +68,7 @@ function mosto(customConfig) {
                     + "\nstartDate: " + playlist.startDate
                     + "\nendDate: " + playlist.endDate);
 
+        self.removeBlackPlaylist();
         self.orderPlaylists();
     };
 
@@ -97,6 +99,7 @@ function mosto(customConfig) {
                         + "\nstartDate: " + playlist.startDate
                         + "\nendDate: " + playlist.endDate);
         }
+        self.removeBlackPlaylist();
         self.orderPlaylists();
     };
 
@@ -106,6 +109,11 @@ function mosto(customConfig) {
      *
      */
     mosto.prototype.orderPlaylists = function() {
+
+        if (self.playlists.length==0) {
+            var sch_rightnow = moment(self.timer_clock).add( moment.duration({ milliseconds: 0 }) ).format("DD/MM/YYYY HH:mm:ss.SSS");
+            self.startBlack( sch_rightnow, "00:00:50.000", sch_rightnow, moment( sch_rightnow,"DD/MM/YYYY HH:mm:ss.SSS").add(moment.duration({ milliseconds: 50000 }) ).format('DD/MM/YYYY HH:mm:ss.SSS') );
+        }
 
         console.log("mbc-mosto: [INFO] Start ordering playlists");
         self.playlists.sort(function (item1, item2) {
@@ -120,6 +128,25 @@ function mosto(customConfig) {
         self.playlists_updated = true;
         self.convertPlaylistsToScheduledClips();
     };
+
+
+    mosto.prototype.removeBlackPlaylist = function() {
+        var i = -1;
+        var playlist = undefined;
+        if (self.playlists.length>0) {
+            self.playlists.some(function(element, index, array) {
+                if (element!==undefined) {
+                    if (element.id === 'black_id') {
+                        i = index;
+                        playlist = element;
+                        return true;
+                    }
+                }
+            });
+        }
+        if (i!=-1) self.playlists.splice(i, 1);        
+    }
+
 
     /**     checkoutPlaylists
      *       checkout load next playlists if needed
@@ -162,11 +189,8 @@ function mosto(customConfig) {
                     self.playlists.push(playlist);
                 }
             }
-            //orderPaylists
-            if (self.playlists.length==0) {
-                var sch_rightnow = moment(self.timer_clock).add( moment.duration({ milliseconds: 1000 }) ).format("DD/MM/YYYY HH:mm:ss.SSS");
-                self.startBlack( sch_rightnow, "00:00:02.000", sch_rightnow, moment( sch_rightnow,"DD/MM/YYYY HH:mm:ss.SSS").add(moment.duration({ milliseconds: 2000 }) ).format('DD/MM/YYYY HH:mm:ss.SSS') );
-            }
+
+            self.removeBlackPlaylist();
             self.orderPlaylists();
 
             //update the boundaries
