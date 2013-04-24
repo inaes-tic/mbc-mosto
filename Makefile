@@ -1,6 +1,6 @@
 ROOT=$(shell pwd)
 NODE=$(shell which node nodejs | head -1)
-MOCHA=node_modules/mocha/bin/mocha --reporter spec --timeout 3000 test
+MOCHA=node_modules/mocha/bin/mocha --reporter spec --timeout 3000 --debug-brk test
 MELTED_BUILD=${ROOT}/melted/BUILD
 MELTED_INTREE=${MELTED_BUILD}/bin/melted
 MELTED = $(shell sh -c "which melted || echo ${MELTED_INTREE}")
@@ -18,7 +18,7 @@ serve: melted-restart mosto.js server.js
 install:
 	npm install
 
-${MOCHA}: install
+${MOCHA}: #install
 
 ifeq (${MELTED}, ${MELTED_INTREE})
 ${MELTED}: melted
