@@ -376,7 +376,7 @@ function mosto(customConfig) {
             if (self.playlists!==undefined && self.playlists.length>0) {
                 var i;
                 for(i = 0; i< self.playlists.length; i++) {
-                    playlist = self.playlists[i];
+                    var playlist = self.playlists[i];
                     if (playlist.id===currentPlaylistId) {
                         break;
                     }
@@ -583,10 +583,10 @@ function mosto(customConfig) {
 
         //NOW CHECK FOR SCHEDULED CLIP EXPECTED TO RUN NOW ( based on selected reference clock, always relative, but absolute must be needed to ensure reync)
         for( i=0; i<self.scheduled_clips.length; i++) {
-            sched_clip = self.scheduled_clips[i];
+            var sched_clip = self.scheduled_clips[i];
             if (sched_clip) {
-                ex_start = moment(sched_clip.expected_start,"DD/MM/YYYY HH:mm:ss.SSS");
-                ex_end = moment(sched_clip.expected_end,"DD/MM/YYYY HH:mm:ss.SSS");
+                var ex_start = moment(sched_clip.expected_start,"DD/MM/YYYY HH:mm:ss.SSS");
+                var ex_end = moment(sched_clip.expected_end,"DD/MM/YYYY HH:mm:ss.SSS");
                 if ( ex_start < reference_clock
                      && reference_clock < ex_end ) {
                     self.cursor_scheduled_clip = i;
@@ -703,7 +703,7 @@ function mosto(customConfig) {
                 //clean playlist (doesnt matter, we are stopped)... then populate...
                 self.server.clearPlaylist( function(response) {
                     console.log("clearPlaylist ok! " + response );
-                    sched_clip = self.scheduled_clips[self.cursor_scheduled_clip];
+                    var sched_clip = self.scheduled_clips[self.cursor_scheduled_clip];
                     self.server.loadClip( sched_clip.media, function(response) {
                         //EASY only C from CRUD
                         self.server.play(  function(response) {
@@ -769,7 +769,7 @@ function mosto(customConfig) {
             return;
         }
 
-        sched_clip = self.scheduled_clips[index_iteration];
+        var sched_clip = self.scheduled_clips[index_iteration];
 
         if ( index_iteration>0 && sched_clip.schedule_time!="now") {
             //we break the loading loop at second appearance of a non-queued media...
@@ -868,7 +868,7 @@ function mosto(customConfig) {
     }
 
     mosto.prototype.stop = function() {
-        self.timer.clear();
+	clearInterval(self.timer);
         self.timer = null;
     }
 
