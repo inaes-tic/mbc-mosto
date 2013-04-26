@@ -802,6 +802,83 @@ function mosto(customConfig) {
 
 
 
+mosto.prototype.getExpectedClip = function( server_playing_list ) {
+
+        var expected_clip = null;
+        var next_expected_clip = null;
+        var next_expected_start = null;
+        var expected_frame = 0;
+        var reference_clock = null;
+
+        self.previous_cursor_scheduled_clip = self.cursor_scheduled_clip;
+        self.cursor_scheduled_clip = -1;
+
+        /** CALCUTALE NEW RELATIVE CLOCK (based on video server index and expected clip start time */
+        //playlist has avanced
+        if ( self.previous_playing_index < self.actual_playing_index && self.actual_playing_status == "playing" ) {
+            self.ref_sched_index = self.ref_sched_index + 1;
+            self.actual_expected_start = self.scheduled_clips[ self.ref_sched_index ].expected_start;
+            console.log("changed index from: " + self.previous_playing_index + " to " + self.actual_playing_index + " self.ref_sched_index:  "  + self.ref_sched_index  );
+        }
+
+
+        if (self.actual_playing_frame>=0 && self.actual_expected_start) {
+            //calculate timer_relative_clock > warning, always do the expected_start of the playing clip...
+            self.timer_relative_clock = moment( self.actual_expected_start, "DD/MM/YYYY HH:mm:ss.SSS" ).add(self.actual_position_millis);
+            self.timer_difference = moment.duration( self.timer_relative_clock - self.timer_clock ).asMilliseconds();
+            console.log("mbc-mosto: [INFO] timer_clock         " + " at:" + self.timer_clock.format("DD/MM/YYYY HH:mm:ss.SSS") );
+            console.log("mbc-mosto: [INFO] timer_relative_clock" + " at:" + self.timer_relative_clock.format("DD/MM/YYYY HH:mm:ss.SSS") );
+            console.log("mbc-mosto: [INFO] progress: " + self.actual_playing_progress );
+            console.log("mbc-mosto: [INFO] difference: " + self.timer_difference );
+        } else self.timer_difference = 0; //back to absolute clocking (we are stopped)
+
+
+        console.log( "Selecting reference clock :" + self.timer_difference );
+        //if diff minimal, use absolute, if diff too big using absolute > to force re-load and re-sync!
+        if( Math.abs(self.timer_difference) < 20 || Math.abs(self.timer_difference) > 10000 ) {
+            console.log("using absolute clock > forcing");
+            reference_clock = self.timer_clock;
+        } else {
+            console.log("using relative clock");
+            reference_clock = self.timer_relative_clock;
+        }
+
+        console.log("mbc-mosto: [INFO] reference_clock         " + " at:" + reference_clock.format("DD/MM/YYYY HH:mm:ss.SSS") );
+
+        //NOW CHECK FOR SCHEDULED CLIP EXPECTED TO RUN NOW ( based on selected reference clock, always relative, but absolute must be needed to ensure reync)
+        for( i=0; i<self.scheduled_clips.length; i++) {
+            var sched_clip = self.scheduled_clips[i];
+            if (sched_clip) {
+                var ex_start = moment(sched_clip.expected_start,"DD/MM/YYYY HH:mm:ss.SSS");
+                var ex_end = moment(sched_clip.expected_end,"DD/MM/YYYY HH:mm:ss.SSS");
+                if ( reference_clock < ex_start ) {
+                    if (next_expected_start==null) {
+                        next_expected_start = ex_start;
+                    }
+                    if ( ex_start <= next_expected_start ) {
+                        next_expected_clip = sched_clip;
+                        next_expected_start = ex_start;
+                    }
+                }
+
+                if ( ex_start < reference_clock
+                     && reference_clock < ex_end 
+                    && expected_clip==null) {
+                    self.cursor_scheduled_clip = i;
+                    expected_clip = sched_clip;
+                    // TODO: calculate frame position! based on length.
+                    expected_frame = utils.getFramePositionFromClock( reference_clock, ex_start, 0, 25.00 );
+                    if ( expected_frame == undefined) expected_frame = 0;
+                    expected_clip.expected_frame = expected_frame;
+                    self.actual_expected_start = expected_clip.expected_start;
+                }
+            }
+        }
+
+        if (next_expected_clip)
+            console.log("mbc-mosto: [INFO] next_expected clip: " + next_expected_clip.media.file + " from:" + next_expected_clip.expected_start + " to:" + next_expected_clip.expected_end );
+
+        return expected_clip;
     }
 
     mosto.prototype.isPlayingExpectedClip = function( expected_clip ) {
