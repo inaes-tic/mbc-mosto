@@ -804,6 +804,17 @@ function mosto(customConfig) {
 
     }
 
+    mosto.prototype.isPlayingExpectedClip = function( expected_clip ) {
+        //CHECK AND COMPARE IF WE ARE PLAYING THE EXPECTED ONE...
+        console.log("COMPARE!!!" + self.actual_playing_status + " self.actual_playing_clip:"+self.actual_playing_clip + " vs expected: " + expected_clip.media.id );
+
+        return (    self.actual_playing_clip != "" 
+                    && (self.actual_playing_status == "playing" || self.actual_playing_status == "paused") 
+                    && self.actual_playing_clip == expected_clip.media.id );
+    }
+
+
+
     mosto.prototype.removePlayingClips = function( index_from, index_to, successCallback, errorCallback ) {
 
         if ( index_from > index_to ) {
