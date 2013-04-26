@@ -889,7 +889,7 @@ function mosto(customConfig) {
     mosto.prototype.timer_fun = function() {
 
         if (!self.sync_lock) {
-            //TODO: call sync and send status message to channels...
+
 
             //calculate now time...
             self.timer_clock = moment();
@@ -912,22 +912,15 @@ function mosto(customConfig) {
     }
 
     mosto.prototype.play = function() {
-        //TODO: check play state
-        //start timer
         console.log("mbc-mosto: [INFO] Start playing mosto");
 
         if (!self.timer) {
-            //self.timer = pauseable.setInterval( self.timer_fun, self.config.timer_interval );
             self.timer = setInterval( self.timer_fun, self.config.timer_interval );
             self.time_window_from = moment();
             self.time_window_to = self.time_window_from.clone();
             self.time_window_to.add( moment.duration({ hours: 4 }) );
             console.log("mbc-mosto: [PLAY] setting window: from: "  + self.time_window_from.format("DD/MM/YYYY HH:mm:ss") + " to: " + self.time_window_to.format("DD/MM/YYYY HH:mm:ss") );
         }
-
-        //self.timer.resume();
-        //console.log("mbc-mosto: [INFO] Start timer: " + self.timer.IsPaused() );
-
     }
 
     mosto.prototype.stop = function() {
@@ -936,8 +929,6 @@ function mosto(customConfig) {
     }
 
     mosto.prototype.pause = function() {
-        //TODO: need more testing...
-        //self.timer.pause();
     }
 
     mosto.prototype.initDriver = function() {
