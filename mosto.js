@@ -811,13 +811,13 @@ function mosto(customConfig) {
         }
 
         self.server.removeClip( index_from, function(response) {
-            index_from++;
-            self.removePlayingClips( index_from, index_to, successCallback, errorCallback);
-        },
-                                function(error) {
-                                    errorCallback(error);
-                                }
-                              );
+                index_from++;
+                self.removePlayingClips( index_from, index_to, successCallback, errorCallback);
+            },
+            function(error) {
+                errorCallback(error);
+            }
+        );
 
     }
 
