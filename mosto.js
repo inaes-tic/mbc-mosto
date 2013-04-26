@@ -729,14 +729,13 @@ function mosto(customConfig) {
                                                       self.appendScheduledClips( breakpoint_scheduled_cursor );
                                                   },
                                                   function(error) {
-                                                      console.log("mbc-mosto: [ERROR] [SYNC] removePlayingClips > error:"+error );
-                                                      self.sync_lock = false;
+                                                      console.error("mbc-mosto: [ERROR] [SYNC] removePlayingClips > error:"+error );
+                                                      self.timerUnlock();
                                                   }
                                                );
-                    }
-                    else self.sync_lock = false;
+                    } else self.timerUnlock();
                 }
-                self.sync_lock = false;
+                self.timerUnlock();
 
             } else {
                 //WE ARE NOT PLAYING THE EXPECTED ONE (OR NOT A THE EXPECTED POSITION) !!!
@@ -761,28 +760,28 @@ function mosto(customConfig) {
                                 self.previous_playing_index = next_index;
                                 self.ref_sched_index = self.cursor_scheduled_clip;
                                 self.previous_cursor_scheduled_clip = -1;
-                                setTimeout( self.appendScheduledClips( self.cursor_scheduled_clip+1 ), 1000);
+                                setTimeout( self.appendScheduledClips( self.cursor_scheduled_clip+1 ), 800);
                             },
                                            function(error) {
-                                               console.error("error goto :"+error);
-                                               self.sync_lock = false;
+                                               console.error("mbc-mosto: [ERROR] error goto :"+error);
+                                               self.timerUnlock();
                                            } );
 
                         },
                                            function(error) {
-                                               console.error("error start playing:"+error);
-                                               self.sync_lock = false;
+                                               console.error("mbc-mosto: [ERROR] error start playing:"+error);
+                                               self.timerUnlock();
                                            } );
 
                     },
                                           function(error) {
-                                              console.error("error loading clip:"+error);
-                                              self.sync_lock = false;
+                                              console.error("mbc-mosto: [ERROR] error loading clip:"+error);
+                                              self.timerUnlock();
                                           } );
                 },
                                            function(error) {
-                                               console.error("error cleaning playlist:"+error);
-                                               self.sync_lock = false;
+                                               console.error("mbc-mosto: [ERROR] error cleaning playlist:"+error);
+                                               self.timerUnlock();
                                            } );
 
 
