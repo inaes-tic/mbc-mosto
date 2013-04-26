@@ -886,14 +886,30 @@ function mosto(customConfig) {
 
     }
 
+    mosto.prototype.timerLock = function() {
+        self.sync_lock = true;
+    }
+
+    mosto.prototype.timerUnlock = function() {
+        self.sync_lock = false;
+    }
+
+    mosto.prototype.timerLocked = function() {
+        return self.sync_lock;
+    }
+
+    mosto.prototype.upstreamActive = function() {
+        return self.sync_lock;
+    }
+
     mosto.prototype.timer_fun = function() {
 
         if (!self.sync_lock) {
 
+            self.timerLock();
 
             //calculate now time...
             self.timer_clock = moment();
-            self.sync_lock = true;
             self.sync_lock_start = moment();
 
             console.log("mbc-mosto: [INFO] [PLAY] timer_fun called: " + self.timer_clock.format("hh:mm:ss") );
@@ -905,8 +921,9 @@ function mosto(customConfig) {
             self.sync_lock_time = moment();
             self.sync_lock_diff = self.sync_lock_time.diff(self.sync_lock_start);
             console.log("sync LOCKED, for " + self.sync_lock_diff );
-            if (Math.abs(self.sync_lock_diff)>20000) {
-                self.sync_lock = false;
+            console.log("mbc-mosto: [INFO] sync LOCKED, for " + self.sync_lock_diff );
+            if (Math.abs(self.sync_lock_diff)>2000) {
+                self.timerUnlock();
             }
         }
     }
