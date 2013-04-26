@@ -350,16 +350,20 @@ function mosto(customConfig) {
                                 (Math.abs(diff)>10000) ) // if diff > 10 seconds > use schedule time... (maybe a warning)
                         {
                             //check if we have unclosed playlists (without black end clip) before this new one...
+                            var black_duration, black_duration_str;
+
                             if (next_playlist_id>0) {
-                                self.queueBlack( "now", "00:00:00.500", lastTimeCode, moment( lastTimeCode,"DD/MM/YYYY HH:mm:ss.SSS").add(moment.duration({ milliseconds: 500 }) ).format('DD/MM/YYYY HH:mm:ss.SSS') );
+                                black_duration = moment.duration({ milliseconds: Math.abs(diff) });
+                                black_duration_str = utils.convertDurationToString(black_duration);
+                                self.queueBlack( "now", black_duration_str, lastTimeCode, moment( lastTimeCode,"DD/MM/YYYY HH:mm:ss.SSS").add(black_duration).format('DD/MM/YYYY HH:mm:ss.SSS') );
                             } else if (next_playlist_id==0) {
                                 //if this is the first and only playlist, check if an empty void is left before it...., so we can put our blackmedia...
                                 if (self.timer_clock==null) self.timer_clock = moment();
                                 var sch_time_mom = moment(sch_time, "DD/MM/YYYY HH:mm:ss.SSS");
-                                var sch_rightnow = moment(self.timer_clock).add( moment.duration({ milliseconds: 0 }) ).format("DD/MM/YYYY HH:mm:ss.SSS");
+                                var sch_rightnow = moment(self.timer_clock).format("DD/MM/YYYY HH:mm:ss.SSS");
                                 var diff_void_start = sch_time_mom.diff( self.timer_clock );
-                                var black_duration = moment.duration( sch_time_mom - self.timer_clock );
-                                var black_duration_str = utils.convertDurationToString(black_duration);
+                                black_duration = moment.duration( sch_time_mom - self.timer_clock );
+                                black_duration_str = utils.convertDurationToString(black_duration);
                                 var sch_to_next_playlist = moment( sch_rightnow,"DD/MM/YYYY HH:mm:ss.SSS").add(black_duration).format('DD/MM/YYYY HH:mm:ss.SSS');
                                 console.log("mbc-mosto: [INFO] [LOGIC] preparePlaylist > empty space ? diff_void_start :" + diff_void_start );
 
@@ -389,8 +393,11 @@ function mosto(customConfig) {
         //iteration ended because we have no more playlists !
         if (self.playlists.length==next_playlist_id) {
             if (next_playlist_id > 0 && lastTimeCode!=-1 && pl.id!="black_id") {
-                //queue blackness to the end of the last playlist (no after a black media!)
-                self.queueBlack( "now", "00:00:00.100", lastTimeCode, moment( lastTimeCode,"DD/MM/YYYY HH:mm:ss.SSS").add(moment.duration({ milliseconds: 100 }) ).format('DD/MM/YYYY HH:mm:ss.SSS') );
+                var black_duration, black_duration_str;
+                black_duration = moment.duration( self.time_window_to - last_tc );
+                black_duration_str = utils.convertDurationToString(black_duration);
+                //queue blackness to the end of the last playlist (no after a black media!) till last frame window
+                self.queueBlack( "now", black_duration_str, lastTimeCode, moment( lastTimeCode,"DD/MM/YYYY HH:mm:ss.SSS").add(black_duration).format('DD/MM/YYYY HH:mm:ss.SSS') );
             }
             return;
         }
