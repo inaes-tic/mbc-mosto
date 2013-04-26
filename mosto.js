@@ -106,7 +106,8 @@ function mosto(customConfig) {
      */
     mosto.prototype.orderPlaylists = function() {
     
-        self.removeBlackPlaylist();
+        self.removeBlackPlaylist();        
+        self.trimPlaylists();
 
         if (self.playlists.length==0) {
             var sch_rightnow = moment(self.timer_clock).add( moment.duration({ milliseconds: 0 }) ).format("DD/MM/YYYY HH:mm:ss.SSS");
@@ -271,7 +272,7 @@ function mosto(customConfig) {
             console.log("mbc-mosto: [INFO] [LOGIC] converPlaylistsToScheduledClips() > rt_actual_window:" + rt_actual_window + " rt_min_window:" + rt_min_window );
             if (  rt_actual_window < rt_min_window ) {
                 console.log("mbc-mosto: [INFO] [LOGIC] window advanced at least one hour... calling [FETCH] checkoutPlaylists actual:" + rt_actual_window + " min:" + rt_min_window);
-                return  self.checkoutPlaylists();
+                return  self.checkoutPlaylists();//really updates time window too
             }
         }
 
