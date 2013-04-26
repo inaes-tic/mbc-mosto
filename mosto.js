@@ -869,7 +869,7 @@ function mosto(customConfig) {
             self.actual_playing_length = self.actual_status.actualClip.totalFrames;
             self.actual_playing_fps =  self.actual_status.actualClip.fps;
 
-            self.actual_position_millis = utils.convertFramesToMilliseconds( self.actual_playing_frame, self.actual_playing_fps );
+            self.actual_position_millis = utils.convertFramesToMilliseconds( self.actual_status.actualClip.currentFrame, self.actual_status.actualClip.fps );
             self.actual_position_millis_length = self.actual_status.actualClip.totalFrames;
         } else {
             self.actual_playing_frame = -1;
@@ -920,7 +920,6 @@ function mosto(customConfig) {
         } else {
             self.sync_lock_time = moment();
             self.sync_lock_diff = self.sync_lock_time.diff(self.sync_lock_start);
-            console.log("sync LOCKED, for " + self.sync_lock_diff );
             console.log("mbc-mosto: [INFO] sync LOCKED, for " + self.sync_lock_diff );
             if (Math.abs(self.sync_lock_diff)>2000) {
                 self.timerUnlock();
