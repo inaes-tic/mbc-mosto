@@ -111,7 +111,12 @@ CaspaDriver.prototype.setStatus = function(meltedStatus) {
     this.publish("mostoStatus", status);
 };
 
-CaspaDriver.prototype.setStatusClip = function(statusClip) {}
+CaspaDriver.prototype.setStatusClip = function(statusClip) {
+    this.publish("mostoStatus.progress", {
+        currentFrame: statusClip.currentFrame,
+        totalFrames: statusClip.totalFrames,
+    });
+}
 
 CaspaDriver.prototype.publish = function(channel, status) {
     this.publisher.publishJSON(channel, status);
