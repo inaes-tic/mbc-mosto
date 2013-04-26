@@ -162,6 +162,13 @@ function mosto(customConfig) {
         if (i!=-1) self.playlists.splice(i, 1);        
     }
 
+    mosto.prototype.updateTimeWindow = function() {
+        self.time_window_from = moment();
+        //var last_time_window_to = self.time_window_to.clone();
+        //var last_time_window_to = self.time_window_from.clone();
+        self.time_window_to = self.time_window_from.clone();
+        self.time_window_to.add( moment.duration({ hours: 4 }) );
+    }
 
     /**     checkoutPlaylists
      *       checkout load next playlists if needed
