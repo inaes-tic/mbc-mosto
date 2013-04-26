@@ -923,7 +923,6 @@ mosto.prototype.getExpectedClip = function( server_playing_list ) {
 
     mosto.prototype.play = function() {
         console.log("mbc-mosto: [INFO] Start playing mosto");
-
         if (!self.timer) {
             self.timer = setInterval( self.timer_fun, self.config.timer_interval );
             self.time_window_from = moment();
