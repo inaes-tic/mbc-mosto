@@ -924,7 +924,7 @@ function mosto(customConfig) {
     }
 
     mosto.prototype.stop = function() {
-        self.timer.clear();
+	    clearInterval(self.timer);
         self.timer = null;
     }
 
