@@ -256,7 +256,8 @@ function mosto(customConfig) {
 
         //Check if we need to make a checkout! (upstream syncro!! > sync_lock must be true )
         //UPSTREAM
-        if ( self.sync_lock==true ) {
+        if ( self.upstreamActive() ) {
+
             if (self.playlists.length==0) {
                 //make a checkout... (not necesarry if DB Driver take care of it??
                 console.log("mbc-mosto: [INFO] [LOGIC] we have no playlists.");
