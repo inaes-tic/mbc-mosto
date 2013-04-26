@@ -799,8 +799,30 @@ function mosto(customConfig) {
             }
             self.timerUnlock();
         }
+    }
 
+    mosto.prototype.ineedMoreClips = function( server_playing_list, min_queue_clips ) {
+        // conditions are:
+        // 1) video server is stopped
+        // 2) video server list is empty
+        // 3) video server list is not empty but number of queued clips remaining is less than min_queue_clips
+        // 4) there are no scheduled_clips!!! we need some!!!
 
+        return (    !server_playing_list 
+                    ||
+                    server_playing_list.length==0
+                    ||
+                    self.actual_playing_status=="stopped"
+                    ||
+                    self.scheduled_clips.length===0
+                    ||
+                    (   /*hay algo cargado pero... hay menos de min_queue_clips encolados luego del actual...*/
+                        server_playing_list.length>0
+                        &&
+                        ( (server_playing_list.length-1) - self.actual_playing_index  ) < min_queue_clips )
+                    );
+
+    }
 
 mosto.prototype.getExpectedClip = function( server_playing_list ) {
 
