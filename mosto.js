@@ -339,7 +339,7 @@ function mosto(customConfig) {
                     diff = last_tc.diff( moment( sch_time, "DD/MM/YYYY HH:mm:ss.SSS") );
 
                     //choose if queue or schedule...
-                    if ( (i==0 && Math.abs(diff)<10000 && next_playlist_id>0 ) // firt clip of queued playlists if diff <  10 seconds are queued
+                    if ( (i==0 && Math.abs(diff)<10000 && next_playlist_id>0 ) // first clip of queued playlists if diff <  10 seconds are queued
                          ||
                          ( i>0 && Math.abs(diff)<10000)  ) //clips >0 => all queued clips after first one
                         {
@@ -560,17 +560,18 @@ function mosto(customConfig) {
                 self.scheduled_clips_index_last_to_queue = 0;
 
                 //PARSE scheduled clips, calculate actual clips to be queued
-                /*
+                /*IS
                   for( j=self.cursor_scheduled_clip+1; j<self.scheduled_clips.length; j++ ) {
                   var scheduled_c = self.scheduled_clips[j];
                   if (scheduled_c.schedule_time!="now") {
                   self.scheduled_clips_index_last_to_queue = j-1;
                   console.log("mbc-mnostp: [INFO] [SYNC] clips to be queued: " + self.scheduled_clips_index_last_to_queue );
                   }
-                  }
-                */
-
+                  }*/
+                
                 if (self.actual_playing_status=="playing") {
+
+                    var i = 0, j = 0;
                     for( i=self.actual_playing_index,j=self.cursor_scheduled_clip; i<server_playing_list.length && j<self.scheduled_clips.length; i++,j++) {
                         //COMPARE EACH ONE
                         //media on video server
@@ -578,17 +579,11 @@ function mosto(customConfig) {
                         //media expected in mosto
                         var scheduled_media = self.scheduled_clips[j].media;
 
-                        var ff = self.convertMediaFileToClipId(scheduled_media);
-                        var comparison = self.convertMediaFileToClipId(queued_media) != ff;
-
                         breakpoint_playing_cursor = i;
                         breakpoint_scheduled_cursor = j;
 
-                        //console.log("CHECK OTHERS: i:" +i + " j:" + j );
-                        //console.log("CHECK OTHERS: COMPARING " + queued_media.file + " vs " + ff + " com:" + comparison );
-
                         //CHECK IF WE REACH AN INCOHERENCE
-                        if ( comparison ) {
+                        if ( queued_media.id !== scheduled_media.id ) {
                             //record he cursors
                             console.log("mbc-mosto: [INFO] [SYNC] CHECK OTHERS: diff founded, break, remove and append" );
                             need_sync_clips = true;
@@ -623,16 +618,11 @@ function mosto(customConfig) {
                 self.timerUnlock();
 
             } else {
-                //WE ARE NOT PLAYING THE EXPECTED ONE (OR NOT A THE EXPECTED POSITION) !!!
-                // LOAD EVERYTHING STARTING FROM THE EXPECTED CLIP
-
-                //clean playlist (doesnt matter, we are stopped)... then populate...
+                //WE ARE NOT PLAYING THE EXPECTED ONE SO WE CLEAN UP AND LOAD/GOTO EXPECTED ONE
                 self.server.cleanPlaylist( function(response) {
-                    console.log("cleanPlaylist ok! " + response );
+                    console.log("mbc-mosto: [INFO] cleanPlaylist ok! " + response );
                     var sched_clip = self.scheduled_clips[self.cursor_scheduled_clip];
                     self.server.appendClip( sched_clip.media, function(response) {
-                    //self.server.loadClip( sched_clip.media, function(response) {
-                        //EASY only C from CRUD
                         var next_index = 0;
                         if (self.actual_playing_index>-1) {
                             next_index = self.actual_playing_index+1;
