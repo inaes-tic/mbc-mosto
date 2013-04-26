@@ -514,156 +514,41 @@ function mosto(customConfig) {
         });
     };
 
-
+    
     /** SYNC MODULE */
-    /**     syncroCurrentPlaylist
+    /**     syncroScheduledClips
      *
      *       compare every media scheduled in current_playlist with server  playlist
      *
      */
     mosto.prototype.syncroScheduledClips = function( server_playing_list ) {
 
-        var i = 0, j = 0;
-        var min_queue_clips = 1;
-
-        //        console.log("mbc-mosto: [INFO] syncroScheduledClips > server_playing_list = " + server_playing_list );
         console.log("mbc-mosto: [INFO] syncroScheduledClips > server_playing_list medias = " + server_playing_list.length + " playingidx: " + self.actual_playing_index );
 
-        var st = self.buildStatus(server_playing_list, self.actual_status);
-        //self.emit("status", st);
+        var st = self.buildStatus( server_playing_list, self.actual_status );
         self.status_driver.setStatus(st);
 
-
-        //CALLING upstream (LOGIC > FETCH > function convertPlaylistsToScheduledClips() )  when...
-        // condition is:
-        // 1) video server is stopped
-        // 2) video server list is empty or
-        // 3) number of queued clips remaining is less than min_queue_clips.... or
-        // 4) no scheduled_clips!!! we need some
-        if (    !server_playing_list || server_playing_list.length==0
-                ||
-                self.actual_playing_status=="stopped"
-                ||
-                self.scheduled_clips.length===0
-                ||
-                ( /*hay algo cargado pero... hay menos de min_queue_clips encolados luego del actual...*/
-                    server_playing_list.length>0
-                        &&
-                        ( (server_playing_list.length-1) - self.actual_playing_index  ) < min_queue_clips
-                )
-           ) {
+        //CALLING upstream when clips are needed...
+        if ( self.ineedMoreClips( server_playing_list, 1 ) ) {
             console.log("mbc-mosto: [INFO] [SYNC MODULE] i'm hungry, i need more clips!!! calling upstream LOGIC > convertPlaylistsToScheduledClips()");
-
-            //self.testSClips();
-            console.log("mbc-mosto: [INFO] len " + self.scheduled_clips.length );
-
-            //CALLING [LOGIC] module method:
             self.convertPlaylistsToScheduledClips();
-            //self.sync_lock = false;
         }
-
 
         //SYNC METHOD: always check:
         // 1) if video server is playing the expected clip
         // 2) if queue clips are correct
-        var expected_clip = null;
-        var next_expected_clip = null;
-        var next_expected_start = null;
-        var expected_frame = 0;
-        var reference_clock = null;
-        self.previous_cursor_scheduled_clip = self.cursor_scheduled_clip;
-        self.cursor_scheduled_clip = -1;
 
-        /** CALCUTALE NEW RELATIVE CLOCK (based on video server index and expected clip start time */
-        //playlist has avanced
-        if ( self.previous_playing_index < self.actual_playing_index && self.actual_playing_status == "playing" ) {
-            self.ref_sched_index = self.ref_sched_index + 1;
-            self.actual_expected_start = self.scheduled_clips[ self.ref_sched_index ].expected_start;
-            console.log("changed index from: " + self.previous_playing_index + " to " + self.actual_playing_index + " self.ref_sched_index:  "  + self.ref_sched_index  );
-        }
+        var expected_clip = self.getExpectedClip( server_playing_list );
 
-
-        if (self.actual_playing_frame>=0 && self.actual_expected_start) {
-
-            //calculate timer_relative_clock > warning, always do the expected_start of the playing clip...
-            self.timer_relative_clock = moment( self.actual_expected_start, "DD/MM/YYYY HH:mm:ss.SSS" ).add(self.actual_position_millis);
-            self.timer_difference = moment.duration( self.timer_relative_clock - self.timer_clock ).asMilliseconds();
-            console.log("mbc-mosto: [INFO] timer_clock         " + " at:" + self.timer_clock.format("DD/MM/YYYY HH:mm:ss.SSS") );
-            console.log("mbc-mosto: [INFO] timer_relative_clock" + " at:" + self.timer_relative_clock.format("DD/MM/YYYY HH:mm:ss.SSS") );
-            console.log("mbc-mosto: [INFO] progress: " + self.actual_playing_progress );
-            console.log("mbc-mosto: [INFO] difference: " + self.timer_difference );
-        } else self.timer_difference = 0; //back to absolute clocking (we are stopped)
-
-
-        console.log( "Selecting reference clock :" + self.timer_difference );
-        //if diff minimal, use absolute, if diff too big using absolute > to force re-load and re-sync!
-        if( Math.abs(self.timer_difference) < 20 || Math.abs(self.timer_difference) > 10000 ) {
-            console.log("using absolute clock > forcing");
-            reference_clock = self.timer_clock;
-        } else {
-            console.log("using relative clock");
-            reference_clock = self.timer_relative_clock;
-        }
-
-        console.log("mbc-mosto: [INFO] reference_clock         " + " at:" + reference_clock.format("DD/MM/YYYY HH:mm:ss.SSS") );
-
-        //NOW CHECK FOR SCHEDULED CLIP EXPECTED TO RUN NOW ( based on selected reference clock, always relative, but absolute must be needed to ensure reync)
-        for( i=0; i<self.scheduled_clips.length; i++) {
-            var sched_clip = self.scheduled_clips[i];
-            if (sched_clip) {
-                var ex_start = moment(sched_clip.expected_start,"DD/MM/YYYY HH:mm:ss.SSS");
-                var ex_end = moment(sched_clip.expected_end,"DD/MM/YYYY HH:mm:ss.SSS");
-                if ( reference_clock < ex_start ) {
-                    if (next_expected_start==null) {
-                        next_expected_start = ex_start;
-                    }
-                    if ( ex_start <= next_expected_start ) {
-                        next_expected_clip = sched_clip;
-                        next_expected_start = ex_start;
-                    }
-                }
-
-                if ( ex_start < reference_clock
-                     && reference_clock < ex_end ) {
-                    self.cursor_scheduled_clip = i;
-                    expected_clip = sched_clip;
-                    // TODO: calculate frame position! based on length.
-                    expected_frame = utils.getFramePositionFromClock( reference_clock, ex_start, 0, 25.00 );
-                    if ( expected_frame == undefined) expected_frame = 0;
-                    self.actual_expected_start = expected_clip.expected_start;
-                    break;
-                }
-            }
-        }
-
-        if (next_expected_clip) {
-            console.log("mbc-mosto: [INFO] next expected clip: " + next_expected_clip.media.file +" from:" + next_expected_clip.expected_start + " to:" + next_expected_clip.expected_end );
-        }
-
-        //MANDATORY TO HAVE AN EXPECTED CLIP!!! IF NOT, WE DO NOTHING
-        if (    expected_clip
-                //&& (self.previous_playing_index == self.actual_playing_index)
-                //&& (self.previous_cursor_scheduled_clip==self.cursor_scheduled_clip)
-                //&& (self.actual_playing_index == self.cursor_scheduled_clip)
-                //&& self.actual_playing_progress > 0.01 && self.actual_playing_progress < 0.99
-           ) {
-
+        // DO WE HAVE AN EXPECTED CLIP ?
+        if ( expected_clip ) {
 
             console.log("mbc-mosto: [INFO] expected clip: " + expected_clip.media.file + " from:" + expected_clip.expected_start + " to:" + expected_clip.expected_end );
 
+            // IS IT PLAYING IN SERVER ?
+            if ( self.isPlayingExpectedClip( expected_clip ) ) {
 
-            // CHECK AND COMPARE IF WE ARE PLAYING THE EXPECTED ONE...
-            console.log("COMPARE!!!" + self.actual_playing_status + " self.actual_playing_clip:"+self.actual_playing_clip + " vs expected: " + self.convertMediaFileToClipId(expected_clip.media) );
-
-            // NOW COMPARE EXPECTED WITH ACTUAL
-            // Conditions of timer_difference may trigger
-            if (
-                    self.actual_playing_clip != ""
-                    && (self.actual_playing_status == "playing" || self.actual_playing_status == "paused")
-                    && self.actual_playing_clip == self.convertMediaFileToClipId(expected_clip.media)
-            ) {
-
-                console.log(" We are playing the expected clip !! ");
+                console.log("mbc-mosto: [INFO] [SYNC] We are playing the expected clip !! ");
 
                 var breakpoint_playing_cursor = -1;
                 var breakpoint_scheduled_cursor = -1;
@@ -752,7 +637,7 @@ function mosto(customConfig) {
                         if (self.actual_playing_index>-1) {
                             next_index = self.actual_playing_index+1;
                         }
-                        self.server.goto( next_index, expected_frame, function(response) {                            
+                        self.server.goto( next_index, expected_clip.expected_frame, function(response) {                            
                             self.server.play(  function(response) {
                                 console.log("mbc-mosto: [INFO] [SYNC] LOADED start playing!");
                                 self.actual_expected_start = sched_clip.expected_start;
