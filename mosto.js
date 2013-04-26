@@ -179,22 +179,17 @@ function mosto(customConfig) {
      *       Any older playlist are removed from memory to release memory
      */
     mosto.prototype.checkoutPlaylists = function() {
-        console.log("mbc-mosto: checking out new playlists");
+        console.log("mbc-mosto: [INFO] [FETCH] checking out new playlists in our time window.");
 
-        //TODO: We need here to retreive data form DB Driver... (ask for it)
-        // we retreive data when: we load for the first time...
+        //TODO: just ask for the difference between "actual time window" and "last time window"
+        var last_time_window_to = moment(self.time_window_to);
 
-        self.time_window_from = moment();
-        //var last_time_window_to = self.time_window_to.clone();
-        var last_time_window_to = self.time_window_from.clone();
-
-        self.time_window_to = self.time_window_from.clone();
-        self.time_window_to.add( moment.duration({ hours: 4 }) );
+        self.updateTimeWindow();
 
         console.log("mbc-mosto: [INFO] [FETCH] checkoutPlaylists > from: " + self.time_window_from.format("DD/MM/YYYY HH:mm:ss") + " to:" + self.time_window_to.format("DD/MM/YYYY HH:mm:ss") );
 
         //now we read playlists, between "last_time_window_to" and "time_window_to"
-        self.driver.getPlaylists( { from: last_time_window_to, to: self.time_window_to, setWindow: false }, function(playlists) {
+        self.driver.getPlaylists( { from: self.time_window_from, to: self.time_window_to, setWindow: false }, function(playlists) {
 
             //just import new ones....
             console.log("mbc-mosto: [INFO] [LOGIC] checkoutPlaylists > receive playlists from: " + last_time_window_to.format("DD/MM/YYYY HH:mm:ss") + " to:" + self.time_window_to.format("DD/MM/YYYY HH:mm:ss") );
@@ -217,8 +212,6 @@ function mosto(customConfig) {
             //update the boundaries
             self.driver.setWindow( self.time_window_from, self.time_window_to );
         } );
-
-        //TODO: If we are up to date, just return!! (important to avoid infinite recursions)
 
     }
 
