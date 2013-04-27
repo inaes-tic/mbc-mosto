@@ -105,6 +105,19 @@ CaspaDriver.prototype.setStatus = function(meltedStatus) {
     };
     status.piece.current.progress = meltedStatus.position * 100 + "%";
 
+    /* all of this nonsense is to avoid undefineds. I don't know 
+       it's worth the trouble.
+
+       in the end all it's doing is taking out currentFrames from both
+       the saved status and the received one, and check if anything changed
+    */
+    var currentButFrames = _.omit(status.piece.current, 'currentFrames');
+    var statusButFrames = _.chain(status).clone().extend({piece: { current: currentButFrames }})
+    var myButFrames = _.omit(this.status.piece.current, 'currentFrames');
+    var myStatusButFrames = _.chain(status).clone().extend({ piece: { current: myButFrames } }).value();
+    if( statusButFrames.isEqual(myStatusButFrames).value() )
+        return this.setStatusClip(status.piece.current);
+
     this.status = _.extend(this.status, status);
     // except next. If that's undefined, I just don't know!
     this.status.show.next = status.show.next;
