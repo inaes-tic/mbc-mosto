@@ -108,13 +108,13 @@ CaspaDriver.prototype.setStatus = function(meltedStatus) {
     this.status = _.extend(this.status, status);
     // except next. If that's undefined, I just don't know!
     this.status.show.next = status.show.next;
-    this.publishStatus(status);
+    this.publish("mostoStatus", status);
 };
 
 CaspaDriver.prototype.setStatusClip = function(statusClip) {}
 
-CaspaDriver.prototype.publishStatus = function(status) {
-    this.publisher.publishJSON("mostoStatus", status)
+CaspaDriver.prototype.publish = function(channel, status) {
+    this.publisher.publishJSON(channel, status);
 };
 
 CaspaDriver.prototype.publishMessage = function(code, description, message, sticky) {
