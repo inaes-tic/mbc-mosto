@@ -10,7 +10,7 @@ var util = require('util');
 var _ = require('underscore');
 var mbc = require('mbc-common');
 
-defaults = { // copied from caspa/models.App.Status
+var defaults = { // copied from caspa/models.App.Status
     _id: 2,
     piece: {
         previous: {name: ''},
