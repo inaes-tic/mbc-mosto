@@ -32,7 +32,6 @@ console.log = console.info = function(t) {
 // END SILENCE LOG OUTPUT
 */
 
-
 function mosto(customConfig) {
     var self = this;
 
