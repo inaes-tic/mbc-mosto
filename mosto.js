@@ -3,6 +3,7 @@ var fs               = require('fs'),
     events           = require('events'),
     moment           = require('moment'),
     Playlist         = require('./api/Playlist'),
+    Melted           = require('./api/Melted'),
     Media            = require('./api/Media'),
     ScheduledMedia   = require('./api/ScheduledMedia'),
     mvcp_server      = require('./drivers/mvcp/mvcp-driver'),
@@ -1074,7 +1075,18 @@ function mosto(customConfig) {
         self.status_driver = status_driver();
         
         self.initDriver();
-        self.startMvcpServer(self.play);
+
+        Melted.take(function() {
+            Melted.stop(function(pid) {
+                Melted.start(function(pid) {
+                    Melted.setup( undefined, undefined, function(has_err) {
+                        self.startMvcpServer(self.play);
+                    });                    
+                    Melted.leave();
+                });
+            });    
+        });
+        
     }    
 
 }
