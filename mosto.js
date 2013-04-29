@@ -546,8 +546,13 @@ function mosto(customConfig) {
 
         console.log("mbc-mosto: [INFO] syncroScheduledClips > server_playing_list medias = " + server_playing_list.length + " playingidx: " + self.actual_playing_index );
 
-        var st = self.buildStatus( server_playing_list, self.actual_status );
-        self.status_driver.setStatus(st);
+        self.emit('syncing', 'calling syncro upstream' );
+
+        self.prev_full_status = self.full_status;
+        self.full_status = self.buildStatus( server_playing_list, self.actual_status );
+        if ( self.statusHasChanged() ) {
+            self.emit('status', self.full_status );
+        }
 
         //CALLING upstream when clips are needed...
         if ( self.ineedMoreClips( server_playing_list, 1 ) ) {
@@ -952,6 +957,15 @@ mosto.prototype.getExpectedClip = function( server_playing_list ) {
             self.time_window_to = self.time_window_from.clone();
             self.time_window_to.add( moment.duration({ hours: 4 }) );
             console.log("mbc-mosto: [PLAY] setting window: from: "  + self.time_window_from.format("DD/MM/YYYY HH:mm:ss") + " to: " + self.time_window_to.format("DD/MM/YYYY HH:mm:ss") );
+
+            self.on('statusclip', function(stclip) {
+                //if (self.status_driver) self.status_driver.setStatusClip(stclip) );
+            });
+
+            self.on('status', function(st) {
+                if (self.status_driver) self.status_driver.setStatus(st);
+            });
+
         }
     }
 
@@ -1043,9 +1057,15 @@ mosto.prototype.getExpectedClip = function( server_playing_list ) {
 
     this.actual_status = null;
 
+    this.full_status = undefined;
+    this.prev_full_status = undefined;
+
     /** ALL MODULES */
 
     this.config = customConfig || config;
+    this.server = undefined;
+    this.driver = undefined;
+    this.status_driver = undefined;
 
     console.log("mbc-mosto: [INFO] Starting mbc-mosto... ") ;
 
