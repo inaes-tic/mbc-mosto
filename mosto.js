@@ -12,6 +12,25 @@ var fs               = require('fs'),
     utils            = require('./utils'),
     config           = require('mbc-common').config.Mosto.General,
     _                = require('underscore');
+/*
+// SILENCE LOG OUTPUT
+var util = require('util');
+var fs = require('fs');
+var log = fs.createWriteStream('./stdout.log');
+
+console.log = console.info = function(t) {
+  var out;
+  if (t && ~t.indexOf('%')) {
+    out = util.format.apply(util, arguments);
+    process.stdout.write(out + '\n');
+    return;
+  } else {
+    out = Array.prototype.join.call(arguments, ' ');
+  }
+  out && log.write(out + '\n');
+};
+// END SILENCE LOG OUTPUT
+*/
 
 
 function mosto(customConfig) {
