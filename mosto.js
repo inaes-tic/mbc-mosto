@@ -1033,7 +1033,7 @@ mosto.prototype.getExpectedClip = function( server_playing_list ) {
 
     /** PLAY MODULE */
     this.timer = null;
-    this.timer_clock = null;
+    this.timer_clock = moment();
     this.timer_relative_clock = null;
     this.timer_expected_clock = null;
     this.timer_difference = 0;
@@ -1070,12 +1070,14 @@ mosto.prototype.getExpectedClip = function( server_playing_list ) {
 
     console.log("mbc-mosto: [INFO] Starting mbc-mosto... ") ;
 
-    this.server     = new mvcp_server(this.config.mvcp_server);
-    this.driver     = new playlists_driver(this.config.playlist_server);
-    this.status_driver = status_driver();
-
-    self.initDriver();
-    self.startMvcpServer(self.play);
+    mosto.prototype.init = function() {
+        self.server     = new mvcp_server(self.config.mvcp_server);
+        self.driver     = new playlists_driver(self.config.playlist_server);
+        self.status_driver = status_driver();
+        
+        self.initDriver();
+        self.startMvcpServer(self.play);
+    }    
 
 }
 
