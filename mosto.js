@@ -727,7 +727,7 @@ function mosto(customConfig) {
 
     }
 
-mosto.prototype.getExpectedClip = function( server_playing_list ) {
+    mosto.prototype.getExpectedClip = function( server_playing_list ) {
 
         var expected_clip = null;
         var next_expected_clip = null;
@@ -745,7 +745,6 @@ mosto.prototype.getExpectedClip = function( server_playing_list ) {
             self.actual_expected_start = self.scheduled_clips[ self.ref_sched_index ].expected_start;
             console.log("changed index from: " + self.previous_playing_index + " to " + self.actual_playing_index + " self.ref_sched_index:  "  + self.ref_sched_index  );
         }
-
 
         if (self.actual_playing_frame>=0 && self.actual_expected_start) {
             //calculate timer_relative_clock > warning, always do the expected_start of the playing clip...
@@ -1005,7 +1004,6 @@ mosto.prototype.getExpectedClip = function( server_playing_list ) {
             }, 5000);
         });
     };
-
 
     /** CONFIGURATION */
     this.config     = false;
