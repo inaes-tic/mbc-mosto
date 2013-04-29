@@ -135,6 +135,7 @@ function mosto(customConfig) {
      *
      */
     mosto.prototype.trimPlaylists = function() {
+        self.updateTimeWindow();
         var newplaylists = [];
         for(var i=0; i<self.playlists.length;i++) {
             var playlist = self.playlists[i];
@@ -192,29 +193,30 @@ function mosto(customConfig) {
         console.log("mbc-mosto: [INFO] [FETCH] checkoutPlaylists > from: " + self.time_window_from.format("DD/MM/YYYY HH:mm:ss") + " to:" + self.time_window_to.format("DD/MM/YYYY HH:mm:ss") );
 
         //now we read playlists, between "last_time_window_to" and "time_window_to"
-        self.driver.getPlaylists( { from: self.time_window_from, to: self.time_window_to, setWindow: false }, function(playlists) {
+        if (self.driver)
+            self.driver.getPlaylists( { from: self.time_window_from, to: self.time_window_to, setWindow: false }, function(playlists) {
 
-            //just import new ones....
-            console.log("mbc-mosto: [INFO] [LOGIC] checkoutPlaylists > receive playlists from: " + last_time_window_to.format("DD/MM/YYYY HH:mm:ss") + " to:" + self.time_window_to.format("DD/MM/YYYY HH:mm:ss") );
-            for( var p=0;p<playlists.length;p++) {
-                var playlist = playlists[p];
-                var i = -1;
-                self.playlists.some( function(element, index, array) {
-                    if (element.id === playlist.id) {
-                        i = index;
-                        return true;
+                //just import new ones....
+                console.log("mbc-mosto: [INFO] [LOGIC] checkoutPlaylists > receive playlists from: " + last_time_window_to.format("DD/MM/YYYY HH:mm:ss") + " to:" + self.time_window_to.format("DD/MM/YYYY HH:mm:ss") );
+                for( var p=0;p<playlists.length;p++) {
+                    var playlist = playlists[p];
+                    var i = -1;
+                    self.playlists.some( function(element, index, array) {
+                        if (element.id === playlist.id) {
+                            i = index;
+                            return true;
+                        }
+                    });
+                    if (i==-1) {
+                        self.playlists.push(playlist);
                     }
-                });
-                if (i==-1) {
-                    self.playlists.push(playlist);
                 }
-            }
 
-            self.orderPlaylists();
+                self.orderPlaylists();
 
-            //update the boundaries
-            self.driver.setWindow( self.time_window_from, self.time_window_to );
-        } );
+                //update the boundaries
+                self.driver.setWindow( self.time_window_from, self.time_window_to );
+            } );
 
     }
 
