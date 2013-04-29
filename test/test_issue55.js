@@ -1,6 +1,6 @@
 var assert = require("assert");
 var melted = require('../api/Melted');
-
+/*
 describe('Melted', function(){
 	describe('#take - #leave', function(){
 		var serie = "";
@@ -78,4 +78,4 @@ describe('Melted', function(){
 	});
 
 });
-
+*/
