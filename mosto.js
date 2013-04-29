@@ -956,6 +956,7 @@ mosto.prototype.getExpectedClip = function( server_playing_list ) {
         if (!self.timer) {
             self.timer = setInterval( self.timer_fun, self.config.timer_interval );
             self.updateTimeWindow();
+            self.timer_fun();
             console.log("mbc-mosto: [PLAY] setting window: from: "  + self.time_window_from.format("DD/MM/YYYY HH:mm:ss") + " to: " + self.time_window_to.format("DD/MM/YYYY HH:mm:ss") );
 
             self.on('statusclip', function(stclip) {
