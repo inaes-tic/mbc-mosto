@@ -114,7 +114,7 @@ function mosto(customConfig) {
             self.startBlack( sch_rightnow, "00:00:50.00", sch_rightnow, moment( sch_rightnow,"DD/MM/YYYY HH:mm:ss.SSS").add(moment.duration({ milliseconds: 50000 }) ).format('DD/MM/YYYY HH:mm:ss.SSS') );
         }
 
-        console.log("mbc-mosto: [INFO] Start ordering playlists");
+        console.log("mbc-mosto: [INFO] Start ordering playlists " + self.playlists.length);
         self.playlists.sort(function (item1, item2) {
             if (item1.startDate < item2.startDate)
                 return -1;
@@ -139,7 +139,9 @@ function mosto(customConfig) {
         for(var i=0; i<self.playlists.length;i++) {
             var playlist = self.playlists[i];
             if ( (moment(playlist.startDate) <= self.time_window_to &&
-                  moment(playlist.endDate) >= self.time_window_from ) ) {
+                  moment(playlist.endDate) >= self.time_window_from ) 
+                && (playlist.id != 'black_id') ) {
+                console.log("trimming:" + playlist.id );
                 newplaylists.push(playlist);
             }
         }
