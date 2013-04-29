@@ -526,6 +526,15 @@ function mosto(customConfig) {
         });
     };
 
+    mosto.prototype.statusHasChanged = function() {
+
+        var result = ( self.prev_full_status == undefined );
+        result = result || ( self.prev_full_status 
+                && ( self.prev_full_status.clips.length!=self.full_status.clips.length
+                     || self.prev_full_status.clip.current!=self.full_status.clip.current ) 
+                );
+        return result;
+    }
     
     /** SYNC MODULE */
     /**     syncroScheduledClips
