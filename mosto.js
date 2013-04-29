@@ -259,6 +259,8 @@ function mosto(customConfig) {
 
         console.log("mbc-mosto: [INFO] [LOGIC] converting Playlists to scheduled clips");
 
+        self.emit('converting', '[LOGIC] Scheduler start' );
+
         //Check if we need to make a checkout! (upstream syncro!! > sync_lock must be true )
         //UPSTREAM
         if ( self.upstreamActive() ) {
@@ -288,6 +290,8 @@ function mosto(customConfig) {
             }
             self.playlists_updated = false;
         }
+
+        self.emit('converted', '[LOGIC] Scheduler end' );
 
         //TODO: try to syncro immediatelly
         //or wait for timer synchronization
@@ -680,6 +684,9 @@ function mosto(customConfig) {
             }
             self.timerUnlock();
         }
+
+        self.emit('synced', 'finished ' );
+
     }
 
     mosto.prototype.ineedMoreClips = function( server_playing_list, min_queue_clips ) {
@@ -869,6 +876,8 @@ mosto.prototype.getExpectedClip = function( server_playing_list ) {
 
             self.actual_position_millis = utils.convertFramesToMilliseconds( self.actual_status.actualClip.currentFrame, self.actual_status.actualClip.fps );
             self.actual_position_millis_length = self.actual_status.actualClip.totalFrames;
+
+            self.emit('playing','playing clip: ' + self.actual_playing_clip );
         } else {
             self.actual_playing_frame = -1;
             self.actual_playing_index = -1;
