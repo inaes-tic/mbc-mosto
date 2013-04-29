@@ -551,7 +551,13 @@ function mosto(customConfig) {
         var result = ( self.prev_full_status == undefined );
         result = result || ( self.prev_full_status 
                 && ( self.prev_full_status.clips.length!=self.full_status.clips.length
-                     || self.prev_full_status.clip.current!=self.full_status.clip.current ) 
+                     || self.prev_full_status.clip.current!=self.full_status.clip.current
+                     || self.prev_full_status.clip.prev!=self.full_status.clip.prev
+                     || self.prev_full_status.clip.next!=self.full_status.clip.next
+                     || self.prev_full_status.show.prev!=self.full_status.show.prev
+                     || self.prev_full_status.show.current!=self.full_status.show.current
+                     || self.prev_full_status.show.next!=self.full_status.show.next
+                    ) 
                 );
         return result;
     }
@@ -984,10 +990,12 @@ function mosto(customConfig) {
             console.log("mbc-mosto: [PLAY] setting window: from: "  + self.time_window_from.format("DD/MM/YYYY HH:mm:ss") + " to: " + self.time_window_to.format("DD/MM/YYYY HH:mm:ss") );
 
             self.on('statusclip', function(stclip) {
+                console.log("mbc-mosto: [PLAY] emitting statusclip: " + stclip.currentFrame + " / "+  stclip.totalFrames);
                 if (self.status_driver) self.status_driver.setStatusClip(stclip);
             });
 
             self.on('status', function(st) {
+                console.log("mbc-mosto: [PLAY] emitting status");
                 if (self.status_driver) self.status_driver.setStatus(st);
             });
 
