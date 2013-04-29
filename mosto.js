@@ -889,6 +889,8 @@ mosto.prototype.getExpectedClip = function( server_playing_list ) {
             self.actual_playing_length = self.actual_status.actualClip.totalFrames;
             self.actual_playing_fps =  self.actual_status.actualClip.fps;
 
+            self.emit('statusclip', self.actual_status.actualClip);
+
             self.actual_position_millis = utils.convertFramesToMilliseconds( self.actual_status.actualClip.currentFrame, self.actual_status.actualClip.fps );
             self.actual_position_millis_length = self.actual_status.actualClip.totalFrames;
 
