@@ -959,7 +959,7 @@ function mosto(customConfig) {
             console.log("mbc-mosto: [PLAY] setting window: from: "  + self.time_window_from.format("DD/MM/YYYY HH:mm:ss") + " to: " + self.time_window_to.format("DD/MM/YYYY HH:mm:ss") );
 
             self.on('statusclip', function(stclip) {
-                //if (self.status_driver) self.status_driver.setStatusClip(stclip) );
+                if (self.status_driver) self.status_driver.setStatusClip(stclip);
             });
 
             self.on('status', function(st) {
