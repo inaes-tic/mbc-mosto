@@ -213,7 +213,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
             });
             it("--should be playing first clip of added playlist", function(done) {                
                 function is_playing_media( clipid, intents, interv ) {
-                    if (intents==0) return done();
+                    assert.notEqual( intents, 0 , done(new Error("Too much intents.")));
                     mosto_server.once('playing', function(mess3) {
                         console.log(mess3);
                         if ( mosto_server.actual_playing_clip == clipid ) {
