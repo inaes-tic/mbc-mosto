@@ -488,7 +488,7 @@ function mosto(customConfig) {
     };
 
     mosto.prototype.validatePlaylist = function( playlist ) {
-        for( i=0; i<playlist.length; i++) {
+        for( var i=0; i<playlist.length; i++) {
             element = playlist[i];
             if ( element.fps != self.config.fps ) {
                 console.error("Playlist is not valid! media: " + element.file + " fps:" + element.fps );
@@ -581,8 +581,7 @@ function mosto(customConfig) {
                   }*/
                 
                 if (self.actual_playing_status=="playing") {
-
-                    var i = 0, j = 0;
+                    
                     for( i=self.actual_playing_index,j=self.cursor_scheduled_clip; i<server_playing_list.length && j<self.scheduled_clips.length; i++,j++) {
                         //COMPARE EACH ONE
                         //media on video server
@@ -756,7 +755,7 @@ mosto.prototype.getExpectedClip = function( server_playing_list ) {
         console.log("mbc-mosto: [INFO] reference_clock         " + " at:" + reference_clock.format("DD/MM/YYYY HH:mm:ss.SSS") );
 
         //NOW CHECK FOR SCHEDULED CLIP EXPECTED TO RUN NOW ( based on selected reference clock, always relative, but absolute must be needed to ensure reync)
-        for( i=0; i<self.scheduled_clips.length; i++) {
+        for( var i=0; i<self.scheduled_clips.length; i++) {
             var sched_clip = self.scheduled_clips[i];
             if (sched_clip) {
                 var ex_start = moment(sched_clip.expected_start,"DD/MM/YYYY HH:mm:ss.SSS");
@@ -828,7 +827,7 @@ mosto.prototype.getExpectedClip = function( server_playing_list ) {
             return;
         }
 
-        sched_clip = self.scheduled_clips[index_iteration];
+        var sched_clip = self.scheduled_clips[index_iteration];
 
         if ( index_iteration>0 && sched_clip.schedule_time!="now") {
             //we break the loading loop at second appearance of a non-queued media...
