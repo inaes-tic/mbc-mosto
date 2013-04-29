@@ -946,7 +946,12 @@ function mosto(customConfig) {
             self.sync_lock_diff = self.sync_lock_time.diff(self.sync_lock_start);
             console.log("mbc-mosto: [INFO] sync LOCKED, for " + self.sync_lock_diff );
             if (Math.abs(self.sync_lock_diff)>2000) {
+                //kill server and reconnect!!!
+                self.server = null;
+                self.server = new mvcp_server(self.config.mvcp_server);
                 self.timerUnlock();
+                self.stop();
+                self.startMvcpServer(self.play);               
             }
         }
     }
