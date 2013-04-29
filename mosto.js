@@ -286,6 +286,7 @@ function mosto(customConfig) {
         if (self.playlists_updated) {
             self.scheduled_clips = [];
             if (self.playlists.length>0) {
+                console.log("mbc-mosto: [INFO] [LOGIC] actually converting playlists.");
                 self.preparePlaylist( 0, -1 );
             }
             self.playlists_updated = false;
@@ -296,7 +297,7 @@ function mosto(customConfig) {
         //TODO: try to syncro immediatelly
         //or wait for timer synchronization
         //self.server.getServerPlaylist( self.syncroScheduledClips );
-
+        
     }
 
     /** preparePlaylist
@@ -385,7 +386,7 @@ function mosto(customConfig) {
 
                             schedule_time = sch_time;
                         }
-
+                    console.log("mbc-mosto: [INFO] [LOGIC] adding scheduled clip:" + sMedia.id + " file:" + sMedia.file + " start:"+sch_expect_start+" end:"+sch_expect_end + " milis:" + milis );
                     self.scheduled_clips.push( new ScheduledMedia( sMedia, schedule_time, sch_duration, sch_expect_start, sch_expect_end ) );
                     lastTimeCode = sch_expect_end;
                     last_tc = moment( lastTimeCode,"DD/MM/YYYY HH:mm:ss.SSS");
@@ -564,6 +565,7 @@ function mosto(customConfig) {
                 var breakpoint_playing_cursor = -1;
                 var breakpoint_scheduled_cursor = -1;
                 var need_sync_clips = false;
+                var i = 0, j = 0;
                 //LETS CHECK THE OTHERS....
                 //TODO: check maybe if we have enough time int this clip to check the full list...
                 //console.log(" check  the others !! ");
