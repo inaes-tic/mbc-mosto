@@ -55,13 +55,15 @@ exports = module.exports = {
         return m.hours()*60*60*1000 + m.minutes()*60*1000 + m.seconds()*1000 + m.milliseconds();
     },
 
-    convertFramesToMilliseconds: function ( frames, fps ) {
-        if (fps+""=="NaN" || fps==undefined || fps===false || fps==0) {
+    convertFramesToMilliseconds: function ( frames, fps ) {        
+        if ( isNaN(frames) || fps+""=="NaN" || fps==undefined || fps===false || fps==0) {            
             var m = moment( frames, "HH:mm:ss.SS");
-            return m.hours()*60*60*1000 + m.minutes()*60*1000 + m.seconds()*1000 + m.milliseconds();
+            if (m) return m.hours()*60*60*1000 + m.minutes()*60*1000 + m.seconds()*1000 + m.milliseconds();
         }
         fps = parseFloat(fps);
-        return frames * 1000.0 / (1.0 * fps);
+        var millis = frames * 1000.0 / (1.0 * fps);
+        if (millis!==undefined) return millis;
+        console.error("mbc-mosto: utils.convertFramesToMilliseconds frames: " + frames + " fps:" + fps);
     },
 
     convertDurationToString: function( moment_duration ) {
