@@ -115,8 +115,9 @@ CaspaDriver.prototype.setStatus = function(meltedStatus) {
     var statusButFrames = _.chain(status).clone().extend({piece: { current: currentButFrames }})
     var myButFrames = _.omit(this.status.piece.current, 'currentFrames');
     var myStatusButFrames = _.chain(status).clone().extend({ piece: { current: myButFrames } }).value();
-    if( statusButFrames.isEqual(myStatusButFrames).value() )
-        return this.setStatusClip(status.piece.current);
+    if( statusButFrames.isEqual(myStatusButFrames).value() ) {
+        return this.setStatusClip(meltedStatus.clip.current);
+    }
 
     this.status = _.extend(this.status, status);
     // except next. If that's undefined, I just don't know!
