@@ -1106,7 +1106,8 @@ function mosto(customConfig) {
         self.status_driver = status_driver();
         
         self.initDriver();
-
+        self.startMvcpServer(self.play);
+/*
         Melted.take(function() {
             Melted.stop(function(pid) {
                 Melted.start(function(pid) {
@@ -1117,7 +1118,7 @@ function mosto(customConfig) {
                 });
             });    
         });
-        
+*/        
     }    
 
 }
