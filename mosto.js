@@ -562,6 +562,7 @@ function mosto(customConfig) {
                      || self.prev_full_status.clip.current!=self.full_status.clip.current
                      || self.prev_full_status.clip.prev!=self.full_status.clip.prev
                      || self.prev_full_status.clip.next!=self.full_status.clip.next
+
                      || self.prev_full_status.show.prev!=self.full_status.show.prev
                      || self.prev_full_status.show.current!=self.full_status.show.current
                      || self.prev_full_status.show.next!=self.full_status.show.next
@@ -734,6 +735,7 @@ function mosto(customConfig) {
                 self.convertPlaylistsToScheduledClips();
             }
             self.timerUnlock();
+            
         }
 
         self.emit('synced', 'finished ' );
@@ -799,6 +801,7 @@ function mosto(customConfig) {
 
 
         console.log( "Selecting reference clock :" + self.timer_difference );
+       
         //if diff minimal, use absolute, if diff too big using absolute > to force re-load and re-sync!
         if( Math.abs(self.timer_difference) < 20 || Math.abs(self.timer_difference) > 10000 ) {
             console.log("using absolute clock > forcing");
