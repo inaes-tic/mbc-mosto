@@ -83,9 +83,13 @@ exports.is_running = function(callback) {
 exports.stop = function(callback) {
 	_do(function(pid) {
 		if (pid) {
-			// exports.connect(function(conn){ exports.push(conn, ['SHUTDOWN'], undefined, undefined); });
-			var kill = spawn('kill',[pid]);
-			kill.on('close', function(state) { return callback(pid) });
+			//exports.connect(function(conn){ exports.push(conn, ['SHUTDOWN'], undefined, undefined); });
+			var kill = spawn('kill',['-9',pid]);
+			//kill.on('close', function(state) { return callback(pid) });
+			kill.on('exit', function(code) { 
+                if (code) console.log("returned with code:"+code);
+                return callback(pid) 
+            });
 		} else
 			callback(pid);
 	})
