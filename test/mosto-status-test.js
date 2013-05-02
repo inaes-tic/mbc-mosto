@@ -43,12 +43,14 @@ describe('Mosto status', function() {
 melted.take(function() {
     describe('# status test: init mosto', function() {
 	    before(function(done) {
-	    	mosto_server = silence(function(){ return new mosto(); });
-            mosto_server.once('statusclip', function(stclip) {
-                ++rec;
-			    done();
-            });
-            mosto_server.init( melted, function() {                
+            melted.stop( function(pid) {
+	        	mosto_server = silence(function(){ return new mosto(); });
+                mosto_server.once('statusclip', function(stclip) {
+                    ++rec;
+			        done();
+                });
+                mosto_server.init( melted, function() {                
+                });
             });
 	    });
 	    it('--should be instantiated', function() {
@@ -70,14 +72,13 @@ melted.take(function() {
 
     describe('#Finish mosto', function() {
         before(function(done) {
-            mosto_server.finish();
-            done();
+            mosto_server.finish( function() {
+                mosto_server = undefined;
+                done();
+            } );
         });
-	    it('--- leave melted', function(done) {
-		    melted.stop(function(pid) {
-			    mosto_server = null;
-			    done();
-		    });
+	    it('--- leave mosto, leave melted', function() {
+    	    assert.equal( mosto_server,undefined);
 	    });
     });
 
