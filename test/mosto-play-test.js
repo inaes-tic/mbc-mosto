@@ -54,7 +54,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
 		    });
 	    });
 
-        describe('#[SYNC] Start Melted', function() {
+        describe('#[PLAY] Start Melted', function() {
             it("--should not throw error", function(done) {
                 melted.start(function(pid){
                     if (pid) {
@@ -65,7 +65,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
             });
         });
 
-        describe('#[SYNC] Setup Melted', function() {
+        describe('#[PLAY] Setup Melted', function() {
             it("--should not throw error", function(done) {
                 melted.setup(undefined, undefined, function(has_err) {                        
                     if (has_err) {
