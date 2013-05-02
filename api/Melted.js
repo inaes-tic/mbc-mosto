@@ -10,6 +10,36 @@ var conf = {
 	output: process.env.MELTED_OUTPUT || "sdl"    
 };
 
+var melted_bin_path = process.env.PWD+ '/melted/BUILD/bin/melted';
+var melted_lib_path = process.env.PWD+ '/melted/BUILD/lib';
+
+_meltedbin = function(callback,errorCallback) {
+    console.log("Melted.js: executing _meltedbin()");    
+	var pgrep = spawn( "which", ["melted"] );
+    var pbin = melted_bin_path;
+
+	pgrep.stdout.on('data', function (data) {
+		pbin = data;
+        console.log("Melted.js: data: " + data );
+        conf.bin = pbin;
+	});
+
+	pgrep.on('exit', function (code) {
+        if (code>1) {             
+            conf.bin = pbin;
+            errorCallback(code);
+        } else if (code==1) {
+            conf.bin = pbin;
+            return callback(pbin);
+        } else {
+            conf.bin = pbin;
+            return callback(pbin);
+        }
+	});
+
+};
+
+
 /**
  * _do
  *
@@ -107,10 +137,20 @@ exports.start = function(callback) {
 		if (pid) {
 			callback(pid);
 		} else {
-			var melted_proc = spawn(conf.bin, [], {detached: true, stdio: [ 'ignore', 'ignore', 'ignore' ]});
-			var pid = melted_proc.pid;
-			melted_proc.unref()
-			setTimeout(function() { callback(pid); }, 100);
+            _meltedbin( function(lbin) { 
+                console.log("Melted.js: [INFO] Melted.start > melted_bin is at: "+conf.bin);
+
+                if (process.env.LD_LIBRARY_PATH!==undefined) process.env.LD_LIBRARY_PATH = process.env.LD_LIBRARY_PATH+":"+melted_lib_path;
+                else process.env.LD_LIBRARY_PATH = melted_lib_path;
+
+			    var melted_proc = spawn(conf.bin, [], {detached: true, stdio: [ 'ignore', 'ignore', 'ignore' ]});
+			    var pid = melted_proc.pid;
+                //melted_proc.on('exit', function(code) { callback(pid); } );
+			    melted_proc.unref();
+			    setTimeout(function() { callback(pid); }, 1000 );
+            }, function(error) {
+                callback(0);
+            } );
 		}
 	})
 };
