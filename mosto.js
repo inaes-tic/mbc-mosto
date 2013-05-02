@@ -600,7 +600,7 @@ function mosto(customConfig) {
         // 1) if video server is playing the expected clip
         // 2) if queue clips are correct
 
-        var expected_clip = self.getExpectedClip( server_playing_list );
+        var expected_clip = self.getExpectedClip();
 
         // DO WE HAVE AN EXPECTED CLIP ?
         if ( expected_clip ) {
