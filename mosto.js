@@ -1049,11 +1049,11 @@ function mosto(customConfig) {
                 callback();
             }
         }, function(err) {
-            var e = new Error("mbc-mosto: [ERROR] Error starting MVCP server: " + err + ".\nRetrying in 5 seconds...");
+            var e = new Error("mbc-mosto: [ERROR] Error starting MVCP server: " + err + ".\nRetrying in 2 seconds...");
             console.error(e);
             setTimeout(function() {
                 self.startMvcpServer(callback);
-            }, 5000);
+            }, 2000);
         });
     };
 
