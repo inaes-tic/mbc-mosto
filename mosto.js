@@ -207,7 +207,7 @@ function mosto(customConfig) {
      *       Full playlist has a maximum of 4 hours total length starting from "now"
      *       Any older playlist are removed from memory to release memory
      */
-    mosto.prototype.checkoutPlaylists = function() {
+    mosto.prototype.checkoutPlaylists = function(callback) {
         console.log("mbc-mosto: [INFO] [FETCH] checking out new playlists in our time window.");
 
         //TODO: just ask for the difference between "actual time window" and "last time window"
@@ -241,6 +241,8 @@ function mosto(customConfig) {
 
                 //update the boundaries
                 self.driver.setWindow( self.time_window_from, self.time_window_to );
+    
+                if (callback) callback(playlists);
             } );
 
     }
