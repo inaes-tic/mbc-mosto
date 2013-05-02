@@ -186,11 +186,17 @@ function mosto(customConfig) {
     }
 
     mosto.prototype.updateTimeWindow = function() {
-        self.time_window_from = moment();
+        self.timer_clock = moment();
+        self.sync_lock_start = moment();
+
+        self.time_window_from = moment( moment().toDate());
         //var last_time_window_to = self.time_window_to.clone();
         //var last_time_window_to = self.time_window_from.clone();
         self.time_window_to = self.time_window_from.clone();
         self.time_window_to.add( moment.duration({ hours: 4 }) );
+
+        if (self.driver) self.driver.setWindow( self.time_window_from, self.time_window_to );
+
     }
 
     /**     checkoutPlaylists
