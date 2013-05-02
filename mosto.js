@@ -1139,7 +1139,7 @@ function mosto(customConfig) {
             });
         };
 
-        if (melted!=undefined) {
+        if (melted!==undefined) {
             Melted = melted;
             check_and_start();
         } 
@@ -1148,10 +1148,13 @@ function mosto(customConfig) {
       
     }
 
-    mosto.prototype.finish = function() {
+    mosto.prototype.finish = function(callback) {
         console.log("mbc-mosto: [INFO] Finish mbc-mosto... ") ;
         self.stop();
-        Melted.leave();
+        Melted.stop(function(pid) {
+            Melted.leave();
+            if (callback) callback();
+        });        
     }
 
 }
