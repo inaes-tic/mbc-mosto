@@ -1126,20 +1126,22 @@ function mosto(customConfig) {
         self.status_driver = status_driver();
         
         self.initDriver();
-        self.startMvcpServer(self.play);
-/*
+
         Melted.take(function() {
             Melted.stop(function(pid) {
                 Melted.start(function(pid) {
                     Melted.setup( undefined, undefined, function(has_err) {
-                        self.startMvcpServer(self.play);
-                    });                    
-                    Melted.leave();
+                        self.startMvcpServer(self.play);                        
+                    });
                 });
             });    
         });
-*/        
-    }    
+        
+    }
+
+    mosto.prototype.finish = function() {
+        Melted.leave();
+    }
 
 }
 
