@@ -161,7 +161,7 @@ function mosto(customConfig) {
             if ( (moment(playlist.startDate) <= self.time_window_to &&
                   moment(playlist.endDate) >= self.time_window_from ) 
                 && (playlist.id != 'black_id') ) {
-                console.log("trimming:" + playlist.id );
+                console.log("mbc-mosto: [INFO] [FETCH] trimming playlists:" + playlist.id );
                 newplaylists.push(playlist);
             }
         }
@@ -305,7 +305,7 @@ function mosto(customConfig) {
         if (self.playlists_updated) {
             self.scheduled_clips = [];
             if (self.playlists.length>0) {
-                console.log("mbc-mosto: [INFO] [LOGIC] actually converting playlists.");
+                console.log("mbc-mosto: [INFO] [LOGIC] actually converting playlists ("+self.playlists.length+").");
                 self.preparePlaylist( 0, -1 );
             }
             self.playlists_updated = false;
@@ -405,7 +405,7 @@ function mosto(customConfig) {
 
                             schedule_time = sch_time;
                         }
-                    console.log("mbc-mosto: [INFO] [LOGIC] adding scheduled clip:" + sMedia.id + " file:" + sMedia.file + " start:"+sch_expect_start+" end:"+sch_expect_end + " milis:" + milis );
+                    console.log("mbc-mosto: [INFO] [LOGIC] adding scheduled clip: sched_time:" + schedule_time + " media.id:" + sMedia.id + " file:" + sMedia.file + " start:"+sch_expect_start+" end:"+sch_expect_end + " milis:" + milis );
                     self.scheduled_clips.push( new ScheduledMedia( sMedia, schedule_time, sch_duration, sch_expect_start, sch_expect_end ) );
                     lastTimeCode = sch_expect_end;
                     last_tc = moment( lastTimeCode,"DD/MM/YYYY HH:mm:ss.SSS");
@@ -775,10 +775,10 @@ function mosto(customConfig) {
             //calculate timer_relative_clock > warning, always do the expected_start of the playing clip...
             self.timer_relative_clock = moment( self.actual_expected_start, "DD/MM/YYYY HH:mm:ss.SSS" ).add(self.actual_position_millis);
             self.timer_difference = moment.duration( self.timer_relative_clock - self.timer_clock ).asMilliseconds();
-            console.log("mbc-mosto: [INFO] timer_clock         " + " at:" + self.timer_clock.format("DD/MM/YYYY HH:mm:ss.SSS") );
-            console.log("mbc-mosto: [INFO] timer_relative_clock" + " at:" + self.timer_relative_clock.format("DD/MM/YYYY HH:mm:ss.SSS") );
-            console.log("mbc-mosto: [INFO] progress: " + self.actual_playing_progress );
-            console.log("mbc-mosto: [INFO] difference: " + self.timer_difference );
+            console.log("mbc-mosto: [INFO] [SYNC] timer_clock         " + " at:" + self.timer_clock.format("DD/MM/YYYY HH:mm:ss.SSS") );
+            console.log("mbc-mosto: [INFO] [SYNC] timer_relative_clock" + " at:" + self.timer_relative_clock.format("DD/MM/YYYY HH:mm:ss.SSS") );
+            console.log("mbc-mosto: [INFO] [SYNC] progress: " + self.actual_playing_progress );
+            console.log("mbc-mosto: [INFO] [SYNC] difference: " + self.timer_difference );
         } else self.timer_difference = 0; //back to absolute clocking (we are stopped)
 
 
@@ -897,6 +897,8 @@ function mosto(customConfig) {
      */
 
     mosto.prototype.timer_fun_status = function( actual_status ) {
+
+        console.log("mbc-mosto: [INFO] [PLAY] timer_fun_status received.");
 
         self.previous_playing_index = self.actual_playing_index;
 
