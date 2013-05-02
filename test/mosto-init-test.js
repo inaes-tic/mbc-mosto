@@ -71,7 +71,7 @@ describe('Mosto init test', function(done) {
 	    describe('#setup melted', function() {
 		    it('-- mvcp server connected should return true', function(done) {
 		        melted.start(function(pid){
-                    mosto_server.server = new mvcp_server( mosto_server.config.mvcp_server );       	            
+                    mosto_server.server = new mvcp_server( "melted" );       	            
 			        melted.setup(undefined, undefined, function(has_err) {
                         mosto_server.startMvcpServer( function(done) { done(); } );
 				        // time to next server_started update.
