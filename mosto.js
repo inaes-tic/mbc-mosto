@@ -580,7 +580,9 @@ function mosto(customConfig) {
 
         console.log("mbc-mosto: [INFO] syncroScheduledClips > server_playing_list medias = " + server_playing_list.length + " playingidx: " + self.actual_playing_index );
 
-        self.emit('syncing', 'calling syncro upstream' );
+        self.emit('syncing', server_playing_list );
+
+        self.actual_server_playlist = server_playing_list;
 
         self.prev_full_status = self.full_status;
         self.full_status = self.buildStatus( server_playing_list, self.actual_status );
