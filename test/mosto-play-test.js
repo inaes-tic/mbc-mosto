@@ -8,8 +8,8 @@ var assert = require("assert"),
     melted  = require('../api/Melted'),
     Playlist  = require('../api/Playlist'),
     status_driver    = require('../drivers/status/pubsub'),
+    test_driver    = require('../drivers/playlists/test-driver'),
     Media  = require('../api/Media');
-
 
 // SILENCE LOG OUTPUT
 var util = require('util');
@@ -41,79 +41,6 @@ silence = function(callback) {
 	return r;
 }
 
-function test_pl_driver() {
-    events.EventEmitter.call (this);
-    this.window = {};
-};
-
-util.inherits ( test_pl_driver, events.EventEmitter);
-
-test_pl_driver.prototype.start = function(timeSpan) {
-    var self = this;
-    self.setWindow( { from: moment(), to: moment().add(moment.duration({ hours: 4 })), setWindow: true } );
-};
-
-test_pl_driver.prototype.getPlaylists = function( ops, callback ) {
-    var playlists = [];
-/*
-    var playlist = undefined;            
-    var files =  {  0: "../videos/SMPTE_Color_Bars_01.mp4",
-                    1: "../videos/SMPTE_Color_Bars_02.mp4",
-                    2: "../videos/SMPTE_Color_Bars_03.mp4" };
-    var medias = [];
-
-    for( var i=0; i<3; i++ ) {
-        var clip = new Media(  files[i].substring(files[i].lastIndexOf("/") + 1)+"_id", 0, undefined, 1, files[i].substring(files[i].lastIndexOf("/") + 1), "default", files[i], "00:00:30.00", 25 );
-        medias.push(clip);
-    }
-
-    var startDate = moment().toDate();
-    var endDate = moment( startDate ).add( moment.duration({seconds:90})).toDate();
-    playlist = new Playlist( "test_pl_1_id", "test_pl_1_name", startDate, medias, endDate, "snap", false );
-
-    playlists.push(playlist);
-*/
-    callback(playlists);
-
-};
-
-test_pl_driver.prototype.getWindow = function( from, to) {        
-    var window = {
-        from: moment(from),
-        to: moment(to),
-    };
-    window.timeSpan = window.to.diff(window.from);
-    return window;            
-};
-
-test_pl_driver.prototype.setWindow = function(from, to) {
-    var self = this;
-    self.window = self.getWindow(from, to);
-    return self.window;
-};
-
-function TestPlaylist() {
-    var playlist = undefined;            
-    var files =  {  0: "../videos/SMPTE_Color_Bars_01.mp4",
-                    1: "../videos/SMPTE_Color_Bars_02.mp4",
-                    2: "../videos/SMPTE_Color_Bars_03.mp4" };
-    var medias = [];
-
-    for( var i=0; i<3; i++ ) {
-        var clip = new Media(  files[i].substring(files[i].lastIndexOf("/") + 1)+"_id", 0, undefined, 1, files[i].substring(files[i].lastIndexOf("/") + 1), "file", files[i], "00:00:30.00", 25 );
-        console.log("clip " + clip.id + " media:" + clip.file + " length:" + clip.length );
-        medias.push(clip);
-
-    }
-
-    var startDate = moment().toDate();
-    var endDate = moment( startDate ).add( moment.duration({seconds:90})).toDate();
-    playlist = new Playlist( "test_pl_1_id", "test_pl_1_name", startDate, medias, endDate, "snap", false );
-    return playlist;
-}
-
-
-
 describe('Mosto [PLAY/Timer event] tests', function(done) {
 
     var mosto_server = undefined;
@@ -127,94 +54,104 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
 		    });
 	    });
 
+        describe('#[SYNC] Start Melted', function() {
+            it("--should not throw error", function(done) {
+                melted.start(function(pid){
+                    if (pid) {
+                        assert.notEqual( pid, 0);
+                        done();
+                    } else done(new Error("no process id for melted! Start failed."));
+                });
+            });
+        });
+
+        describe('#[SYNC] Setup Melted', function() {
+            it("--should not throw error", function(done) {
+                melted.setup(undefined, undefined, function(has_err) {                        
+                    if (has_err) {
+                        done(new Error(has_err));
+                    } else done();
+                });            
+            });
+        });
+
 	    describe('#[PLAY] start mosto', function() {
 		    it('-- starting mosto shouldnt throw error', function() {
 		        mosto_server = silence(function(){ return new mosto(); });
+		        mosto_server.server = silence(function(){ return mvcp_server("melted"); });
+                mosto_server.status_driver = new status_driver();
+                mosto_server.driver = new test_driver();
 		        assert.notEqual(mosto_server, undefined);
 		    });
 		    it('-- mvcp server connected should return false', function() {
-		        var r = silence(function(){ return mosto_server.server_started; });
-		        assert.equal(r, false);
-		    });
-	    });
-
-
-	    describe('#[PLAY] start melted', function() {
-		    before(function(done) {
-                melted.start(function(pid){                    
-    		        done();
-	            });
-		    });
-            it('-- mvcp server created', function(done) {
-		        mosto_server.server = silence(function(){ return mvcp_server("melted"); });
-                mosto_server.status_driver = new status_driver();
-                mosto_server.driver = new test_pl_driver();
-
 		        assert.notEqual( mosto_server.server, undefined);
                 assert.notEqual( mosto_server.driver, undefined);
-                done();
-		    });    
-	    });
-
-
-	    describe('#[PLAY] setup melted and connect', function() {
-            describe('#[PLAY] mvcp server connected', function(){
-		        it('--should return true', function(done) {
-                    var result = mosto_server.server.initServer();
-		            melted.start(function(pid){
-			            melted.setup(undefined, undefined, function(has_err) {                        
-				            // time to next server_started update.
-				            setTimeout(function(){
-					            assert.equal(mosto_server.server.isConnected(), true);
-					            done();
-				            }, 1000);
-			            });
-
-		            });
-		        });
+		        assert.equal(mosto_server.server_started, false);
 		    });
 	    });
 
+        describe("#[PLAY] Initializing mosto video server", function() {
+            before(function(done) {
+                done();
+		    });
+            it("--should server has started", function(done) {
+                mosto_server.startMvcpServer( function() {
+                    assert.equal( mosto_server.server.isConnected(), true );
+                    done();                    
+                });
+            });
 
-        describe("#[PLAY] Initializing mosto driver and play.", function() {
+        });
+
+        describe("#[PLAY] Initializing mosto driver then play.", function() {
             before(function(done) {
                 mosto_server.initDriver();
                 mosto_server.play();               
                 done();
 		    });
             it("--should timer have been created", function(done) {
-                assert.notEqual( mosto_server.timer, undefined );
-                assert.notEqual( mosto_server.timer, null );
-                done();
+                mosto_server.once('playing', function(mess) {
+                    assert.notEqual( mosto_server.timer, undefined );
+                    assert.notEqual( mosto_server.timer, null );
+                    done();
+                });
             });
         });
+
+
         
         describe("#[PLAY] Checking no playlists, play blank.", function() {
+            before(function(done){
+                mosto_server.driver.setCheckoutMode(false);
+                mosto_server.checkoutPlaylists( function(playlists) {
+                    if (playlists.length>0) done(new Error("test_driver->getPlaylists must return no playlists when called for first time"));
+                    done();
+                });                
+            });
             it("--should return black_id playing!!", function(done) {
-                    mosto_server.once('converted', function(mess) {                        
-                        assert.notEqual( mosto_server.playlists.length, 0 );
-                        assert.notEqual( mosto_server.scheduled_clips.length, 0 );
-                        assert.equal( mosto_server.scheduled_clips[0].media.id, "black_id" );
-                        done();
-                    });                    
+                mosto_server.once('playing', function(mess) {                        
+                    assert.equal( mosto_server.playlists.length, 1 );
+                    assert.equal( mosto_server.scheduled_clips.length, 1 );
+                    assert.equal( mosto_server.scheduled_clips[0].media.id, "black_id" );
+                    done();
+                });                    
 
-                });
+            });
         });
 
 
-        describe("#Adding playlist", function() {
+        describe("#[PLAY] Adding playlist", function() {
 
             var playlist = null;
 
             before(function(done){
-                playlist = TestPlaylist();
+                playlist = mosto_server.driver.TestPlaylist();
                 mosto_server.addPlaylist( playlist );
                 done();
             });
             it("--should be playing first clip of added playlist", function(done) {                
                 function is_playing_media( clipid, intents, interv ) {
-                    //assert.notEqual( intents, 0 , done(new Error("Too much intents.")));
-                    if (intents==0) return done();
+                    if (intents==0) return done(new Error("max intents reached! We are not playing expected clip: " + clipid+ " is  not " + mosto_server.actual_playing_clip ));
                     mosto_server.once('playing', function(mess3) {
                         console.log(mess3);
                         if ( mosto_server.actual_playing_clip == clipid ) {
@@ -234,19 +171,18 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
         });
 
 
-        describe("#Updating playlist", function() {
+        describe("#[PLAY] Updating playlist", function() {
 
             var playlist = null;
 
             before(function(done){
-                playlist = TestPlaylist();
-                playlist.medias.splice( 2, 1 );
-                mosto_server.updatePlaylist( playlist );
+                playlist = mosto_server.driver.TestPlaylist();
+                playlist.medias.splice( 2, 1 );                
                 done();
             });
             it("--should return the same playlist updated", function(done) {
                 function is_playing_media( clipid, intents, interv ) {
-                    if (intents==0) return done();
+                    if (intents==0) return done(new Error("max intents reached! We are not playing expected clip: " + clipid+ " is  not " + mosto_server.actual_playing_clip ));
                     mosto_server.once('playing', function(mess3) {
                         console.log(mess3);
                         if ( mosto_server.actual_playing_clip == clipid ) {
@@ -260,18 +196,18 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
                         is_playing_media( playlist.medias[0].id, 3, 500 );
                     });
                 });
+                mosto_server.updatePlaylist( playlist );
             });               
         });
 
 
-        describe("#Remove playlist", function() {
-            before(function(done){
-                mosto_server.removePlaylist( "test_pl_1_id" );
+        describe("#[PLAY] Remove playlist", function() {
+            before(function(done){                
                 done();
             });
             it("--should return only the blank black_id", function(done) {
                 function is_playing_media( clipid, intents, interv ) {
-                    if (intents==0) return done();
+                    if (intents==0) return done(new Error("max intents reached! We are not playing expected clip: " + clipid+ " is  not " + mosto_server.actual_playing_clip ));
                     mosto_server.once('playing', function(mess3) {
                         console.log(mess3);
                         if ( mosto_server.actual_playing_clip == clipid ) {
@@ -285,43 +221,52 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
                         is_playing_media( "black_id", 3, 500 );
                     });
                 });
+                mosto_server.removePlaylist( "test_playlist_1_id" );
             });           
             
         });
 
-/*
-        describe("#Doing a checkoutPlaylists()", function() {
+
+        describe("#[PLAY] Doing a checkoutPlaylists()", function() {
             var driver_playlists = undefined;
 
-            before(function(done){
-                mosto_server.driver = new test_pl_driver();
-                mosto_server.driver.getPlaylists( { from: mosto_server.time_window_from, to: mosto_server.time_window_to, setWindow: false }, function(playlists) {
-                    driver_playlists = playlists
-                    mosto_server.playlists = [];
-                    mosto_server.checkoutPlaylists();      
-                    done();
-                });
+            before(function(done){           
+                mosto_server.driver.setCheckoutMode(true);     
+                mosto_server.checkoutPlaylists( function(playlists) {
+                    driver_playlists = playlists;
+                    if (driver_playlists.length>0) {
+                        done();
+                    } else {
+                        done(new Error("mosto-play-test.js: error checkoutPlaylists returning no playlists"));
+                    }
+                } );
             });
-            it("--should return the same playlist", function(done) {
+            it("--should return the same playlist", function() {
                 assert.equal( mosto_server.playlists.length, 1 );
                 assert.notEqual( mosto_server.playlists[0].id, "black_id" );
                 assert.equal( mosto_server.playlists[0].id, driver_playlists[0].id );
-                done();
             });           
 
         });
-*/
+
+
 	    describe('#[PLAY] leave melted', function() {
 		    it('-- leave melted', function(done) {
 			    mosto_server.stop();
 			    mosto_server = null;
 			    melted.stop(function(pid) {
-				    melted.leave();
-				    done();
+  				    melted.leave();
+                    console.log("pid:"+pid);                  
+                    if (pid) {      
+                        done();
+                    } else {
+                        done(new Error("leave melted: no process to stop."));
+                    }
+				    
 			    });
 		    });
 	    });
-
+        
     });
 
     describe('#last [PLAY] check ', function() {
@@ -331,4 +276,3 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
     });
 
 });
-
