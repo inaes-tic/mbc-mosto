@@ -7,8 +7,8 @@ var conf = {
 	root: process.env.MELTED_ROOT || process.env.PWD,
 	host: process.env.MELTED_HOST || "localhost",
 	port: process.env.MELTED_PORT || 5250,
-	output: process.env.MELTED_OUTPUT || "sdl"
-}
+	output: process.env.MELTED_OUTPUT || "sdl"    
+};
 
 /**
  * _do
@@ -162,10 +162,11 @@ exports.setup = function(root, output, callback) {
 	output = output || conf.output;
 	_do(function(pid) {
 		if (pid) {
+            console.log("Melted.js: [INFO] Melted.setup > setting up root:" + root + " ouput:" + output);
 			var commands = [ 'NLS', 'SET root='+root, 'UADD '+output, 'BYE' ];
 			exports.connect(function(conn){ exports.push(conn, commands, undefined, callback)});
 		} else {
-			Err("Can't connect to server. Server is not running!")
+            callback(new Error("Melted.js: [ERROR] Can't connect to server. Server is not running!"));
 		};
 	})
 };
