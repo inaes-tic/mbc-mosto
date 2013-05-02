@@ -163,7 +163,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
                 mosto_server.once('converted', function(mess1) {
                     assert.equal( mosto_server.playlists.length, 1 );
                     mosto_server.once('synced', function(mess2) {                        
-                        is_playing_media( playlist.medias[0].id, 3, 500 );
+                        is_playing_media( playlist.medias[0].id, 4, 500 );
                     });
                 });
             });
@@ -193,7 +193,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
                 mosto_server.once('converted', function(mess1) {
                     assert.equal( mosto_server.playlists.length, 1 );
                     mosto_server.once('synced', function(mess2) {
-                        is_playing_media( playlist.medias[0].id, 3, 500 );
+                        is_playing_media( playlist.medias[0].id, 4, 500 );
                     });
                 });
                 mosto_server.updatePlaylist( playlist );
@@ -218,7 +218,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
                 mosto_server.once('converted', function(mess1) {
                     assert.equal( mosto_server.playlists.length, 1 );
                     mosto_server.once('synced', function(mess2) {
-                        is_playing_media( "black_id", 3, 500 );
+                        is_playing_media( "black_id", 4, 500 );
                     });
                 });
                 mosto_server.removePlaylist( "test_playlist_1_id" );
