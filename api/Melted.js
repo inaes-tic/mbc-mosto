@@ -145,9 +145,9 @@ exports.start = function(callback) {
 
 			    var melted_proc = spawn(conf.bin, [], {detached: true, stdio: [ 'ignore', 'ignore', 'ignore' ]});
 			    var pid = melted_proc.pid;
-                //melted_proc.on('exit', function(code) { callback(pid); } );
-			    melted_proc.unref();
-			    setTimeout(function() { callback(pid); }, 1000 );
+                melted_proc.on('exit', function(code) {                     
+                    setTimeout(function() { callback(pid); }, 1000 );
+                } );
             }, function(error) {
                 callback(0);
             } );
