@@ -18,7 +18,8 @@ var conf = {
  * @callback: Callback function to do to melted.
  */
 _do = function(callback) {
-	var pgrep = spawn('pgrep', ['-x', conf.bin]);
+//	var pgrep = spawn('pgrep', ['-x', "melted"]);
+    var pgrep = spawn('pgrep', ["melted"]);
 	var pid;
 
 	pgrep.stdout.on('data', function (data) {
