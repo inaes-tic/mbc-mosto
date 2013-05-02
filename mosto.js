@@ -623,14 +623,14 @@ function mosto(customConfig) {
                 self.scheduled_clips_index_last_to_queue = 0;
 
                 //PARSE scheduled clips, calculate actual clips to be queued
-                /*IS
-                  for( j=self.cursor_scheduled_clip+1; j<self.scheduled_clips.length; j++ ) {
-                  var scheduled_c = self.scheduled_clips[j];
-                  if (scheduled_c.schedule_time!="now") {
-                  self.scheduled_clips_index_last_to_queue = j-1;
-                  console.log("mbc-mnostp: [INFO] [SYNC] clips to be queued: " + self.scheduled_clips_index_last_to_queue );
-                  }
-                  }*/
+                /*IS*/
+                for( j=self.cursor_scheduled_clip+1; j<self.scheduled_clips.length; j++ ) {
+                    var sclip = self.scheduled_clips[j];
+                    if (sclip.schedule_time!="now") {
+                        self.scheduled_clips_index_last_to_queue = j-1;
+                        console.log("mbc-mosto: [INFO] [SYNC] clips to be queued: " + self.scheduled_clips_index_last_to_queue );
+                    }
+                }
                 
                 if (self.actual_playing_status=="playing") {
                     
