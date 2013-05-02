@@ -407,6 +407,7 @@ function mosto(customConfig) {
 
                                 if (diff_void_start>0) {
                                     self.queueBlack( sch_rightnow, black_duration_str, sch_rightnow, sch_to_next_playlist );
+                                    sch_time = "now";
                                 }
 
                             }
