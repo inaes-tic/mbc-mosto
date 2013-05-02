@@ -29,7 +29,6 @@ console.log = console.info = function(t) {
 };
 // END SILENCE LOG OUTPUT
 
-
 silence = function(callback) {
 	var ori_console_log = console.log;
 	var ori_console_error = console.error;
