@@ -4,6 +4,7 @@ var assert = require("assert"),
     util     = require ('util'),
     exec   = require('child_process').exec,
     mvcp_server      = require('../drivers/mvcp/mvcp-driver'),
+    test_driver    = require('../drivers/playlists/test-driver'),
     mosto  = require('../mosto'),
     melted  = require('../api/Melted'),
     Playlist  = require('../api/Playlist'),
@@ -47,8 +48,9 @@ describe('Mosto [FETCH/Database] section tests', function(done) {
     this.timeout(15000);
     
     melted.take(function() {
+
 	    before(function(done) {
-		    melted.stop(function(){
+		    melted.stop(function(pid){
 		        done();
 		    });
 	    });
@@ -56,6 +58,7 @@ describe('Mosto [FETCH/Database] section tests', function(done) {
 	    describe('#[FETCH] start mosto', function() {
 		    it('-- starting mosto shouldnt throw error', function() {
 		        mosto_server = silence(function(){ return new mosto(); });
+                mosto_server.driver = new test_driver();
 		        assert.notEqual(mosto_server, undefined);
 		    });
 		    it('-- mvcp server connected should return false', function() {
@@ -63,70 +66,6 @@ describe('Mosto [FETCH/Database] section tests', function(done) {
 		        assert.equal(r, false);
 		    });
 	    });
-
-
-        function test_pl_driver() {
-            events.EventEmitter.call (this);
-            this.window = {};
-        };
-
-        util.inherits ( test_pl_driver, events.EventEmitter);
-
-        test_pl_driver.prototype.getPlaylists = function( ops, callback ) {
-            var playlists = [];
-    
-            var playlist = undefined;            
-            var files =  {  0: "../videos/SMPTE_Color_Bars_01.mp4",
-                            1: "../videos/SMPTE_Color_Bars_02.mp4",
-                            2: "../videos/SMPTE_Color_Bars_03.mp4" };
-            var medias = [];
-
-            for( var i=0; i<3; i++ ) {
-                var clip = new Media(  files[i].substring(files[i].lastIndexOf("/") + 1)+"_id", 0, undefined, 1, files[i].substring(files[i].lastIndexOf("/") + 1), "default", files[i], "00:00:30.00", 25 );
-                medias.push(clip);
-            }
-
-            var startDate = moment().toDate();
-            var endDate = moment( startDate ).add( moment.duration({seconds:90})).toDate();
-            playlist = new Playlist( "test_pl_1_id", "test_pl_1_name", startDate, medias, endDate, "snap", false );
-
-            playlists.push(playlist);
-
-            callback(playlists);
-        };
-
-        test_pl_driver.prototype.getWindow = function( from, to) {        
-            var window = {
-                from: moment(from),
-                to: moment(to),
-            };
-            window.timeSpan = window.to.diff(window.from);
-            return window;            
-        };
-
-        test_pl_driver.prototype.setWindow = function(from, to) {
-            var self = this;
-            self.window = self.getWindow(from, to);
-            return self.window;
-        };
-
-        function TestPlaylist() {
-            var playlist = undefined;            
-            var files =  {  0: "../videos/SMPTE_Color_Bars_01.mp4",
-                            1: "../videos/SMPTE_Color_Bars_02.mp4",
-                            2: "../videos/SMPTE_Color_Bars_03.mp4" };
-            var medias = [];
-
-            for( var i=0; i<3; i++ ) {
-                var clip = new Media(  files[i].substring(files[i].lastIndexOf("/") + 1)+"_id", 0, undefined, 1, files[i].substring(files[i].lastIndexOf("/") + 1), "default", files[i], "00:00:30.00", 25 );
-                medias.push(clip);
-            }
-
-            var startDate = moment().toDate();
-            var endDate = moment( startDate ).add( moment.duration({seconds:90})).toDate();
-            playlist = new Playlist( "test_pl_1_id", "test_pl_1_name", startDate, medias, endDate, "snap", false );
-            return playlist;
-        }
 
 
         describe("#[FETCH] Checking no playlists", function() {
@@ -140,9 +79,10 @@ describe('Mosto [FETCH/Database] section tests', function(done) {
 
         describe("#[FETCH] Adding playlist", function() {
 
-            var playlist = new TestPlaylist();
+            var playlist = undefined;
 
             before(function(done){
+                playlist =  mosto_server.driver.TestPlaylist();
                 mosto_server.addPlaylist( playlist );
                 done();
             });
@@ -163,9 +103,10 @@ describe('Mosto [FETCH/Database] section tests', function(done) {
 
         describe("#[FETCH] Updating playlist", function() {
 
-            var playlist = new TestPlaylist();
+            var playlist = undefined;
 
             before(function(done){
+                playlist =  mosto_server.driver.TestPlaylist();
                 mosto_server.updatePlaylist( playlist );
                 done();
             });
@@ -184,7 +125,7 @@ describe('Mosto [FETCH/Database] section tests', function(done) {
 
         describe("#[FETCH] Remove playlist", function() {
             before(function(done){
-                mosto_server.removePlaylist( "test_pl_1_id" );
+                mosto_server.removePlaylist( "test_playlist_1_id" );
                 done();
             });
             it("--should return only the blank black_id", function(done) {
@@ -200,13 +141,12 @@ describe('Mosto [FETCH/Database] section tests', function(done) {
             var driver_playlists = undefined;
 
             before(function(done){
-                mosto_server.driver = new test_pl_driver();
-                mosto_server.driver.getPlaylists( { from: mosto_server.time_window_from, to: mosto_server.time_window_to, setWindow: false }, function(playlists) {
-                    driver_playlists = playlists
-                    mosto_server.playlists = [];
-                    mosto_server.checkoutPlaylists();      
+                mosto_server.driver.setCheckoutMode(true);
+                mosto_server.checkoutPlaylists( function(playlists) {
+                    driver_playlists = playlists;
+                    if (playlists.length==0) return done(new Error("test_driver->getPlaylists must return some playlists when called in co_mode:true"));
                     done();
-                });
+                }); 
             });
             it("--should return the same playlist", function(done) {
                 assert.equal( mosto_server.playlists.length, 1 );
