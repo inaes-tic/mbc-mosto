@@ -1171,10 +1171,13 @@ function mosto(customConfig) {
 
     mosto.prototype.finish = function(callback) {
         console.log("mbc-mosto: [INFO] Finish mbc-mosto... ") ;
+        self.stopDriver();
         self.stop();
         Melted.stop(function(pid) {
-            Melted.leave();
-            if (callback) callback();
+            setTimeout( function() {
+                Melted.leave();
+                if (callback) callback();
+            }, 1000 );
         });        
     }
 
