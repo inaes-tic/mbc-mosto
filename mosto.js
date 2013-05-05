@@ -1137,16 +1137,26 @@ function mosto(customConfig) {
     mosto.prototype.init = function( melted, callback) {
         console.log("mbc-mosto: [INFO] Init mbc-mosto... ") ;
 
+        function startall() {
+            self.server     = new mvcp_server(self.config.mvcp_server);
+            self.driver     = new playlists_driver(self.config.playlist_server);
+            self.status_driver = status_driver();
+
+            self.initDriver();
+            self.startMvcpServer( function() { self.play(); if (callback) callback(); } );                        
+        }
+
         function check_and_start() {
-            Melted.start(function(pid) {
-                Melted.setup( undefined, undefined, function(has_err) {
-                    self.server     = new mvcp_server(self.config.mvcp_server);
-                    self.driver     = new playlists_driver(self.config.playlist_server);
-                    self.status_driver = status_driver();
-                    
-                    self.initDriver();
-                    self.startMvcpServer( function() { self.play(); if (callback) callback(); } );                        
-                });
+            Melted.is_running(function(running) {
+                if (!running) {
+                    Melted.start(function(pid) {
+                        Melted.setup( undefined, undefined, function(result) {
+                            startall();
+                        });
+                    });
+                } else {
+                    startall();
+                }
             });
         };
 
