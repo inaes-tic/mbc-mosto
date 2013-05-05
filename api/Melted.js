@@ -20,6 +20,7 @@ _meltedbin = function(callback,errorCallback) {
 
 	pgrep.stdout.on('data', function (data) {
 		pbin = data;
+        pbin = "melted";
         console.log("Melted.js: data: " + data );
         conf.bin = pbin;
 	});
@@ -54,6 +55,7 @@ _do = function(callback) {
 
 	pgrep.stdout.on('data', function (data) {
 		pid = data;
+        console.log("Melted.js: [INFO] _do pid : " + pid );
 	});
 
 	pgrep.on('exit', function (code) {
