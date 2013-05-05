@@ -1043,6 +1043,17 @@ function mosto(customConfig) {
         self.driver.start();
     };
 
+    mosto.prototype.stopDriver = function() {
+
+        console.log("mbc-mosto: [INFO] Stopping playlists driver");
+
+        self.driver.stop();
+
+        self.driver.removeAllListeners("create");
+        self.driver.removeAllListeners("update");
+        self.driver.removeAllListeners("delete");
+    };
+
     mosto.prototype.startMvcpServer = function(callback) {
         var result = self.server.initServer();
         result.then(function() {
