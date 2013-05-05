@@ -40,7 +40,15 @@ describe('Mosto status', function() {
     var mosto_server = undefined;
     var rec = -1;
 
-melted.take(function() {
+    before(function(done) {
+        melted.take(function() {
+		    melted.stop(function(pid){
+    	        done();
+    	    });
+	    });
+    });
+
+
     describe('# status test: init mosto', function() {
 	    before(function(done) {
             melted.stop( function(pid) {
@@ -70,18 +78,13 @@ melted.take(function() {
 	    });
     });
 
-    describe('#Finish mosto', function() {
-        before(function(done) {
-            mosto_server.finish( function() {
-                mosto_server = undefined;
-                done();
-            } );
-        });
-	    it('--- leave mosto, leave melted', function() {
-    	    assert.equal( mosto_server,undefined);
-	    });
+
+    after(function(done) {
+        mosto_server.finish( function() {
+            mosto_server = undefined;
+            done();
+        } );
     });
 
-});
 
 });
