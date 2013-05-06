@@ -31,7 +31,7 @@ util.inherits (mongo_driver, events.EventEmitter);
 mongo_driver.prototype.start = function(timeSpan) {
     var self = this;
     var db = mbc.db(this.conf && this.conf.db);
-    var channel = mbc.pubsub();
+    self.channel = mbc.pubsub();
 
     console.log("mongo-driver: [INFO] Starting mongo playlists driver");
 
@@ -40,14 +40,29 @@ mongo_driver.prototype.start = function(timeSpan) {
 
     self.setWindow({timeSpan: timeSpan});
 
-    channel.on('JSONmessage', function(chan, msg) {
+    self.channel.on('JSONmessage', function(chan, msg) {
         var handler = self.pubsub_handler[chan];
         return handler && (handler.bind(self))(msg);
     });
 
-    channel.subscribe('schedbackend.create');
-    channel.subscribe('schedbackend.update');
-    channel.subscribe('schedbackend.delete');
+    self.channel.subscribe('schedbackend.create');    
+    self.channel.subscribe('schedbackend.update');
+    self.channel.subscribe('schedbackend.delete');
+
+};
+
+mongo_driver.prototype.stop = function(timeSpan) {
+    var self = this;
+    var db = mbc.db(this.conf && this.conf.db);
+
+    console.log("mongo-driver: [INFO] Stopping mongo playlists driver");
+
+    self.channel.removeAllListeners('JSONmessage');
+    self.channel.unsubscribe('schedbackend.create');
+    self.channel.unsubscribe('schedbackend.update');
+    self.channel.unsubscribe('schedbackend.delete');
+    self.channel.end();
+
 };
 
 mongo_driver.prototype.pubsub_handler = {
