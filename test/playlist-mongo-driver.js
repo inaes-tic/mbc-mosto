@@ -10,7 +10,7 @@ describe('PlaylistMongoDriver', function(){
 
     before(function(done) {
         melted.take(function() {
-	        melted.stop(function(pid){
+            melted.stop(function(pid){
 
                 // setup mongo driver
                 var conf = {
@@ -24,9 +24,8 @@ describe('PlaylistMongoDriver', function(){
                 self.db = mbc.db(conf.db);
                 self.driver.start();
                 self.from = moment();
-        self.span = 120;
-        self.to = moment((self.from.unix() + self.span * 60) * 1000); // add 2hs
-
+                self.span = 120;
+                self.to = moment((self.from.unix() + self.span * 60) * 1000); // add 2hs
 
                 var db_data = require('./playlists/db-data');
                 self.lists = db_data.lists;
@@ -41,7 +40,7 @@ describe('PlaylistMongoDriver', function(){
 
                 self.lists.forEach(function(playlist) {
                     playlist._id = self.db.ObjectID(playlist._id);
-                self.collections.lists.save(playlist, function(err, list) {
+                    self.collections.lists.save(playlist, function(err, list) {
                         ready();
                     });
                 });
@@ -57,7 +56,7 @@ describe('PlaylistMongoDriver', function(){
                         ready();
                     });
                 });
-	        });
+            });
         });
 
     });
