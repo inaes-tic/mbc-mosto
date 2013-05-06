@@ -1,5 +1,6 @@
 var json_driver  = require("./json-driver"),
-    mongo_driver = require("./mongo-driver");
+    mongo_driver = require("./mongo-driver"),
+    test_driver  = require("./test-driver");
 
 exports = module.exports = function(type, config) {
     console.log("playlists-driver: [INFO] Creating playlists driver for type [" + type + "]");
@@ -8,6 +9,8 @@ exports = module.exports = function(type, config) {
         return new json_driver(config);
     } else if (type === 'mongo') {
         return new mongo_driver(config);
+    } else if (type === 'test') {
+        return new test_driver(config);
     }
 
     /******************************************************************
@@ -30,7 +33,7 @@ exports = module.exports = function(type, config) {
      *******************************************************************/
     /******************************************************************
      * playlists_driver.prototype.getPlaylists(ops, callback)
-     * ops is 
+     * ops is
      * {
      *    from: date
      *    to: date

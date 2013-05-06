@@ -3,54 +3,61 @@ var mongo_driver = require('../drivers/playlists/mongo-driver');
 var should = require('should');
 var mbc = require('mbc-common');
 var _ = require('underscore');
+var melted  = require('../api/Melted');
 
 describe('PlaylistMongoDriver', function(){
     var self = this;
 
     before(function(done) {
-        // setup mongo driver
-        var conf = {
-            db: {
-                dbName: 'mediatestdb',
-                dbHost: 'localhost',
-                dbPort: 27017
-            }
-        };
-        self.driver = new mongo_driver(conf);
-        self.db = mbc.db(conf.db);
-        self.driver.start();
-        self.from = moment();
-        self.to = moment((self.from.unix() + 120 * 60) * 1000); // add 2hs
+        melted.take(function() {
+	        melted.stop(function(pid){
 
-        var db_data = require('./playlists/db-data');
-        self.lists = db_data.lists;
-        self.scheds = db_data.scheds;
+                // setup mongo driver
+                var conf = {
+                    db: {
+                        dbName: 'mediatestdb',
+                        dbHost: 'localhost',
+                        dbPort: 27017
+                    }
+                };
+                self.driver = new mongo_driver(conf);
+                self.db = mbc.db(conf.db);
+                self.driver.start();
+                self.from = moment();
+                self.to = moment((self.from.unix() + 120 * 60) * 1000); // add 2hs
 
-        self.collections = {
-            lists: self.db.collection('lists'),
-            scheds: self.db.collection('scheds'),
-        };
+                var db_data = require('./playlists/db-data');
+                self.lists = db_data.lists;
+                self.scheds = db_data.scheds;
 
-        var ready = _.after(self.lists.length + self.scheds.length, function(){ done() });
+                self.collections = {
+                    lists: self.db.collection('lists'),
+                    scheds: self.db.collection('scheds'),
+                };
 
-        self.lists.forEach(function(playlist) {
-            playlist._id = self.db.ObjectID(playlist._id);
-        self.collections.lists.save(playlist, function(err, list) {
-                ready();
-            });
+                var ready = _.after(self.lists.length + self.scheds.length, function(){ done() });
+
+                self.lists.forEach(function(playlist) {
+                    playlist._id = self.db.ObjectID(playlist._id);
+                self.collections.lists.save(playlist, function(err, list) {
+                        ready();
+                    });
+                });
+                self.scheds.forEach(function(schedule, ix) {
+                    var hsix = ix - 3;
+                    var now = self.from;
+                    // schedules are from 1hs before now
+                    var schtime = moment(now + (hsix * 30 * 60 * 1000)).unix();
+                    var length = schedule.end - schedule.start;
+                    schedule.start = schtime;
+                    schedule.end = schtime + length;
+                    self.collections.scheds.save(schedule, function(err, sched){
+                        ready();
+                    });
+                });
+	        });
         });
-        self.scheds.forEach(function(schedule, ix) {
-            var hsix = ix - 3;
-            var now = self.from;
-            // schedules are from 1hs before now
-            var schtime = moment(now + (hsix * 30 * 60 * 1000)).unix();
-            var length = schedule.end - schedule.start;
-            schedule.start = schtime;
-            schedule.end = schtime + length;
-            self.collections.scheds.save(schedule, function(err, sched){
-                ready();
-            });
-        });
+
     });
 
     after(function(done) {
@@ -60,6 +67,7 @@ describe('PlaylistMongoDriver', function(){
                 self.collections[col].drop();
             }
         }
+        melted.leave();
         done();
     });
 
@@ -118,6 +126,7 @@ describe('PlaylistMongoDriver', function(){
             message.method = 'create';
             self.driver.setWindow(moment(), moment().add(10 * 60 * 1000));
             self.driver.on('create', function(playlist) {
+                console.log("create received!" + playlist.name );
                 playlist.id.should.be.eql(message.model._id);
                 playlist.name.should.be.eql(message.model.title);
                 moment(playlist.startDate).valueOf().should.eql(message.model.start * 1000);
