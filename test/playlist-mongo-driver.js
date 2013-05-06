@@ -103,6 +103,13 @@ describe('PlaylistMongoDriver', function(){
             window.should.have.property('from');
             window.from.valueOf().should.approximately((new moment()).valueOf(), 10);
         });
+        it('should accept no parameters, and use the config file from defaults', function(){
+            var window = self.driver.getWindow();
+            var config = require('mbc-common').config.Mosto.Mongo;
+            window.timeSpan.should.equal(config.load_time * 60 * 1000);
+            window.from.valueOf().should.approximately(moment().valueOf(), 10);
+            window.to.diff(window.from).valueOf().should.equal(window.timeSpan.valueOf());
+        });
         it('should accept dates and transform them to moments', function() {
             var window = self.driver.getWindow(new Date(), new Date());
             moment.isMoment(window.from).should.be.ok;
