@@ -1,5 +1,5 @@
 var melted_node_driver = require("./melted-node-driver"),
-    conf               = require('mbc-common').config.Mosto.Mvcp;
+    conf               = require('mbc-common').config.Mosto.Melted;
 
 exports = module.exports = function(type) {
     console.log("mbc-mosto: [INFO] Creating server for type [" + type + "]");
