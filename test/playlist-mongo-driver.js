@@ -72,28 +72,26 @@ describe('PlaylistMongoDriver', function(){
         done();
     });
 
-    describe('#setWindow()', function() {
+    describe('#getWindow()', function() {
         beforeEach(function(){
             self.driver.window = undefined;
         });
         it('should exist', function() {
-            self.driver.should.have.property('setWindow');
-            self.driver.setWindow.should.be.a('function');
+            self.driver.should.have.property('getWindow');
+            self.driver.getWindow.should.be.a('function');
         });
         it('should accept two parameters and save them in window = {from, to}', function() {
-            self.driver.setWindow(self.from, self.to);
-            var window = self.driver.window;
+            var window = self.driver.getWindow(self.from, self.to);
             window.from.valueOf().should.equal(self.from.valueOf());
             window.to.valueOf().should.equal(self.to.valueOf());
         });
         it('should accept an object with {from, to}', function() {
-            self.driver.setWindow({from: self.from, to: self.to})
-            var window = self.driver.window;
+            var window = self.driver.getWindow({from: self.from, to: self.to});
             window.from.valueOf().should.equal(self.from.valueOf());
             window.to.valueOf().should.equal(self.to.valueOf());
         });
         it('should accept an object with {from, timeSpan}', function() {
-            var window = self.driver.setWindow({from: self.from, timeSpan: self.span});
+            var window = self.driver.getWindow({from: self.from, timeSpan: self.span});
             window.from.valueOf().should.equal(self.from.valueOf());
             var to = moment(self.from.valueOf());
             to.add(self.span * 60 * 1000);
@@ -101,14 +99,14 @@ describe('PlaylistMongoDriver', function(){
             window.to.valueOf().should.equal(to.valueOf());
         });
         it('should accept only a "to" object and assume "from" is now', function() {
-            self.driver.setWindow({to: self.to});
-            self.driver.window.should.have.property('from');
-            self.driver.window.from.valueOf().should.approximately((new moment()).valueOf(), 10);
+            var window = self.driver.getWindow({to: self.to});
+            window.should.have.property('from');
+            window.from.valueOf().should.approximately((new moment()).valueOf(), 10);
         });
         it('should accept dates and transform them to moments', function() {
-            self.driver.setWindow(new Date(), new Date());
-            moment.isMoment(self.driver.window.from).should.be.ok;
-            moment.isMoment(self.driver.window.to).should.be.ok;
+            var window = self.driver.getWindow(new Date(), new Date());
+            moment.isMoment(window.from).should.be.ok;
+            moment.isMoment(window.to).should.be.ok;
         });
     });
 
