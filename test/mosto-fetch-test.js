@@ -1,14 +1,14 @@
-var assert = require("assert"),
-    moment           = require('moment'),
-    events   = require ('events'),
-    util     = require ('util'),
-    exec   = require('child_process').exec,
-    mvcp_server      = require('../drivers/mvcp/mvcp-driver'),
-    test_driver    = require('../drivers/playlists/test-driver'),
-    mosto  = require('../mosto'),
-    melted  = require('../api/Melted'),
-    Playlist  = require('../api/Playlist'),
-    Media  = require('../api/Media');
+var assert      = require("assert")
+,   moment      = require('moment')
+,   events      = require ('events')
+,   util        = require ('util')
+,   exec        = require('child_process').exec
+,   mvcp_server = require('../drivers/mvcp/mvcp-driver')
+,   test_driver = require('../drivers/playlists/test-driver')
+,   mosto       = require('../mosto')
+,   melted      = require('../api/Melted')
+,   Playlist    = require('../api/Playlist')
+,   Media       = require('../api/Media');
 
 
 // SILENCE LOG OUTPUT
@@ -17,28 +17,28 @@ var fs = require('fs');
 var log = fs.createWriteStream('./stdout.log');
 
 console.log = console.info = function(t) {
-  var out;
-  if (t && ~t.indexOf('%')) {
-    out = util.format.apply(util, arguments);
-    process.stdout.write(out + '\n');
-    return;
-  } else {
-    out = Array.prototype.join.call(arguments, ' ');
-  }
-  out && log.write(out + '\n');
+    var out;
+    if (t && ~t.indexOf('%')) {
+        out = util.format.apply(util, arguments);
+        process.stdout.write(out + '\n');
+        return;
+    } else {
+        out = Array.prototype.join.call(arguments, ' ');
+    }
+    out && log.write(out + '\n');
 };
 // END SILENCE LOG OUTPUT
 
 
 silence = function(callback) {
-	var ori_console_log = console.log;
-	var ori_console_error = console.error;
-	console.log = function() { };
-	console.error = function() { };
-	var r = callback();
-	console.log = ori_console_log;
-	console.error = ori_console_error;
-	return r;
+    var ori_console_log = console.log;
+    var ori_console_error = console.error;
+    console.log = function() { };
+    console.error = function() { };
+    var r = callback();
+    console.log = ori_console_log;
+    console.error = ori_console_error;
+    return r;
 }
 
 describe('Mosto [FETCH/Database] section tests', function(done) {
@@ -46,25 +46,25 @@ describe('Mosto [FETCH/Database] section tests', function(done) {
     var server = undefined;
 
     this.timeout(15000);
-    
+
     before(function(done) {
         melted.take(function() {
-	        melted.stop(function(){
-	            done();
-	        });
+            melted.stop(function(){
+                done();
+            });
         });
     });
 
     describe('#[FETCH] start mosto', function() {
-	    it('-- starting mosto shouldnt throw error', function() {
-	        mosto_server = silence(function(){ return new mosto(); });
+        it('-- starting mosto shouldnt throw error', function() {
+            mosto_server = silence(function(){ return new mosto(); });
             mosto_server.driver = new test_driver();
-	        assert.notEqual(mosto_server, undefined);
-	    });
-	    it('-- mvcp server connected should return false', function() {
-	        var r = silence(function(){ return mosto_server.server_started; });
-	        assert.equal(r, false);
-	    });
+            assert.notEqual(mosto_server, undefined);
+        });
+        it('-- mvcp server connected should return false', function() {
+            var r = silence(function(){ return mosto_server.server_started; });
+            assert.equal(r, false);
+        });
     });
 
 
@@ -120,7 +120,7 @@ describe('Mosto [FETCH/Database] section tests', function(done) {
             assert.equal( mosto_server.playlists[0].mode, playlist.mode );
             assert.notEqual( mosto_server.scheduled_clips.length, 0 );
             done();
-        });               
+        });
     });
 
     describe("#[FETCH] Remove playlist", function() {
@@ -133,8 +133,8 @@ describe('Mosto [FETCH/Database] section tests', function(done) {
             assert.equal( mosto_server.playlists[0].id, "black_id" );
             //assert.notEqual( mosto_server.scheduled_clips.length, 0 );
             done();
-        });           
-        
+        });
+
     });
 
     describe("#[FETCH] Doing a checkoutPlaylists()", function() {
@@ -146,7 +146,7 @@ describe('Mosto [FETCH/Database] section tests', function(done) {
                 driver_playlists = playlists;
                 if (playlists.length==0) return done(new Error("test_driver->getPlaylists must return some playlists when called in co_mode:true"));
                 done();
-            }); 
+            });
         });
         it("--should return the same playlist", function(done) {
             assert.equal( mosto_server.playlists.length, 1 );
@@ -158,24 +158,24 @@ describe('Mosto [FETCH/Database] section tests', function(done) {
             //assert.equal( mosto_server.playlists[0].endDate, driver_playlists[0].endDate );
             assert.equal( mosto_server.playlists[0].mode, driver_playlists[0].mode );
             done();
-        });           
+        });
 
     });
 
     describe('#[FETCH] leave melted', function() {
-	    it('-- leave melted', function(done) {
-		    //mosto_server.stop();
-		    mosto_server = null;
-		    melted.stop(function(pid) {
-			    melted.leave();
-			    done();
-		    });
-	    });
+        it('-- leave melted', function(done) {
+            //mosto_server.stop();
+            mosto_server = null;
+            melted.stop(function(pid) {
+                melted.leave();
+                done();
+            });
+        });
     });
-   
+
     describe('#last [FETCH] check ', function() {
         it("--should finish FETCH", function(done) {
-            done(); 
+            done();
         });
     });
 

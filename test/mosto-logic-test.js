@@ -1,14 +1,14 @@
-var assert = require("assert"),
-    moment           = require('moment'),
-    events   = require ('events'),
-    util     = require ('util'),
-    exec   = require('child_process').exec,
-    mvcp_server      = require('../drivers/mvcp/mvcp-driver'),
-    test_driver    = require('../drivers/playlists/test-driver'),
-    mosto  = require('../mosto'),
-    melted  = require('../api/Melted'),
-    Playlist  = require('../api/Playlist'),
-    Media  = require('../api/Media');
+var assert      = require("assert")
+,   moment      = require('moment')
+,   events      = require ('events')
+,   util        = require ('util')
+,   exec        = require('child_process').exec
+,   mvcp_server = require('../drivers/mvcp/mvcp-driver')
+,   test_driver = require('../drivers/playlists/test-driver')
+,   mosto       = require('../mosto')
+,   melted      = require('../api/Melted')
+,   Playlist    = require('../api/Playlist')
+,   Media       = require('../api/Media');
 
 
 // SILENCE LOG OUTPUT
@@ -17,27 +17,27 @@ var fs = require('fs');
 var log = fs.createWriteStream('./stdout.log');
 
 console.log = console.info = function(t) {
-  var out;
-  if (t && ~t.indexOf('%')) {
-    out = util.format.apply(util, arguments);
-    process.stdout.write(out + '\n');
-    return;
-  } else {
-    out = Array.prototype.join.call(arguments, ' ');
-  }
-  out && log.write(out + '\n');
+    var out;
+    if (t && ~t.indexOf('%')) {
+        out = util.format.apply(util, arguments);
+        process.stdout.write(out + '\n');
+        return;
+    } else {
+        out = Array.prototype.join.call(arguments, ' ');
+    }
+    out && log.write(out + '\n');
 };
 // END SILENCE LOG OUTPUT
 
 silence = function(callback) {
-	var ori_console_log = console.log;
-	var ori_console_error = console.error;
-	console.log = function() { };
-	console.error = function() { };
-	var r = callback();
-	console.log = ori_console_log;
-	console.error = ori_console_error;
-	return r;
+    var ori_console_log = console.log;
+    var ori_console_error = console.error;
+    console.log = function() { };
+    console.error = function() { };
+    var r = callback();
+    console.log = ori_console_log;
+    console.error = ori_console_error;
+    return r;
 }
 
 describe('Mosto [LOGIC/Scheduler] section tests', function(done) {
@@ -48,21 +48,21 @@ describe('Mosto [LOGIC/Scheduler] section tests', function(done) {
 
     before(function(done) {
         melted.take(function() {
-		    melted.stop(function(){
-    	        done();
-    	    });
-	    });
+            melted.stop(function(){
+                done();
+            });
+        });
     });
 
     describe('#[LOGIC] start mosto', function() {
-	    it('-- starting mosto shouldnt throw error', function() {
-	        mosto_server = silence(function(){ return new mosto(); });
-	        assert.notEqual(mosto_server, undefined);
-	    });
-	    it('-- mvcp server connected should return false', function() {
-	        var r = silence(function(){ return mosto_server.server_started; });
-	        assert.equal(r, false);
-	    });
+        it('-- starting mosto shouldnt throw error', function() {
+            mosto_server = silence(function(){ return new mosto(); });
+            assert.notEqual(mosto_server, undefined);
+        });
+        it('-- mvcp server connected should return false', function() {
+            var r = silence(function(){ return mosto_server.server_started; });
+            assert.equal(r, false);
+        });
     });
 
 
@@ -161,14 +161,14 @@ describe('Mosto [LOGIC/Scheduler] section tests', function(done) {
     });
 
     describe('#[LOGIC] leave melted', function() {
-	    it('-- leave melted', function(done) {
-		    //mosto_server.stop();
-		    mosto_server = null;
-		    melted.stop(function(pid) {
-			    melted.leave();
-			    done();
-		    });
-	    });
+        it('-- leave melted', function(done) {
+            //mosto_server.stop();
+            mosto_server = null;
+            melted.stop(function(pid) {
+                melted.leave();
+                done();
+            });
+        });
     });
 
     describe('#last [LOGIC] check ', function() {

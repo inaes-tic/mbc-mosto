@@ -34,20 +34,20 @@ test_driver.prototype.setCheckoutMode = function(co_mode) {
 test_driver.prototype.getPlaylists = function( ops, callback ) {
     var self = this;
 
-    if (self.co_mode) 
+    if (self.co_mode)
         return self.getTestPlaylists(ops,callback);
 
     var playlists = [];
     callback(playlists);
 };
 
-test_driver.prototype.getWindow = function( from, to) {        
+test_driver.prototype.getWindow = function( from, to) {
     var window = {
         from: moment(from),
         to: moment(to),
     };
     window.timeSpan = window.to.diff(window.from);
-    return window;            
+    return window;
 };
 
 test_driver.prototype.setWindow = function(from, to) {
@@ -57,7 +57,7 @@ test_driver.prototype.setWindow = function(from, to) {
 };
 
 test_driver.prototype.TestPlaylist = function( displacement_in_ms ) {
-    var playlist = undefined;            
+    var playlist = undefined;
     var files =  {  0: "../videos/SMPTE_Color_Bars_01.mp4",
                     1: "../videos/SMPTE_Color_Bars_02.mp4",
                     2: "../videos/SMPTE_Color_Bars_03.mp4" };
@@ -79,7 +79,7 @@ test_driver.prototype.TestPlaylist = function( displacement_in_ms ) {
 test_driver.prototype.getTestPlaylists = function( ops, callback ) {
     var playlists = [];
 
-    var playlist = undefined;            
+    var playlist = undefined;
     var files =  {  0: "../videos/SMPTE_Color_Bars_01.mp4",
                     1: "../videos/SMPTE_Color_Bars_02.mp4",
                     2: "../videos/SMPTE_Color_Bars_03.mp4" };

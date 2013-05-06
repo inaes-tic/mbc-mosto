@@ -76,7 +76,7 @@ function mosto(customConfig) {
         } else {
             if ( (moment(playlist.startDate) <= self.time_window_to &&
                   moment(playlist.endDate) >= self.time_window_from ) ) {
-                self.playlists[i] = playlist;            
+                self.playlists[i] = playlist;
             } else return self.removePlaylist(playlist.id);
         }
 
@@ -124,8 +124,8 @@ function mosto(customConfig) {
      *
      */
     mosto.prototype.orderPlaylists = function() {
-    
-        self.removeBlackPlaylist();        
+
+        self.removeBlackPlaylist();
         self.trimPlaylists();
 
         if (self.playlists.length==0) {
@@ -147,7 +147,7 @@ function mosto(customConfig) {
         self.convertPlaylistsToScheduledClips();
     };
 
-    
+
     /** trimPlaylists
      *       remove any playlist that is out of our time window
      *
@@ -159,8 +159,8 @@ function mosto(customConfig) {
         for(var i=0; i<self.playlists.length;i++) {
             var playlist = self.playlists[i];
             if ( (moment(playlist.startDate) <= self.time_window_to &&
-                  moment(playlist.endDate) >= self.time_window_from ) 
-                && (playlist.id != 'black_id') ) {
+                  moment(playlist.endDate) >= self.time_window_from )
+                 && (playlist.id != 'black_id') ) {
                 console.log("mbc-mosto: [INFO] [FETCH] trimming playlists:" + playlist.id );
                 newplaylists.push(playlist);
             }
@@ -182,7 +182,7 @@ function mosto(customConfig) {
                 }
             });
         }
-        if (i!=-1) self.playlists.splice(i, 1);        
+        if (i!=-1) self.playlists.splice(i, 1);
     }
 
     mosto.prototype.updateTimeWindow = function() {
@@ -241,7 +241,7 @@ function mosto(customConfig) {
 
                 //update the boundaries
                 self.driver.setWindow( self.time_window_from, self.time_window_to );
-    
+
                 if (callback) callback(playlists);
             } );
 
@@ -324,7 +324,7 @@ function mosto(customConfig) {
         //TODO: try to syncro immediatelly
         //or wait for timer synchronization
         //self.server.getServerPlaylist( self.syncroScheduledClips );
-        
+
     }
 
     /** preparePlaylist
@@ -557,20 +557,20 @@ function mosto(customConfig) {
     mosto.prototype.statusHasChanged = function() {
 
         var result = ( self.prev_full_status == undefined );
-        result = result || ( self.prev_full_status 
-                && ( self.prev_full_status.clips.length!=self.full_status.clips.length
-                     || self.prev_full_status.clip.current!=self.full_status.clip.current
-                     || self.prev_full_status.clip.prev!=self.full_status.clip.prev
-                     || self.prev_full_status.clip.next!=self.full_status.clip.next
+        result = result || ( self.prev_full_status
+                             && ( self.prev_full_status.clips.length!=self.full_status.clips.length
+                                  || self.prev_full_status.clip.current!=self.full_status.clip.current
+                                  || self.prev_full_status.clip.prev!=self.full_status.clip.prev
+                                  || self.prev_full_status.clip.next!=self.full_status.clip.next
 
-                     || self.prev_full_status.show.prev!=self.full_status.show.prev
-                     || self.prev_full_status.show.current!=self.full_status.show.current
-                     || self.prev_full_status.show.next!=self.full_status.show.next
-                    ) 
-                );
+                                  || self.prev_full_status.show.prev!=self.full_status.show.prev
+                                  || self.prev_full_status.show.current!=self.full_status.show.current
+                                  || self.prev_full_status.show.next!=self.full_status.show.next
+                                )
+                           );
         return result;
     }
-    
+
     /** SYNC MODULE */
     /**     syncroScheduledClips
      *
@@ -632,9 +632,9 @@ function mosto(customConfig) {
                         console.log("mbc-mosto: [INFO] [SYNC] clips to be queued: " + self.scheduled_clips_index_last_to_queue );
                     }
                 }
-                
+
                 if (self.actual_playing_status=="playing") {
-                    
+
                     for( i=self.actual_playing_index,j=self.cursor_scheduled_clip; i<server_playing_list.length && j<self.scheduled_clips.length; i++,j++) {
                         //COMPARE EACH ONE
                         //media on video server
@@ -690,7 +690,7 @@ function mosto(customConfig) {
                         if (self.actual_playing_index>-1) {
                             next_index = self.actual_playing_index+1;
                         }
-                        self.server.goto( next_index, expected_clip.expected_frame, function(response) {                            
+                        self.server.goto( next_index, expected_clip.expected_frame, function(response) {
                             self.server.play(  function(response) {
                                 console.log("mbc-mosto: [INFO] [SYNC] LOADED start playing!");
                                 self.actual_expected_start = sched_clip.expected_start;
@@ -700,22 +700,22 @@ function mosto(customConfig) {
                                 self.previous_cursor_scheduled_clip = -1;
                                 setTimeout( self.appendScheduledClips( self.cursor_scheduled_clip+1 ), 800);
                             },
-                                           function(error) {
-                                               console.error("mbc-mosto: [ERROR] error goto :"+error);
-                                               self.timerUnlock();
-                                           } );
+                                               function(error) {
+                                                   console.error("mbc-mosto: [ERROR] error goto :"+error);
+                                                   self.timerUnlock();
+                                               } );
 
                         },
-                                           function(error) {
-                                               console.error("mbc-mosto: [ERROR] error start playing:"+error);
-                                               self.timerUnlock();
-                                           } );
-
-                    },
                                           function(error) {
-                                              console.error("mbc-mosto: [ERROR] error loading clip:"+error);
+                                              console.error("mbc-mosto: [ERROR] error start playing:"+error);
                                               self.timerUnlock();
                                           } );
+
+                    },
+                                            function(error) {
+                                                console.error("mbc-mosto: [ERROR] error loading clip:"+error);
+                                                self.timerUnlock();
+                                            } );
                 },
                                            function(error) {
                                                console.error("mbc-mosto: [ERROR] error cleaning playlist:"+error);
@@ -735,7 +735,7 @@ function mosto(customConfig) {
                 self.convertPlaylistsToScheduledClips();
             }
             self.timerUnlock();
-            
+
         }
 
         self.emit('synced', 'finished ' );
@@ -749,7 +749,7 @@ function mosto(customConfig) {
         // 3) video server list is not empty but number of queued clips remaining is less than min_queue_clips
         // 4) there are no scheduled_clips!!! we need some!!!
 
-        return (    !server_playing_list 
+        return (    !server_playing_list
                     ||
                     server_playing_list.length==0
                     ||
@@ -759,9 +759,9 @@ function mosto(customConfig) {
                     ||
                     (   /*hay algo cargado pero... hay menos de min_queue_clips encolados luego del actual...*/
                         server_playing_list.length>0
-                        &&
-                        ( (server_playing_list.length-1) - self.actual_playing_index  ) < min_queue_clips )
-                    );
+                            &&
+                            ( (server_playing_list.length-1) - self.actual_playing_index  ) < min_queue_clips )
+               );
 
     }
 
@@ -801,7 +801,7 @@ function mosto(customConfig) {
 
 
         console.log( "Selecting reference clock :" + self.timer_difference );
-       
+
         //if diff minimal, use absolute, if diff too big using absolute > to force re-load and re-sync!
         if( Math.abs(self.timer_difference) < 20 || Math.abs(self.timer_difference) > 10000 ) {
             console.log("using absolute clock > forcing");
@@ -832,8 +832,8 @@ function mosto(customConfig) {
                 }
 
                 if ( ex_start < reference_clock
-                     && reference_clock < ex_end 
-                    && expected_clip==null) {
+                     && reference_clock < ex_end
+                     && expected_clip==null) {
                     self.cursor_scheduled_clip = i;
                     expected_clip = sched_clip;
                     // TODO: calculate frame position! based on length.
@@ -855,8 +855,8 @@ function mosto(customConfig) {
         //CHECK AND COMPARE IF WE ARE PLAYING THE EXPECTED ONE...
         console.log("COMPARE!!!" + self.actual_playing_status + " self.actual_playing_clip:"+self.actual_playing_clip + " vs expected: " + expected_clip.media.id );
 
-        return (    self.actual_playing_clip != "" 
-                    && (self.actual_playing_status == "playing" || self.actual_playing_status == "paused") 
+        return (    self.actual_playing_clip != ""
+                    && (self.actual_playing_status == "playing" || self.actual_playing_status == "paused")
                     && self.actual_playing_clip == expected_clip.media.id );
     }
 
@@ -869,13 +869,13 @@ function mosto(customConfig) {
         }
 
         self.server.removeClip( index_from, function(response) {
-                index_from++;
-                self.removePlayingClips( index_from, index_to, successCallback, errorCallback);
-            },
-            function(error) {
-                errorCallback(error);
-            }
-        );
+            index_from++;
+            self.removePlayingClips( index_from, index_to, successCallback, errorCallback);
+        },
+                                function(error) {
+                                    errorCallback(error);
+                                }
+                              );
 
     }
 
@@ -900,14 +900,14 @@ function mosto(customConfig) {
         } else index_iteration++;
 
         self.server.appendClip( sched_clip.media, function(response) {
-                console.log("mbc-mosto: [INFO] appendScheduledClips() Iteration:" + index_iteration + " Append ok media " + sched_clip.media.file + " resp:" + response);
-                self.appendScheduledClips( index_iteration );
-            },
-            function(error) {
-                console.error("mbc-mosto: [ERROR] appendScheduledClips() Error appending clip:"+error);
-                self.timerUnlock();
-            }
-          );
+            console.log("mbc-mosto: [INFO] appendScheduledClips() Iteration:" + index_iteration + " Append ok media " + sched_clip.media.file + " resp:" + response);
+            self.appendScheduledClips( index_iteration );
+        },
+                                function(error) {
+                                    console.error("mbc-mosto: [ERROR] appendScheduledClips() Error appending clip:"+error);
+                                    self.timerUnlock();
+                                }
+                              );
 
     }
 
@@ -927,7 +927,7 @@ function mosto(customConfig) {
 
         self.actual_playing_status = self.actual_status.status;
 
-        if (    self.actual_playing_status=="playing" 
+        if (    self.actual_playing_status=="playing"
                 || (self.actual_playing_status=="paused" && self.actual_status.actualClip.id=="black_id") ) {
             self.actual_playing_clip = self.actual_status.actualClip.id;
             self.actual_playing_index = self.actual_status.actualClip.order;
@@ -998,7 +998,7 @@ function mosto(customConfig) {
                 self.server = new mvcp_server(self.config.mvcp_server);
                 self.timerUnlock();
                 self.stop();
-                self.startMvcpServer(self.play);               
+                self.startMvcpServer(self.play);
             }
         }
     }
@@ -1025,7 +1025,7 @@ function mosto(customConfig) {
     }
 
     mosto.prototype.stop = function() {
-	    clearInterval(self.timer);
+        clearInterval(self.timer);
         self.timer = null;
     }
 
@@ -1143,7 +1143,7 @@ function mosto(customConfig) {
             self.status_driver = status_driver();
 
             self.initDriver();
-            self.startMvcpServer( function() { self.play(); if (callback) callback(); } );                        
+            self.startMvcpServer( function() { self.play(); if (callback) callback(); } );
         }
 
         function check_and_start() {
@@ -1163,10 +1163,10 @@ function mosto(customConfig) {
         if (melted!==undefined) {
             Melted = melted;
             check_and_start();
-        } 
-        else 
-        Melted.take( check_and_start );
-      
+        }
+        else
+            Melted.take( check_and_start );
+
     }
 
     mosto.prototype.finish = function(callback) {
@@ -1178,7 +1178,7 @@ function mosto(customConfig) {
                 Melted.leave();
                 if (callback) callback();
             }, 1000 );
-        });        
+        });
     }
 
 }

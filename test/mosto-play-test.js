@@ -1,15 +1,15 @@
-var assert = require("assert"),
-    moment           = require('moment'),
-    events   = require ('events'),
-    util     = require ('util'),
-    exec   = require('child_process').exec,
-    mvcp_server      = require('../drivers/mvcp/mvcp-driver'),
-    mosto  = require('../mosto'),
-    melted  = require('../api/Melted'),
-    Playlist  = require('../api/Playlist'),
-    status_driver    = require('../drivers/status/pubsub'),
-    test_driver    = require('../drivers/playlists/test-driver'),
-    Media  = require('../api/Media');
+var assert        = require("assert")
+,   moment        = require('moment')
+,   events        = require ('events')
+,   util          = require ('util')
+,   exec          = require('child_process').exec
+,   mvcp_server   = require('../drivers/mvcp/mvcp-driver')
+,   mosto         = require('../mosto')
+,   melted        = require('../api/Melted')
+,   Playlist      = require('../api/Playlist')
+,   status_driver = require('../drivers/status/pubsub')
+,   test_driver   = require('../drivers/playlists/test-driver')
+,   Media         = require('../api/Media');
 
 // SILENCE LOG OUTPUT
 var util = require('util');
@@ -17,28 +17,28 @@ var fs = require('fs');
 var log = fs.createWriteStream('./stdout.log');
 
 console.log = console.info = function(t) {
-  var out;
-  if (t && ~t.indexOf('%')) {
-    out = util.format.apply(util, arguments);
-    process.stdout.write(out + '\n');
-    return;
-  } else {
-    out = Array.prototype.join.call(arguments, ' ');
-  }
-  out && log.write(out + '\n');
+    var out;
+    if (t && ~t.indexOf('%')) {
+        out = util.format.apply(util, arguments);
+        process.stdout.write(out + '\n');
+        return;
+    } else {
+        out = Array.prototype.join.call(arguments, ' ');
+    }
+    out && log.write(out + '\n');
 };
 // END SILENCE LOG OUTPUT
 
 
 silence = function(callback) {
-	var ori_console_log = console.log;
-	var ori_console_error = console.error;
-	console.log = function() { };
-	console.error = function() { };
-	var r = callback();
-	console.log = ori_console_log;
-	console.error = ori_console_error;
-	return r;
+    var ori_console_log = console.log;
+    var ori_console_error = console.error;
+    console.log = function() { };
+    console.error = function() { };
+    var r = callback();
+    console.log = ori_console_log;
+    console.error = ori_console_error;
+    return r;
 }
 
 describe('Mosto [PLAY/Timer event] tests', function(done) {
@@ -49,10 +49,10 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
 
     before(function(done) {
         melted.take(function() {
-		    melted.stop(function(){
-    	        done();
-    	    });
-	    });
+            melted.stop(function(){
+                done();
+            });
+        });
     });
 
     describe('#[PLAY] Start Melted', function() {
@@ -77,24 +77,24 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
     });
 
     describe('#[PLAY] start mosto', function() {
-	    it('-- starting mosto shouldnt throw error', function() {
-	        mosto_server = silence(function(){ return new mosto(); });
-	        mosto_server.server = silence(function(){ return mvcp_server("melted"); });
+        it('-- starting mosto shouldnt throw error', function() {
+            mosto_server = silence(function(){ return new mosto(); });
+            mosto_server.server = silence(function(){ return mvcp_server("melted"); });
             mosto_server.status_driver = new status_driver();
             mosto_server.driver = new test_driver();
-	        assert.notEqual(mosto_server, undefined);
-	    });
-	    it('-- mvcp server connected should return false', function() {
-	        assert.notEqual( mosto_server.server, undefined);
+            assert.notEqual(mosto_server, undefined);
+        });
+        it('-- mvcp server connected should return false', function() {
+            assert.notEqual( mosto_server.server, undefined);
             assert.notEqual( mosto_server.driver, undefined);
-	        assert.equal(mosto_server.server_started, false);
-	    });
+            assert.equal(mosto_server.server_started, false);
+        });
     });
 
     describe("#[PLAY] Initializing mosto video server", function() {
         before(function(done) {
             done();
-	    });
+        });
         it("--should server has started", function(done) {
             mosto_server.startMvcpServer( function() {
                 assert.equal( mosto_server.server.isConnected(), true );
@@ -109,7 +109,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
             mosto_server.initDriver();
             mosto_server.play();               
             done();
-	    });
+        });
         it("--should timer have been created", function(done) {
             mosto_server.once('playing', function(mess) {
                 assert.notEqual( mosto_server.timer, undefined );
@@ -252,20 +252,20 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
 
 
     describe('#[PLAY] leave melted', function() {
-	    it('-- leave melted', function(done) {
-		    mosto_server.stop();
-		    mosto_server = null;
-		    melted.stop(function(pid) {
-			    melted.leave();
+        it('-- leave melted', function(done) {
+            mosto_server.stop();
+            mosto_server = null;
+            melted.stop(function(pid) {
+                melted.leave();
                 console.log("pid:"+pid);                  
                 if (pid) {      
                     done();
                 } else {
                     done(new Error("leave melted: no process to stop."));
                 }
-			    
-		    });
-	    });
+                
+            });
+        });
     });
     
     describe('#last [PLAY] check ', function() {
