@@ -67,19 +67,22 @@ mongo_driver.prototype.stop = function(timeSpan) {
 
 mongo_driver.prototype.pubsub_handler = {
     'schedbackend.create': function(msg) {
+        var self = this;
         if( this.inTime(msg.model) ) {
             this.createPlaylist(msg.model, (function(err, playlist) {
-                if( err )
+                if( err ) {
+                    self.emit('error', err);
                     return console.error("mongo-driver [ERROR]:", err);
-
+                }
                 this.emit('create', playlist);
             }).bind(this));}},
     'schedbackend.update': function(msg) {
         // I forward all create messages
         this.createPlaylist(msg.model, (function(err, playlist) {
-            if( err )
-                return  console.error("mongo-driver [ERROR]:", err);
-
+            if( err ) {
+                self.emit('error', err);
+                return console.error("mongo-driver [ERROR]:", err);
+            }
             this.emit('update', playlist)
         }).bind(this));
     },
@@ -188,7 +191,10 @@ mongo_driver.prototype.getPlaylists = function(ops, callback) {
     }, function(err, scheds) {
         if( err ) {
             console.log(err);
-        } else if( scheds ) {
+            return self.emit('error', err);
+        }
+
+        if( scheds ) {
             console.log("Processing sched list:", scheds);
             async.map(scheds, self.createPlaylist.bind(self), function(err, playlists) {
                 if( callback )
@@ -209,7 +215,6 @@ mongo_driver.prototype.createPlaylist = function(sched, callback) {
     console.log("mongo-driver: [INFO] Create Playlist:", sched);
     self.lists.findById(sched.list, function(err, list) {
         if( err ) {
-            self.emit ("error", err);
             callback(err);
             return err;
         }
