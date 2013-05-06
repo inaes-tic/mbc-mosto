@@ -1,13 +1,13 @@
-var config   = require("mbc-common").config.Mosto.Mongo,
-    Playlist = require('../../api/Playlist'),
-    Media    = require('../../api/Media'),
-    mubsub   = require("mubsub"),
-    moment   = require("moment"),
-    mbc      = require('mbc-common'),
-    async    = require('async'),
-    events   = require ('events'),
-    util     = require ('util'),
-    _        = require('underscore');
+var config   = require("mbc-common").config.Mosto.Mongo
+,   Playlist = require('../../api/Playlist')
+,   Media    = require('../../api/Media')
+,   mubsub   = require("mubsub")
+,   moment   = require("moment")
+,   mbc      = require('mbc-common')
+,   async    = require('async')
+,   events   = require ('events')
+,   util     = require ('util')
+,   _        = require('underscore');
 
 function drop_err(callback, err_handler) {
     return function(err,v) {
@@ -45,7 +45,7 @@ mongo_driver.prototype.start = function(timeSpan) {
         return handler && (handler.bind(self))(msg);
     });
 
-    self.channel.subscribe('schedbackend.create');    
+    self.channel.subscribe('schedbackend.create');
     self.channel.subscribe('schedbackend.update');
     self.channel.subscribe('schedbackend.delete');
 
