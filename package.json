@@ -27,7 +27,7 @@
         "watchr"      : "2.4.x",
         "moment"      : "2.0.0",
         "mubsub"      : "git://github.com/inaes-tic/mubsub.git",
-        "mbc-common"  : "git://github.com/inaes-tic/mbc-common.git#0.0.1",
+        "mbc-common"  : "git://github.com/inaes-tic/mbc-common.git",
         "node-mlt"    : "git://github.com/inaes-tic/node-mlt.git#0.0.1",
         "semaphore"   : "1.0.x"
     },
