@@ -8,4 +8,4 @@ services:
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get build-dep -qq melt
-  - sudo apt-get install -qq ffmpeg melt libmlt-dev libmlt++-dev x264
+  - sudo apt-get install -qq ffmpeg melt libmlt-dev libmlt++-dev libx264-120
