@@ -1,17 +1,9 @@
 var spawn = require('child_process').spawn;
 var net = require('net');
 var semaphore = require('semaphore')(1);
-
-var conf = {
-    bin: process.env.MELTED || "melted",
-    root: process.env.MELTED_ROOT || process.env.PWD,
-    host: process.env.MELTED_HOST || "localhost",
-    port: process.env.MELTED_PORT || 5250,
-    output: process.env.MELTED_OUTPUT || "sdl"
-};
-
-var melted_bin_path = process.env.PWD+ '/melted/BUILD/bin/melted';
-var melted_lib_path = process.env.PWD+ '/melted/BUILD/lib';
+var conf = require('mbc-common').config.Mosto.Melted;
+var melted_bin_path = conf.root + '/melted/BUILD/bin/melted';
+var melted_lib_path = conf.root + '/melted/BUILD/lib';
 
 _meltedbin = function(callback,errorCallback) {
     console.log("Melted.js: executing _meltedbin()");
