@@ -1,5 +1,37 @@
 var moment = require('moment');
 
+var _ = require('underscore');
+
+// copypasta from http://michalbe.blogspot.com/2011/02/javascript-random-numbers-with-custom.html
+var seededRandom = function ( nseed ) {
+    var self = this;
+    var constant = Math.pow(2, 13)+1,
+    prime = 37,
+    maximum = Math.pow(2, 50);
+
+    self.seed = function (nseed) {
+        if (nseed) {
+            self._seed = nseed;
+        } else {
+            var old = self._seed;
+            self._seed = (new Date()).getTime();
+            return old;
+        }
+    };
+
+    self.seed(nseed);
+
+    self.next = function() {
+        self._seed *= constant;
+        self._seed += prime;
+        self._seed %= maximum;
+
+        return self._seed;
+    }
+};
+
+var random = new seededRandom();
+
 exports = module.exports = {
     getXmlFileNameFromClip: function(clip) {
         return clip.playlist_id + "-" + clip.id + ".xml";
@@ -79,5 +111,33 @@ exports = module.exports = {
     convertDateToUnix:  function ( date_timestamp ) {
         var date = new moment(date_timestamp);
         return date.unix();
-    }
+    },
+
+    random: random,
+
+// from underscore.js
+    shuffle: function(obj, seed) {
+        var _random = function(min, max) {
+          if (max == null) {
+            max = min;
+            min = 0;
+          }
+          return min + Math.floor((random.next()/Math.pow(2,50)) * (max - min + 1));
+        };
+
+        if (seed) {
+            random.seed(seed);
+        }
+
+        var rand;
+        var index = 0;
+        var shuffled = [];
+        _.each(obj, function(value) {
+          rand = _random(index++);
+          shuffled[index - 1] = shuffled[rand];
+          shuffled[rand] = value;
+        }, this);
+        return shuffled;
+    },
+
 };
