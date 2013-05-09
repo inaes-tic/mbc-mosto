@@ -4,6 +4,7 @@ MOCHA=node_modules/mocha/bin/mocha --reporter spec --timeout 30000 test
 MELTED_BUILD=${ROOT}/melted/BUILD
 MELTED_INTREE=${MELTED_BUILD}/bin/melted
 MELTED = $(shell sh -c "which melted || echo ${MELTED_INTREE}")
+MELT=$(shell which melt | head -1)
 NC=$(shell which nc netcat telnet | head -1)
 TEST_VIDEOS=test/videos/SMPTE_Color_Bars_01.mp4 test/videos/SMPTE_Color_Bars_02.mp4 test/videos/SMPTE_Color_Bars_03.mp4
 
@@ -62,7 +63,7 @@ test/videos/%.avi: test/images/%.png
 	avconv -loop 1 -f image2 -i $< -t 30 $@ &> /dev/null
 
 test/videos/%.mp4: test/images/%.png
-	melt $< in=0 out=750 -consumer avformat:$@ acodec=none
+	${MELT} $< in=0 out=750 -consumer avformat:$@ acodec=none
 
 test: videos ${MOCHA} melted-check
 	${NODE} ${MOCHA}
