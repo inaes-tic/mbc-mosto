@@ -62,7 +62,7 @@ test/videos/%.avi: test/images/%.png
 	avconv -loop 1 -f image2 -i $< -t 30 $@ &> /dev/null
 
 test/videos/%.mp4: test/images/%.png
-	melt $< in=0 out=750 -consumer avformat:$@ vcodec=libx264 acodec=none
+	melt $< in=0 out=750 -consumer avformat:$@ acodec=none
 
 test: videos ${MOCHA} melted-check
 	${NODE} ${MOCHA}
