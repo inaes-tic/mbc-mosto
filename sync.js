@@ -26,10 +26,27 @@ function sync( config ) {
     self.cursor_scheduled_clip = -1;
     self.previous_cursor_scheduled_clip = -1;
 
+    self.sync_clips = [];
 
     sync.prototype.init = function() {
         self.scheduler = self.mosto.scheduler;
+        self.scheduler.on( 'sync_downstream', function( scheduled_clips ) { 
+                console.log("mbc-mosto: [INFO] [SYNC] receiving sync_downstream"); 
+                self.server.getServerPlaylist( function( server_playlist ) {
+                        self.syncroScheduledClips( scheduled_clips, server_playlist );
+                    },
+                    function(error) {
+                        console.error("mbc-mosto: [ERROR] [SYNC] receiving sync_downstream event: on self.server.getServerPlaylist(...) " + error);
+                    });
+            }
+        );
+
         self.player = self.mosto.player;
+        self.player.on( 'sync_upstream', function(play_status) {
+            console.log("mbc-mosto: [INFO] [SYNC] receiving sync_upstream"); 
+            self.upstreamCheck( play_status ); 
+        } );        
+
     }
 
     sync.prototype.timerUnlock = function() {
@@ -60,6 +77,20 @@ function sync( config ) {
         return media.id;
     };
 
+
+    sync.prototype.upstreamCheck = function( play_status ) {
+
+        
+
+        //CALLING upstream when clips are needed...
+        if ( self.ineedMoreClips( play_status.server_playlist, play_status.server_status, self.sync_clips, 1 ) ) {
+            console.log("mbc-mosto: [INFO] [SYNC] i'm hungry, i need more clips!!! calling sched_upstream");
+            self.emit('sched_upstream');//no message needed...
+        }
+
+        
+    };
+
     
     /** SYNC MODULE */
     /**     syncroScheduledClips
@@ -67,25 +98,19 @@ function sync( config ) {
      *       compare every media scheduled in current_playlist with server  playlist
      *
      */
-    sync.prototype.syncroScheduledClips = function( server_playing_list ) {
+    sync.prototype.syncroScheduledClips = function( scheduled_clips, server_playing_list ) {
 
         console.log("mbc-mosto: [INFO] syncroScheduledClips > server_playing_list medias = " + server_playing_list.length + " playingidx: " + self.player.actual_playing_index );
 
         self.emit('syncing', server_playing_list );
 
         self.actual_server_playlist = server_playing_list;
-
-        //CALLING upstream when clips are needed...
-        if ( self.ineedMoreClips( server_playing_list, 1 ) ) {
-            console.log("mbc-mosto: [INFO] [SYNC MODULE] i'm hungry, i need more clips!!! calling upstream LOGIC > convertPlaylistsToScheduledClips()");
-            self.scheduler.convertPlaylistsToScheduledClips();
-        }
+        self.sync_clips = scheduled_clips;
 
         //SYNC METHOD: always check:
         // 1) if video server is playing the expected clip
         // 2) if queue clips are correct
-
-        var expected_clip = self.getExpectedClip();
+        var expected_clip = self.getExpectedClip( scheduled_clips );
 
         // DO WE HAVE AN EXPECTED CLIP ?
         if ( expected_clip ) {
@@ -109,8 +134,8 @@ function sync( config ) {
 
                 //PARSE scheduled clips, calculate actual clips to be queued
                 /*IS*/
-                for( j=self.cursor_scheduled_clip+1; j<self.scheduler.scheduled_clips.length; j++ ) {
-                    var sclip = self.scheduler.scheduled_clips[j];
+                for( j=self.cursor_scheduled_clip+1; j<scheduled_clips.length; j++ ) {
+                    var sclip = scheduled_clips[j];
                     if (sclip.schedule_time!="now") {
                         self.scheduled_clips_index_last_to_queue = j-1;
                         console.log("mbc-mosto: [INFO] [SYNC] clips to be queued: " + self.scheduled_clips_index_last_to_queue );
@@ -119,12 +144,12 @@ function sync( config ) {
                 
                 if (self.player.actual_playing_status=="playing") {
                     
-                    for( i=self.player.actual_playing_index,j=self.cursor_scheduled_clip; i<server_playing_list.length && j<self.scheduler.scheduled_clips.length; i++,j++) {
+                    for( i=self.player.actual_playing_index,j=self.cursor_scheduled_clip; i<server_playing_list.length && j<scheduled_clips.length; i++,j++) {
                         //COMPARE EACH ONE
                         //media on video server
                         var queued_media = server_playing_list[i];
                         //media expected in mosto
-                        var scheduled_media = self.scheduler.scheduled_clips[j].media;
+                        var scheduled_media = scheduled_clips[j].media;
 
                         breakpoint_playing_cursor = i;
                         breakpoint_scheduled_cursor = j;
@@ -168,7 +193,7 @@ function sync( config ) {
                 //WE ARE NOT PLAYING THE EXPECTED ONE SO WE CLEAN UP AND LOAD/GOTO EXPECTED ONE
                 self.server.cleanPlaylist( function(response) {
                     console.log("mbc-mosto: [INFO] cleanPlaylist ok! " + response );
-                    var sched_clip = self.scheduler.scheduled_clips[self.cursor_scheduled_clip];
+                    var sched_clip = scheduled_clips[self.cursor_scheduled_clip];
                     self.server.appendClip( sched_clip.media, function(response) {
                         var next_index = 0;
                         if (self.player.actual_playing_index>-1) {
@@ -216,17 +241,19 @@ function sync( config ) {
                 console.log("mbc-mosto: [INFO] FILLED WITH BLACK OK...");
             } else {
                 console.log("mbc-mosto: [INFO] [WARNING] NOT BLACK!!! calling upstream scheduler... to fix it ASAP.");
-                self.scheduler.convertPlaylistsToScheduledClips();
+                self.emit( 'sched_upstream' );
+                //self.scheduler.convertPlaylistsToScheduledClips();
             }
             self.timerUnlock();
             
         }
 
         self.emit('synced', 'finished ' );
+        self.emit('play_downstream');
 
     }
 
-    sync.prototype.ineedMoreClips = function( server_playing_list, min_queue_clips ) {
+    sync.prototype.ineedMoreClips = function( server_playing_list, server_status, scheduled_clips, min_queue_clips ) {
         // conditions are:
         // 1) video server is stopped
         // 2) video server list is empty
@@ -237,19 +264,19 @@ function sync( config ) {
                     ||
                     server_playing_list.length==0
                     ||
-                    self.player.actual_playing_status=="stopped"
+                    server_status.status=="stopped"
                     ||
-                    self.scheduler.scheduled_clips.length===0
+                    scheduled_clips.length===0
                     ||
                     (   /*hay algo cargado pero... hay menos de min_queue_clips encolados luego del actual...*/
                         server_playing_list.length>0
                         &&
-                        ( (server_playing_list.length-1) - self.player.actual_playing_index  ) < min_queue_clips )
+                        ( (server_playing_list.length-1) - server_status.actualClip.order  ) < min_queue_clips )
                     );
 
     }
 
-    sync.prototype.getExpectedClip = function() {
+    sync.prototype.getExpectedClip = function( scheduled_clips ) {
 
         console.log("mbc-mosto: [INFO] [SYNC] getExpectedClip");
 
@@ -266,7 +293,7 @@ function sync( config ) {
         //playlist has avanced
         if ( self.player.previous_playing_index < self.player.actual_playing_index && self.player.actual_playing_status == "playing" ) {
             self.ref_sched_index = self.ref_sched_index + 1;
-            var exp_clip = self.scheduler.scheduled_clips[ self.ref_sched_index ];
+            var exp_clip = scheduled_clips[ self.ref_sched_index ];
             if (exp_clip) {
                 self.player.actual_expected_start = exp_clip.expected_start;
                 console.log("mbc-mosto: [INFO] [SYNC] changed index from: " + self.player.previous_playing_index + " to " + self.player.actual_playing_index + " self.ref_sched_index:  "  + self.ref_sched_index  );
@@ -300,8 +327,8 @@ function sync( config ) {
         console.log("mbc-mosto: [INFO] reference_clock         " + " at:" + reference_clock.format("DD/MM/YYYY HH:mm:ss.SSS") );
 
         //NOW CHECK FOR SCHEDULED CLIP EXPECTED TO RUN NOW ( based on selected reference clock, always relative, but absolute must be needed to ensure reync)
-        for( var i=0; i<self.scheduler.scheduled_clips.length; i++) {
-            var sched_clip = self.scheduler.scheduled_clips[i];
+        for( var i=0; i<scheduled_clips.length; i++) {
+            var sched_clip = scheduled_clips[i];
             if (sched_clip) {
                 var ex_start = moment(sched_clip.expected_start,"DD/MM/YYYY HH:mm:ss.SSS");
                 var ex_end = moment(sched_clip.expected_end,"DD/MM/YYYY HH:mm:ss.SSS");
@@ -315,8 +342,8 @@ function sync( config ) {
                     }
                 }
 
-                if ( ex_start < reference_clock
-                     && reference_clock < ex_end 
+                if ( ex_start <= reference_clock
+                     && reference_clock <= ex_end 
                     && expected_clip==null) {
                     self.cursor_scheduled_clip = i;
                     expected_clip = sched_clip;
@@ -364,14 +391,14 @@ function sync( config ) {
 
     sync.prototype.appendScheduledClips = function( index_iteration ) {
 
-        console.log("APPENDING index_iteration: " + index_iteration + " over " + self.scheduler.scheduled_clips.length + " elements" );
-        if ( 0>index_iteration || index_iteration > (self.scheduler.scheduled_clips.length-1) ) {
+        console.log("APPENDING index_iteration: " + index_iteration + " over " + scheduled_clips.length + " elements" );
+        if ( 0>index_iteration || index_iteration > (scheduled_clips.length-1) ) {
             console.log("mbc-mosto: [INFO]appendScheduledClips() > APPENDING : out of bound > stop appending");
             self.timerUnlock();
             return;
         }
 
-        var sched_clip = self.scheduler.scheduled_clips[index_iteration];
+        var sched_clip = scheduled_clips[index_iteration];
 
         if ( index_iteration>0 && sched_clip.schedule_time!="now") {
             //we break the loading loop at second appearance of a non-queued media...
