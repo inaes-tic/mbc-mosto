@@ -114,6 +114,9 @@ mongo_driver.prototype.getWindow = function(from, to) {
             } else {
                 ret.from = moment(window.from);
             }
+            if( window.timeSpan ) {
+                ret.timeSpan = window.timeSpan * 60 * 1000;
+            }
             if( !(window.to || window.timeSpan) ) {
                 // if neither is present, we use the currently set
                 // value, or default to the config file
