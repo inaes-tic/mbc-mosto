@@ -118,7 +118,8 @@ function fetch( config ) {
         self.trimPlaylists();
 
         if (self.playlists.length==0) {
-            var sch_rightnow = moment( self.player.timer_clock).add( moment.duration({ milliseconds: 0 }) ).format("DD/MM/YYYY HH:mm:ss.SSS");
+
+            var sch_rightnow = moment().add( moment.duration({ milliseconds: 0 }) ).format("DD/MM/YYYY HH:mm:ss.SSS");            
             self.startBlack( sch_rightnow, "00:00:50.00", sch_rightnow, moment( sch_rightnow,"DD/MM/YYYY HH:mm:ss.SSS").add(moment.duration({ milliseconds: 50000 }) ).format('DD/MM/YYYY HH:mm:ss.SSS') );
         }
 
@@ -135,7 +136,7 @@ function fetch( config ) {
         self.playlists_updated = true;
 
         //Here we must emit a "scheduler" event with actual self.playlists object...
-        self.scheduler.convertPlaylistsToScheduledClips();
+        if (self.scheduler) self.scheduler.convertPlaylistsToScheduledClips();
 
     };
 
@@ -178,8 +179,8 @@ function fetch( config ) {
     }
 
     fetch.prototype.updateTimeWindow = function() {
-        self.player.timer_clock = moment();
-        self.player.sync_lock_start = moment();
+        if (self.player) self.player.timer_clock = moment();
+        if (self.player) self.player.sync_lock_start = moment();
 
         self.time_window_from = moment( moment().toDate());
         //var last_time_window_to = self.time_window_to.clone();
