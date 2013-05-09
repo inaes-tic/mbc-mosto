@@ -187,7 +187,7 @@ function play( config ) {
         }
 
 
-        console.log("mbc-mosto: [INFO] timer_fun_status status: " + self.actual_playing_status + " clip: " + self.actual_playing_clip );
+        console.log("mbc-mosto: [INFO] [PLAY] timer_fun_status status: " + self.actual_playing_status + " clip: " + self.actual_playing_clip );
 
         self.server.getServerPlaylist( function( server_playing_list ) { 
                 self.prev_full_status = self.full_status;
@@ -195,7 +195,12 @@ function play( config ) {
                 if ( self.statusHasChanged() ) {
                     self.emit('status', self.full_status );
                 }
-                self.synchronizer.syncroScheduledClips( server_playing_list ); 
+                //self.synchronizer.syncroScheduledClips( server_playing_list ); 
+                console.log("mbc-mosto: [INFO] [PLAY] emitting sync_upstream");
+                self.emit('sync_upstream', { 
+                    server_playlist: server_playing_list, 
+                    server_status: self.actual_status 
+                } );
             
             }, 
             function() { console.log("mbc-mosto: [ERROR] timer_fun_status >  getServerPlaylist() " ); } 
@@ -254,11 +259,13 @@ function play( config ) {
         console.log("mbc-mosto: [INFO] Start playing mosto");
         if (!self.timer) {
 
-            self.fetcher.updateTimeWindow();
+            if (self.fetcher) {
+                self.fetcher.updateTimeWindow();
+                console.log("mbc-mosto: [PLAY] setting window: from: "  + self.fetcher.time_window_from.format("DD/MM/YYYY HH:mm:ss") + " to: " + self.fetcher.time_window_to.format("DD/MM/YYYY HH:mm:ss") );
+            }
 
             self.timer = setInterval( self.timer_fun, self.mosto.config.timer_interval );
             self.timer_fun();
-            console.log("mbc-mosto: [PLAY] setting window: from: "  + self.fetcher.time_window_from.format("DD/MM/YYYY HH:mm:ss") + " to: " + self.fetcher.time_window_to.format("DD/MM/YYYY HH:mm:ss") );
 
             self.on('statusclip', function(stclip) {
                 console.log("mbc-mosto: [PLAY] emitting statusclip: " + stclip.currentFrame + " / "+  stclip.totalFrames);
@@ -278,8 +285,7 @@ function play( config ) {
         self.timer = null;
     }
 
-    play.prototype.pause = function() {
-    }
+    play.prototype.pause = function() {}
 
 };
 
