@@ -1,6 +1,6 @@
 require('should');
 
-describe("Mosto functional test", function() {
+describe.only("Mosto functional test", function() {
     /*
      * arrancar sin playlists
      ** ver negro
