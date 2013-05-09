@@ -134,7 +134,7 @@ describe('PlaylistMongoDriver', function(){
             };
         });
 
-        this.timeout(500);
+        this.timeout(1000);
         it('should respond to create messages',function(done){
             // set window from now to 10 minutes
             var message = self.message;
