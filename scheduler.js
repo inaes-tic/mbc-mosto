@@ -20,16 +20,47 @@ function scheduler( config ) {
     self.scheduled_clips_updated = false;
 
     scheduler.prototype.init = function() {
+
         self.fetcher = self.mosto.fetcher;
+        if (self.fetcher) self.fetcher.on( 'fetch_downstream', self.convertPlaylistsToScheduledClips );
+
+        self.synchronizer = self.mosto.synchronizer;
+        if (self.synchronizer) self.synchronizer.on( 'sched_upstream', function() {
+            console.log('mbc-mosto: [INFO] [SCHED] receiving sched_upstream event');
+            self.upstreamCheck(); 
+        });//receives server_playing_list + status
+
         self.player = self.mosto.player;
+
+
     }
 
     scheduler.prototype.queueBlack = function( schedule_time, sch_duration, sch_expect_start, sch_expect_end ) {
         //Media(id, orig_order, actual_order, playlist_id, name, type, file, length, fps)
         var BlackMedia = new Media( 'black_id' /*id*/, '0' /*orig_order*/, '0'/*actual_order*/, '0' /*playlist_id*/, 'black' /*name*/, 'file' /*type*/, self.mosto.config.black, sch_duration/*length*/, ''/*fps*/ );
-        console.log("mbc-mosto: [INFO] [LOGIC] queueBlack > media:" + BlackMedia.file + " schedule_time:" + schedule_time + " sch_duration:" + sch_duration + " sch_expect_start:" + sch_expect_start + " sch_expect_end:" + sch_expect_end + " fps?:"+BlackMedia.fps );
+        console.log("mbc-mosto: [INFO] [SCHED] queueBlack > media:" + BlackMedia.file + " schedule_time:" + schedule_time + " sch_duration:" + sch_duration + " sch_expect_start:" + sch_expect_start + " sch_expect_end:" + sch_expect_end + " fps?:"+BlackMedia.fps );
         self.scheduled_clips.push( new ScheduledMedia( BlackMedia, schedule_time, sch_duration, sch_expect_start, sch_expect_end ) );
 
+    }
+
+    scheduler.prototype.upstreamCheck = function() {
+        //Check if we need to make a checkout! (upstream syncro!! > sync_lock must be true )
+
+        //UPSTREAM
+
+            //if time_window advance for 1 hours (4 hours > 3 hours left ), we make a checkout...[FETCH]
+            var rt_actual_window = self.fetcher.time_window_to.diff( moment() );
+            var rt_min_window = moment.duration( { hours: 3 } ).asMilliseconds();
+
+            console.log("mbc-mosto: [INFO] [SCHED] upstreamCheck > rt_actual_window:" + rt_actual_window + " rt_min_window:" + rt_min_window );
+            console.log("mbc-mosto: [INFO] [SCHED] upstreamCheck > scheduled_clips:" + self.scheduled_clips.length );
+            if (  rt_actual_window < rt_min_window || self.scheduled_clips.length==0 ) {
+                //console.log("mbc-mosto: [INFO] [SCHED] window advanced at least one hour... calling [FETCH] checkoutPlaylists actual:" + rt_actual_window + " min:" + rt_min_window);
+                //return  self.fetcher.checkoutPlaylists();//really updates time window too
+                console.log("mbc-mosto: [INFO] [SCHED] emitting fetch_upstream");
+                self.emit('fetch_upstream');
+            }
+        
     }
 
     /** LOGIC SCHEDULER MODULE */
@@ -51,59 +82,40 @@ function scheduler( config ) {
      *
      *       We use a recursive function preparePlaylist
      */
-    scheduler.prototype.convertPlaylistsToScheduledClips = function( propagate ) {
+    scheduler.prototype.convertPlaylistsToScheduledClips = function( playlists ) {
 
-        console.log("mbc-mosto: [INFO] [LOGIC] converting Playlists to scheduled clips");
-
-        self.emit('converting', '[LOGIC] Scheduler start' );
-
-        //Check if we need to make a checkout! (upstream syncro!! > sync_lock must be true )
-        //UPSTREAM
-        if ( self.player && self.player.upstreamActive() ) {
-
-            if (self.fetcher.playlists.length==0) {
-                //make a checkout... (not necesarry if DB Driver take care of it??
-                console.log("mbc-mosto: [INFO] [LOGIC] we have no playlists.");
-                return  self.fetcher.checkoutPlaylists();
-            }
-
-            //if time_window advance for 1 hours (4 hours > 3 hours left ), we make a checkout...[FETCH]
-            var rt_actual_window = self.fetcher.time_window_to.diff( moment() );
-            var rt_min_window = moment.duration( { hours: 3 } ).asMilliseconds();
-
-            console.log("mbc-mosto: [INFO] [LOGIC] converPlaylistsToScheduledClips() > rt_actual_window:" + rt_actual_window + " rt_min_window:" + rt_min_window );
-            if (  rt_actual_window < rt_min_window ) {
-                console.log("mbc-mosto: [INFO] [LOGIC] window advanced at least one hour... calling [FETCH] checkoutPlaylists actual:" + rt_actual_window + " min:" + rt_min_window);
-                return  self.fetcher.checkoutPlaylists();//really updates time window too
-            }
-        }
+        console.log("mbc-mosto: [INFO] [SCHED] converting Playlists to scheduled clips : " + playlists );
+        
+        self.emit('converting', '[SCHED] Scheduler start' );
 
         //clean scheduled clips
-        if (self.fetcher.playlists_updated) {
-            self.scheduled_clips = [];
-            if (self.fetcher.playlists.length>0) {
-                console.log("mbc-mosto: [INFO] [LOGIC] actually converting playlists ("+self.fetcher.playlists.length+").");
-                self.preparePlaylist( 0, -1 );
-            }
-            self.fetcher.playlists_updated = false;
+        //if ( playlists_updated ) {
+        self.scheduled_clips = [];
+        if ( playlists.length>0 ) {
+            console.log("mbc-mosto: [INFO] [SCHED] actually converting playlists ("+playlists.length+").");
+            self.preparePlaylist( playlists, 0, -1 );
         }
+        //playlists_updated = false;
+        //}
 
-        self.emit('converted', '[LOGIC] Scheduler end' );
+        self.emit('converted', '[SCHED] Scheduler end' );
 
         //TODO: try to syncro immediatelly
         //or wait for timer synchronization
-        //self.server.getServerPlaylist( self.syncroScheduledClips );
+        console.log("mbc-mosto: [INFO] [SCHED] emitting sync_downstream");
+        self.emit('sync_downstream', self.scheduled_clips );
         
     }
+
 
     /** preparePlaylist
      *       recursive convert for convertPlaylistsToScheduledClips
      *
      *       @see convertPlaylistsToScheduledClips
      */
-    scheduler.prototype.preparePlaylist = function( next_playlist_id, lastTimeCode ) {
+    scheduler.prototype.preparePlaylist = function( playlists, next_playlist_id, lastTimeCode ) {
 
-        var pl = self.fetcher.playlists[next_playlist_id];
+        var pl = playlists[next_playlist_id];
         var milis,sch_duration_m;
         var sch_duration, sch_time, sch_expect_start, sch_expect_end, schedule_time;
         var i = 0,is = 0;
@@ -123,7 +135,7 @@ function scheduler( config ) {
             diff = last_tc.diff( pl_tc );
         } else last_tc = pl_tc;
 
-        console.log("mbc-mosto: [INFO] [LOGIC] preparePlaylist() : next_playlist_id : " + next_playlist_id + " startDate:" + pl_tc.format("DD/MM/YYYY HH:mm:ss") + " lastTimeCode:" +  lastTimeCode + " diff:" + diff );
+        console.log("mbc-mosto: [INFO] [SCHED] preparePlaylist() : next_playlist_id : " + next_playlist_id + " startDate:" + pl_tc.format("DD/MM/YYYY HH:mm:ss") + " lastTimeCode:" +  lastTimeCode + " diff:" + diff );
 
         if ( lastTimeCode==-1
              || diff < 10000
@@ -174,7 +186,7 @@ function scheduler( config ) {
                                 black_duration = moment.duration( sch_time_mom - tnow );
                                 black_duration_str = utils.convertDurationToString(black_duration);
                                 var sch_to_next_playlist = moment( sch_rightnow,"DD/MM/YYYY HH:mm:ss.SSS").add(black_duration).format('DD/MM/YYYY HH:mm:ss.SSS');
-                                console.log("mbc-mosto: [INFO] [LOGIC] preparePlaylist > empty space ? diff_void_start :" + diff_void_start );
+                                console.log("mbc-mosto: [INFO] [SCHED] preparePlaylist > empty space ? diff_void_start :" + diff_void_start );
 
                                 if (diff_void_start>0) {
                                     self.queueBlack( sch_rightnow, black_duration_str, sch_rightnow, sch_to_next_playlist );
@@ -185,7 +197,7 @@ function scheduler( config ) {
 
                             schedule_time = sch_time;
                         }
-                    console.log("mbc-mosto: [INFO] [LOGIC] adding scheduled clip: sched_time:" + schedule_time + " media.id:" + sMedia.id + " file:" + sMedia.file + " start:"+sch_expect_start+" end:"+sch_expect_end + " milis:" + milis );
+                    console.log("mbc-mosto: [INFO] [SCHED] adding scheduled clip: sched_time:" + schedule_time + " media.id:" + sMedia.id + " file:" + sMedia.file + " start:"+sch_expect_start+" end:"+sch_expect_end + " milis:" + milis );
                     self.scheduled_clips.push( new ScheduledMedia( sMedia, schedule_time, sch_duration, sch_expect_start, sch_expect_end ) );
                     lastTimeCode = sch_expect_end;
                     last_tc = moment( lastTimeCode,"DD/MM/YYYY HH:mm:ss.SSS");
@@ -201,7 +213,7 @@ function scheduler( config ) {
         next_playlist_id++;
 
         //iteration ended because we have no more playlists !
-        if (self.fetcher.playlists.length==next_playlist_id) {
+        if ( playlists.length==next_playlist_id) {
             if (next_playlist_id > 0 && lastTimeCode!=-1 && pl.id!="black_id") {
                 var black_duration, black_duration_str;
                 black_duration = moment.duration( self.fetcher.time_window_to - last_tc );
@@ -212,7 +224,7 @@ function scheduler( config ) {
             return;
         }
 
-        return self.preparePlaylist( next_playlist_id, lastTimeCode );
+        return self.preparePlaylist( playlists, next_playlist_id, lastTimeCode );
     }
 
 };
