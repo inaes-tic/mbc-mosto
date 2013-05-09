@@ -26,6 +26,12 @@ test_driver.prototype.start = function(timeSpan) {
     self.setWindow( { from: moment(), to: moment().add(moment.duration({ hours: 4 })), setWindow: true } );
 };
 
+test_driver.prototype.stop = function() {
+    var self = this;
+    self.co_mode = false;
+    self.setWindow( { from: moment(), to: moment().add(moment.duration({ hours: 4 })), setWindow: true } );
+};
+
 test_driver.prototype.setCheckoutMode = function(co_mode) {
     var self = this;
     self.co_mode = co_mode;
