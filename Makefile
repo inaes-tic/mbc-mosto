@@ -17,6 +17,10 @@ all: test serve
 serve: melted-check mosto.js server.js
 	${NODE} server.js
 
+debug: melted-check mosto.js server.js
+	${NODE} --debug-brk server.js
+
+
 install:
 	npm install
 
