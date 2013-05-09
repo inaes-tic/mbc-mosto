@@ -7,6 +7,7 @@ var fs               = require('fs'),
     Melted           = require('./api/Melted'),
     Media            = require('./api/Media'),
     ScheduledMedia   = require('./api/ScheduledMedia'),
+    _                = require('underscore'),
     mvcp_server      = require('./drivers/mvcp/mvcp-driver');
 
 function play( config ) {
