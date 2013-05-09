@@ -59,7 +59,7 @@ function scheduler( config ) {
 
         //Check if we need to make a checkout! (upstream syncro!! > sync_lock must be true )
         //UPSTREAM
-        if ( self.player.upstreamActive() ) {
+        if ( self.player && self.player.upstreamActive() ) {
 
             if (self.fetcher.playlists.length==0) {
                 //make a checkout... (not necesarry if DB Driver take care of it??
@@ -165,11 +165,13 @@ function scheduler( config ) {
                                 self.queueBlack( "now", black_duration_str, lastTimeCode, moment( lastTimeCode,"DD/MM/YYYY HH:mm:ss.SSS").add(black_duration).format('DD/MM/YYYY HH:mm:ss.SSS') );
                             } else if (next_playlist_id==0) {
                                 //if this is the first and only playlist, check if an empty void is left before it...., so we can put our blackmedia...
-                                if (self.player.timer_clock==null) self.player.timer_clock = moment();
+                                var tnow = moment();
+                                if (self.player) tnow = self.player.timer_clock;
+                                if (self.player && !self.player.timer_clock) tnow = self.player.timer_clock = moment();
                                 var sch_time_mom = moment(sch_time, "DD/MM/YYYY HH:mm:ss.SSS");
-                                var sch_rightnow = moment(self.timer_clock).format("DD/MM/YYYY HH:mm:ss.SSS");
-                                var diff_void_start = sch_time_mom.diff( self.timer_clock );
-                                black_duration = moment.duration( sch_time_mom - self.timer_clock );
+                                var sch_rightnow = moment(tnow).format("DD/MM/YYYY HH:mm:ss.SSS");
+                                var diff_void_start = sch_time_mom.diff( tnow );
+                                black_duration = moment.duration( sch_time_mom - tnow );
                                 black_duration_str = utils.convertDurationToString(black_duration);
                                 var sch_to_next_playlist = moment( sch_rightnow,"DD/MM/YYYY HH:mm:ss.SSS").add(black_duration).format('DD/MM/YYYY HH:mm:ss.SSS');
                                 console.log("mbc-mosto: [INFO] [LOGIC] preparePlaylist > empty space ? diff_void_start :" + diff_void_start );
