@@ -20,9 +20,14 @@ function fetch( config ) {
     self.playlists_updated = false;
 
     fetch.prototype.init = function() {
+
         self.driver = self.mosto.driver;
+
         self.scheduler = self.mosto.scheduler;
+        if (self.scheduler) self.scheduler.on( 'fetch_upstream', self.checkoutPlaylists );
+
         self.player = self.mosto.player;
+
     }
 
     /** FETCH MODULE */
@@ -135,7 +140,8 @@ function fetch( config ) {
         self.playlists_updated = true;
 
         //Here we must emit a "scheduler" event with actual self.playlists object...
-        if (self.scheduler) self.scheduler.convertPlaylistsToScheduledClips();
+        //if (self.scheduler) self.scheduler.convertPlaylistsToScheduledClips();
+        self.emit('fetch_downstream', self.playlists );        
 
     };
 
