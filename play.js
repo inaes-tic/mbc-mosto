@@ -137,7 +137,8 @@ function play( config ) {
     play.prototype.statusHasChanged = function() {
 
         var result = ( self.prev_full_status == undefined );
-        result = result || ( self.prev_full_status 
+        if (result) return result;
+        result = result || ( self.prev_full_status && self.full_status
                 && ( self.prev_full_status.clips.length!=self.full_status.clips.length
                      || self.prev_full_status.clip.current!=self.full_status.clip.current
                      || self.prev_full_status.clip.prev!=self.full_status.clip.prev
