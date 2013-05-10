@@ -104,7 +104,7 @@ function play( config ) {
         }
 
         currentClip = serverStatus.actualClip;
-        if (serverPlaylist!==undefined && serverPlaylist.length>0) {
+        if (serverPlaylist!==undefined && serverPlaylist.length>0 && currentClip!=undefined) {
             var currentClipOrder = parseInt(currentClip.order);
             if ( currentClipOrder > 0 ) {
                 prevClip = _.find(serverPlaylist, function(walkClip) {
