@@ -86,7 +86,7 @@ function sync( config ) {
         if ( self.ineedMoreClips( play_status.server_playlist, play_status.server_status, self.sync_clips, 1 ) ) {
             console.log("mbc-mosto: [INFO] [SYNC] i'm hungry, i need more clips!!! calling sched_upstream");
             self.emit('sched_upstream');//no message needed...
-        }
+        } else self.timerUnlock(" upstreamCheck > no upstream needed.");
 
         
     };
