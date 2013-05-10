@@ -85,8 +85,6 @@ function sync( config ) {
 
     sync.prototype.upstreamCheck = function( play_status ) {
 
-        
-
         //CALLING upstream when clips are needed...
         if ( self.ineedMoreClips( play_status.server_playlist, play_status.server_status, self.sync_clips, 1 ) ) {
             console.log("mbc-mosto: [INFO] [SYNC] i'm hungry, i need more clips!!! calling sched_upstream");
