@@ -13,6 +13,7 @@ function fetch( config ) {
     self.mosto = config.mosto;
     self.driver = undefined;
     self.scheduler = undefined;
+    self.player = undefined;
 
     self.playlists = []; // this is the scheduled playlists....in a range between now and max_playlist_duration
     self.time_window_from = "";
@@ -24,7 +25,12 @@ function fetch( config ) {
         self.driver = self.mosto.driver;
 
         self.scheduler = self.mosto.scheduler;
-        if (self.scheduler) self.scheduler.on( 'fetch_upstream', self.checkoutPlaylists );
+        if (self.scheduler) self.scheduler.on( 'fetch_upstream', function() {
+            self.checkoutPlaylists( function() {
+                console.log("mbc-mosto: [INFO] [FETCH] timer unlock from fetch_upstream. Top of machine reached.");
+                self.player.timerUnlock();
+            });
+        });
 
         self.player = self.mosto.player;
 
