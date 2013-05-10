@@ -196,17 +196,18 @@ function sync( config ) {
 
             } else {
                 //WE ARE NOT PLAYING THE EXPECTED ONE SO WE CLEAN UP AND LOAD/GOTO EXPECTED ONE
+                console.log("mbc-mosto: [INFO] [SYNC] cleanPlaylist ");
                 self.server.cleanPlaylist( function(response) {
-                    console.log("mbc-mosto: [INFO] cleanPlaylist ok! " + response );
+                    console.log("mbc-mosto: [INFO] [SYNC] cleanPlaylist ok! " + response );
                     var sched_clip = scheduled_clips[self.cursor_scheduled_clip];
                     self.server.appendClip( sched_clip.media, function(response) {
                         var next_index = 0;
                         if (self.player.actual_playing_index>-1) {
                             next_index = self.player.actual_playing_index+1;
                         }
-                        self.server.goto( next_index, expected_clip.expected_frame, function(response) {                            
-                            self.server.play(  function(response) {
-                                console.log("mbc-mosto: [INFO] [SYNC] LOADED start playing!");
+                        self.server.goto( next_index, expected_clip.expected_frame, function(resp1) {                            
+                            self.server.play(  function(resp2) {
+                                console.log("mbc-mosto: [INFO] [SYNC] LOADED start playing!" + resp2);
                                 self.actual_expected_start = sched_clip.expected_start;
                                 self.player.actual_playing_index = next_index;
                                 self.player.previous_playing_index = next_index;
@@ -244,11 +245,11 @@ function sync( config ) {
             }
         } else {
             //IF THERE IS NO EXPECTED CLIP > WE MUST HAVE OUR BLANK MOVIE PLAYING
-            console.log("mbc-mosto: [INFO] [WARNING] no expected clip right now! (CHECK IF BLACK IS PLAYING OR PAUSED)");
+            console.log("mbc-mosto: [WARNING] [SYNC] no expected clip right now! (CHECK IF BLACK IS PLAYING OR PAUSED)");
             if ( self.player.actual_playing_clip == 'black_id'  ) {
-                console.log("mbc-mosto: [INFO] FILLED WITH BLACK OK...");
+                console.log("mbc-mosto: [INFO] [SYNC] FILLED WITH BLACK OK...");
             } else {
-                console.log("mbc-mosto: [INFO] [WARNING] NOT BLACK!!! calling upstream scheduler... to fix it ASAP.");
+                console.log("mbc-mosto: [WARNING] [SYNC] NOT BLACK!!! calling upstream scheduler... to fix it ASAP.");
                 self.emit( 'sched_upstream' );
                 //self.scheduler.convertPlaylistsToScheduledClips();
             }
@@ -257,6 +258,7 @@ function sync( config ) {
         }
 
         self.emit('synced', 'finished ' );
+        console.log("mbc-mosto: [INFO] [PLAY] emitting play_downstream");
         self.emit('play_downstream');
 
     }
@@ -286,7 +288,7 @@ function sync( config ) {
 
     sync.prototype.getExpectedClip = function( scheduled_clips ) {
 
-        console.log("mbc-mosto: [INFO] [SYNC] getExpectedClip");
+        console.log("mbc-mosto: [INFO] [SYNC] getExpectedClip called");
 
         var expected_clip = null;
         var next_expected_clip = null;
@@ -332,7 +334,7 @@ function sync( config ) {
         //reference_clock = self.timer_clock;
 
 
-        console.log("mbc-mosto: [INFO] reference_clock         " + " at:" + reference_clock.format("DD/MM/YYYY HH:mm:ss.SSS") );
+        console.log("mbc-mosto: [INFO] [SYNC] reference_clock         " + " at:" + reference_clock.format("DD/MM/YYYY HH:mm:ss.SSS") );
 
         //NOW CHECK FOR SCHEDULED CLIP EXPECTED TO RUN NOW ( based on selected reference clock, always relative, but absolute must be needed to ensure reync)
         for( var i=0; i<scheduled_clips.length; i++) {
@@ -372,7 +374,7 @@ function sync( config ) {
 
     sync.prototype.isPlayingExpectedClip = function( expected_clip ) {
         //CHECK AND COMPARE IF WE ARE PLAYING THE EXPECTED ONE...
-        console.log("COMPARE!!!" + self.player.actual_playing_status + " self.actual_playing_clip:"+self.player.actual_playing_clip + " vs expected: " + expected_clip.media.id );
+        console.log("mbc-mosto: [INFO] [SYNC] COMPARE!!!" + self.player.actual_playing_status + " self.actual_playing_clip:"+self.player.actual_playing_clip + " vs expected: " + expected_clip.media.id );
 
         return (    self.player.actual_playing_clip != "" 
                     && (self.player.actual_playing_status == "playing" || self.player.actual_playing_status == "paused") 
