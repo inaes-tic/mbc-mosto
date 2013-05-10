@@ -129,8 +129,9 @@ function fetch( config ) {
         self.trimPlaylists();
 
         if (self.playlists.length==0) {
-            var sch_rightnow = moment( self.player.timer_clock).add( moment.duration({ milliseconds: 0 }) ).format("DD/MM/YYYY HH:mm:ss.SSS");
-            self.startBlack( sch_rightnow, "00:00:50.00", sch_rightnow, moment( sch_rightnow,"DD/MM/YYYY HH:mm:ss.SSS").add(moment.duration({ milliseconds: 50000 }) ).format('DD/MM/YYYY HH:mm:ss.SSS') );
+
+            var sch_rightnow = moment().add( moment.duration({ milliseconds: -1000 }) ).format("DD/MM/YYYY HH:mm:ss.SSS");            
+            self.startBlack( sch_rightnow, "22:22:22.22", sch_rightnow, moment( sch_rightnow,"DD/MM/YYYY HH:mm:ss.SSS").add(moment.duration({ milliseconds: 80542220 }) ).format('DD/MM/YYYY HH:mm:ss.SSS') );
         }
 
         console.log("mbc-mosto: [INFO] Start ordering playlists " + self.playlists.length);
