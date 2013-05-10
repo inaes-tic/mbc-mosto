@@ -270,6 +270,13 @@ function sync( config ) {
         // 3) video server list is not empty but number of queued clips remaining is less than min_queue_clips
         // 4) there are no scheduled_clips!!! we need some!!!
 
+        var queued_clips = 0;
+
+        if (server_status.actualClip && server_playing_list.length>0)
+            queued_clips = (server_playing_list.length-1) - server_status.actualClip.order;
+
+        console.log("mbc-mosto: [INFO] [SYNC] ineedMoreClips ? : lists:"+server_playing_list.length + " status:" + server_status.status + " sched_clips:" + scheduled_clips.length + " queued:" +   queued_clips );
+
         return (    !server_playing_list 
                     ||
                     server_playing_list.length==0
@@ -278,11 +285,8 @@ function sync( config ) {
                     ||
                     scheduled_clips.length===0
                     ||
-                    (   /*hay algo cargado pero... hay menos de min_queue_clips encolados luego del actual...*/
-                        server_playing_list.length>0
-                        &&
-                        ( (server_playing_list.length-1) - server_status.actualClip.order  ) < min_queue_clips )
-                    );
+                   /*hay algo cargado pero... hay menos de min_queue_clips encolados luego del actual...*/
+                    queued_clips < min_queue_clips );
 
     }
 
