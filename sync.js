@@ -220,24 +220,24 @@ function sync( config ) {
                             },
                                            function(error) {
                                                console.error("mbc-mosto: [ERROR] error goto :"+error);
-                                               self.timerUnlock();
+                                               self.timerUnlock("error synchronizing > goto");
                                            } );
 
                         },
                                            function(error) {
                                                console.error("mbc-mosto: [ERROR] error start playing:"+error);
-                                               self.timerUnlock();
+                                               self.timerUnlock("error synchronizing > start playing");
                                            } );
 
                     },
                                           function(error) {
                                               console.error("mbc-mosto: [ERROR] error loading clip:"+error);
-                                              self.timerUnlock();
+                                              self.timerUnlock("error synchronizing > loading clip");
                                           } );
                 },
                                            function(error) {
                                                console.error("mbc-mosto: [ERROR] error cleaning playlist:"+error);
-                                               self.timerUnlock();
+                                               self.timerUnlock("error synchronizing > cleaning playlist");
                                            } );
 
 
@@ -253,7 +253,7 @@ function sync( config ) {
                 self.emit( 'sched_upstream' );
                 //self.scheduler.convertPlaylistsToScheduledClips();
             }
-            self.timerUnlock();
+            self.timerUnlock("synchronizing > no expected clip");
             
         }
 
