@@ -211,10 +211,10 @@ function sync( config ) {
                                 self.player.previous_playing_index = next_index;
                                 self.ref_sched_index = self.cursor_scheduled_clip;
                                 self.previous_cursor_scheduled_clip = -1;
-                                //setTimeout( 
-                                //    function() { 
+                                setTimeout( 
+                                    function() { 
                                         self.appendScheduledClips( scheduled_clips, self.cursor_scheduled_clip+1 );
-                                //    }, 800);
+                                    }, 800);
                             },
                                            function(error) {
                                                console.error("mbc-mosto: [ERROR] error goto :"+error);
@@ -362,7 +362,7 @@ function sync( config ) {
                     // TODO: calculate frame position! based on length.
                     expected_frame = utils.getFramePositionFromClock( reference_clock, ex_start, 0, 25.00 );
                     if ( expected_frame == undefined || expected_clip.media.id=="black_id") expected_frame = 0;
-                    expected_clip.expected_frame = expected_frame;
+                    expected_clip.expected_frame = parseInt(expected_frame);
                     self.player.actual_expected_start = expected_clip.expected_start;
                 }
             }
