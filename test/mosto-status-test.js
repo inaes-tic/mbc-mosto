@@ -66,9 +66,11 @@ describe('Mosto status', function() {
 	    });
     });
 
-
+    
     describe('#suscribe to status and wait 5 seconds', function() {
+
 	    it('--should have received 5 status events', function(done) {
+            this.timeout(6000);
 	        mosto_server.player.on('statusclip', function(stclip) {
                 console.log("mbc-mosto: [PLAY] emitting statusclip: " + stclip.currentFrame + " / "+  stclip.totalFrames);
 		        if(++rec == 5) {
