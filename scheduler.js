@@ -22,7 +22,9 @@ function scheduler( config ) {
     scheduler.prototype.init = function() {
 
         self.fetcher = self.mosto.fetcher;
-        if (self.fetcher) self.fetcher.on( 'fetch_downstream', self.convertPlaylistsToScheduledClips );
+        if (self.fetcher) self.fetcher.on( 'fetch_downstream', function( playlists) {
+            self.convertPlaylistsToScheduledClips( playlists );
+        });
 
         self.synchronizer = self.mosto.synchronizer;
         if (self.synchronizer) self.synchronizer.on( 'sched_upstream', function() {
