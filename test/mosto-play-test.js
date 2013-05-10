@@ -157,12 +157,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
                 });
             }
 
-            mosto_server.scheduler.once('converted', function(mess1) {
-                assert.equal( mosto_server.fetcher.playlists.length, 1 );
-                mosto_server.synchronizer.once('synced', function(mess2) {                        
-                    is_playing_media( "black_id", 4, 500 );
-                });
-            });
+            is_playing_media( "black_id", 4, 500 );
 
         });
     });
