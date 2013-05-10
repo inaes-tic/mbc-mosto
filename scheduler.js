@@ -28,7 +28,7 @@ function scheduler( config ) {
         if (self.synchronizer) self.synchronizer.on( 'sched_upstream', function() {
             console.log('mbc-mosto: [INFO] [SCHED] receiving sched_upstream event');
             self.upstreamCheck(); 
-        });//receives server_playing_list + status
+        });
 
         self.player = self.mosto.player;
 
@@ -59,6 +59,9 @@ function scheduler( config ) {
                 //return  self.fetcher.checkoutPlaylists();//really updates time window too
                 console.log("mbc-mosto: [INFO] [SCHED] emitting fetch_upstream");
                 self.emit('fetch_upstream');
+            } else {
+                console.log("mbc-mosto: [INFO] [SCHED] timer unlock from upstreamCheck. No need to fetch upstream");
+                self.player.timerUnlock();
             }
         
     }
