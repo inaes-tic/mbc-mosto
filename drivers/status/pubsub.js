@@ -80,8 +80,24 @@ CaspaDriver.prototype.setupMessages = function(callback) {
 };
 
 CaspaDriver.prototype.setStatus = function(meltedStatus) {
+
+    console.log("mbc-mosto: [INFO] [STATUS] building status from melted status " );
+
     // this overrides this.status with the values passed by status
-    function makePiece(clip) {
+    function makePiece( melclip, val ) {
+        if (melclip===undefined) return { name: '', _id: '' };
+        var clip = undefined;
+        switch(val) {
+            case "previous": 
+                clip = melclip.previous;
+                break;
+            case "current": 
+                clip = melclip.current;
+                break;
+            case "next": 
+                clip = melclip.next;
+                break;
+        }
         if (clip===undefined) return { name: '', _id: '' };
         return {
             name: clip.name,
@@ -89,47 +105,66 @@ CaspaDriver.prototype.setStatus = function(meltedStatus) {
         }
     }
 
+    function makeShow( show, val ) {
+        if (show===undefined) return { _id: '' };
+        switch(val) {
+            case "previous": 
+                return { _id: show.previous };
+            case "current": 
+                return { _id: show.current };
+            case "next": 
+                return { _id: show.next };
+        }
+    }
+
     var clips = meltedStatus.clips;
     var status = {
         piece: {
-            previous: makePiece(meltedStatus.clip.previous),
-            current:  makePiece(meltedStatus.clip.current),
-            next:     makePiece(meltedStatus.clip.next),
+            previous: makePiece(meltedStatus.clip, "previous" ),
+            current:  makePiece(meltedStatus.clip, "current" ),
+            next:     makePiece(meltedStatus.clip, "next" ),
         },
         show: {
-            previous: { _id: meltedStatus.show.previous },
-            current: { _id: meltedStatus.show.current },
-            next: { _id: meltedStatus.show.next },
+            previous: makeShow( meltedStatus.show, "previous"),
+            current: makeShow( meltedStatus.show, "current"),
+            next: makeShow( meltedStatus.show, "next"),
         },
         on_air: true,
     };
-    status.piece.current.progress = meltedStatus.position * 100 + "%";
+
+    console.log("mbc-mosto: [INFO] [STATUS] status builded. doing last calculations." );
+
+    if (status.piece.current) 
+        status.piece.current.progress = meltedStatus.position * 100 + "%";
 
     /* all of this nonsense is to avoid undefineds. I don't know 
        it's worth the trouble.
 
        in the end all it's doing is taking out currentFrames from both
        the saved status and the received one, and check if anything changed
-    */
+    */  
     var currentButFrames = _.omit(status.piece.current, 'currentFrames');
     var statusButFrames = _.chain(status).clone().extend({piece: { current: currentButFrames }})
     var myButFrames = _.omit(this.status.piece.current, 'currentFrames');
     var myStatusButFrames = _.chain(status).clone().extend({ piece: { current: myButFrames } }).value();
     if( statusButFrames.isEqual(myStatusButFrames).value() ) {
+        console.log("mbc-mosto: [INFO] [STATUS] no changes, try to send statusclip." );
         return this.setStatusClip(meltedStatus.clip.current);
     }
 
     this.status = _.extend(this.status, status);
     // except next. If that's undefined, I just don't know!
     this.status.show.next = status.show.next;
+    console.log("mbc-mosto: [INFO] [STATUS] finally publish status." );
     this.publish("mostoStatus", status);
 };
 
 CaspaDriver.prototype.setStatusClip = function(statusClip) {
-    this.publish("mostoStatus.progress", {
-        currentFrame: statusClip.currentFrame,
-        totalFrames: statusClip.totalFrames,
-    });
+    if (statusClip!==undefined)
+        this.publish("mostoStatus.progress", {
+            currentFrame: statusClip.currentFrame,
+            totalFrames: statusClip.totalFrames,
+        });
 }
 
 CaspaDriver.prototype.publish = function(channel, status) {
