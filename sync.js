@@ -26,6 +26,9 @@ function sync( config ) {
     self.cursor_scheduled_clip = -1;
     self.previous_cursor_scheduled_clip = -1;
 
+    self.ref_sched_index = -1;
+
+
     self.sync_clips = [];
 
     sync.prototype.init = function() {
