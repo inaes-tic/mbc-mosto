@@ -16,10 +16,11 @@ function play( config ) {
 
     self.mosto = config.mosto;
     self.server = config.mosto.server;
+    self.status_driver = config.mosto.status_driver; 
+
     self.synchronizer = undefined;
     self.fetcher = undefined;
     self.scheduler = undefined;
-    self.status_driver = config.mosto.status_driver; 
 
     /** PLAY MODULE */
     this.timer = null;
@@ -56,6 +57,9 @@ function play( config ) {
         self.fetcher = self.mosto.fetcher;
         self.scheduler = self.mosto.scheduler;
         self.synchronizer = self.mosto.synchronizer;
+        if (self.synchronizer) self.synchronizer.on('play_downstream', function() {
+            console.log("mbc-mosto: [INFO] [PLAY] received play_downstream from [SYNC]");
+        });
     }
 
     play.prototype.sendStatus = function() {
@@ -190,11 +194,14 @@ function play( config ) {
         console.log("mbc-mosto: [INFO] [PLAY] timer_fun_status status: " + self.actual_playing_status + " clip: " + self.actual_playing_clip );
 
         self.server.getServerPlaylist( function( server_playing_list ) { 
+
                 self.prev_full_status = self.full_status;
                 self.full_status = self.buildStatus( server_playing_list, self.actual_status );
+
                 if ( self.statusHasChanged() ) {
                     self.emit('status', self.full_status );
                 }
+
                 //self.synchronizer.syncroScheduledClips( server_playing_list ); 
                 console.log("mbc-mosto: [INFO] [PLAY] emitting sync_upstream");
                 self.emit('sync_upstream', { 
@@ -203,7 +210,9 @@ function play( config ) {
                 } );
             
             }, 
-            function() { console.log("mbc-mosto: [ERROR] timer_fun_status >  getServerPlaylist() " ); } 
+            function(error) { 
+                console.error("mbc-mosto: [ERROR] timer_fun_status >  getServerPlaylist() : " + error ); 
+            } 
         );
 
     }
@@ -238,12 +247,12 @@ function play( config ) {
             console.log("mbc-mosto: [INFO] [PLAY] time_window from: "  + self.fetcher.time_window_from.format("DD/MM/YYYY HH:mm:ss") + " to: " + self.fetcher.time_window_to.format("DD/MM/YYYY HH:mm:ss") );
 
             //get status
-            self.server.getServerStatus( self.timer_fun_status, function( error ) { console.log("mbc-mosto: [ERROR] mosto.timer_fun > getServerStatus failed: " + error ); } );
+            self.server.getServerStatus( self.timer_fun_status, function( error ) { console.error("mbc-mosto: [ERROR] [PLAY] mosto.timer_fun > getServerStatus failed: " + error ); } );
         } else {
             self.sync_lock_time = moment();
             self.sync_lock_diff = self.sync_lock_time.diff(self.sync_lock_start);
             console.log("mbc-mosto: [INFO] sync LOCKED, for " + self.sync_lock_diff );
-            if (Math.abs(self.sync_lock_diff)>2000) {
+            if (Math.abs(self.sync_lock_diff)>200000) {
                 //kill server and reconnect!!!
                 self.mosto.server = null;
                 self.mosto.server = new mvcp_server(self.mosto.config.mvcp_server);
@@ -256,24 +265,26 @@ function play( config ) {
     }
 
     play.prototype.play = function() {
+
         console.log("mbc-mosto: [INFO] Start playing mosto");
+
         if (!self.timer) {
 
             if (self.fetcher) {
                 self.fetcher.updateTimeWindow();
-                console.log("mbc-mosto: [PLAY] setting window: from: "  + self.fetcher.time_window_from.format("DD/MM/YYYY HH:mm:ss") + " to: " + self.fetcher.time_window_to.format("DD/MM/YYYY HH:mm:ss") );
+                console.log("mbc-mosto: [INFO] [PLAY] setting window: from: "  + self.fetcher.time_window_from.format("DD/MM/YYYY HH:mm:ss") + " to: " + self.fetcher.time_window_to.format("DD/MM/YYYY HH:mm:ss") );
             }
 
             self.timer = setInterval( self.timer_fun, self.mosto.config.timer_interval );
             self.timer_fun();
 
             self.on('statusclip', function(stclip) {
-                console.log("mbc-mosto: [PLAY] emitting statusclip: " + stclip.currentFrame + " / "+  stclip.totalFrames);
+                console.log("mbc-mosto: [INFO] [PLAY] emitting statusclip: " + stclip.currentFrame + " / "+  stclip.totalFrames);
                 if (self.status_driver) self.status_driver.setStatusClip(stclip);
             });
 
             self.on('status', function(st) {
-                console.log("mbc-mosto: [PLAY] emitting status");
+                console.log("mbc-mosto: [INFO] [PLAY] emitting status");
                 if (self.status_driver) self.status_driver.setStatus(st);
             });
 
