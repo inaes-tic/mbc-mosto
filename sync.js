@@ -49,11 +49,13 @@ function sync( config ) {
 
     }
 
-    sync.prototype.timerUnlock = function() {
+    sync.prototype.timerUnlock = function( mess ) {
+        console.log("mbc-mosto: [INFO] [SYNC] Unlocking from " + mess);
         self.player.timerUnlock();
     }
 
-    sync.prototype.timerLock = function() {
+    sync.prototype.timerLock = function(mess) {
+        console.log("mbc-mosto: [INFO] [SYNC] Locking from " + mess);
         self.player.timerLock();
     }
 
