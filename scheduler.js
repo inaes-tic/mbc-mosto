@@ -183,9 +183,12 @@ function scheduler( config ) {
                                 self.queueBlack( "now", black_duration_str, lastTimeCode, moment( lastTimeCode,"DD/MM/YYYY HH:mm:ss.SSS").add(black_duration).format('DD/MM/YYYY HH:mm:ss.SSS') );
                             } else if (next_playlist_id==0) {
                                 //if this is the first and only playlist, check if an empty void is left before it...., so we can put our blackmedia...
-                                var tnow = moment();
-                                if (self.player) tnow = self.player.timer_clock;
-                                if (self.player && !self.player.timer_clock) tnow = self.player.timer_clock = moment();
+                                var rever = moment.duration( { milliseconds: -4000 } );
+                                var tnow = moment().add( rever );
+                                if (self.player) {                                    
+                                    if (!self.player.timer_clock) self.player.timer_clock = moment();
+                                    if (self.player.timer_clock) tnow = moment(self.player.timer_clock).add( rever );              
+                                }
                                 var sch_time_mom = moment(sch_time, "DD/MM/YYYY HH:mm:ss.SSS");
                                 var sch_rightnow = moment(tnow).format("DD/MM/YYYY HH:mm:ss.SSS");
                                 var diff_void_start = sch_time_mom.diff( tnow );
