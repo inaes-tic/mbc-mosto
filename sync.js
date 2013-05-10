@@ -183,7 +183,7 @@ function sync( config ) {
                         self.removePlayingClips(  breakpoint_playing_cursor, server_playing_list.length-1,
                                                   function() {
                                                       console.log("mbc-mosto: [INFO] [SYNC] self.removePlayingClips ok, now appendScheduledClips from index:  " + breakpoint_playing_cursor );
-                                                      self.appendScheduledClips( breakpoint_scheduled_cursor );
+                                                      self.appendScheduledClips( scheduled_clips, breakpoint_scheduled_cursor );
                                                   },
                                                   function(error) {
                                                       console.error("mbc-mosto: [ERROR] [SYNC] removePlayingClips > error:"+error );
@@ -212,7 +212,10 @@ function sync( config ) {
                                 self.player.previous_playing_index = next_index;
                                 self.ref_sched_index = self.cursor_scheduled_clip;
                                 self.previous_cursor_scheduled_clip = -1;
-                                setTimeout( self.appendScheduledClips( self.cursor_scheduled_clip+1 ), 800);
+                                //setTimeout( 
+                                //    function() { 
+                                        self.appendScheduledClips( scheduled_clips, self.cursor_scheduled_clip+1 );
+                                //    }, 800);
                             },
                                            function(error) {
                                                console.error("mbc-mosto: [ERROR] error goto :"+error);
@@ -362,7 +365,7 @@ function sync( config ) {
         }
 
         if (next_expected_clip)
-            console.log("mbc-mosto: [INFO] next_expected clip: " + next_expected_clip.media.file + " from:" + next_expected_clip.expected_start + " to:" + next_expected_clip.expected_end );
+            console.log("mbc-mosto: [INFO] [SYNC] next_expected clip: " + next_expected_clip.media.file + " from:" + next_expected_clip.expected_start + " to:" + next_expected_clip.expected_end );
 
         return expected_clip;
     }
@@ -394,13 +397,17 @@ function sync( config ) {
 
     }
 
-    sync.prototype.appendScheduledClips = function( index_iteration ) {
+    sync.prototype.appendScheduledClips = function( scheduled_clips, index_iteration ) {
 
-        console.log("APPENDING index_iteration: " + index_iteration + " over " + scheduled_clips.length + " elements" );
-        if ( 0>index_iteration || index_iteration > (scheduled_clips.length-1) ) {
-            console.log("mbc-mosto: [INFO]appendScheduledClips() > APPENDING : out of bound > stop appending");
-            self.timerUnlock();
-            return;
+        if (! ( scheduled_clips ) ) {
+            console.error("mbc-mosto: [ERROR] [SYNC] appendScheduledClips: " + scheduled_clips);
+            return self.timerUnlock(" appendScheduledClips > no scheduled clips");
+        }
+
+        console.log("mbc-mosto: [INFO] [SYNC] appendScheduledClips: APPENDING index_iteration: " + index_iteration + " over " + scheduled_clips.length + " elements" );
+        if ( index_iteration<0 || index_iteration > (scheduled_clips.length-1) ) {
+            console.log("mbc-mosto: [INFO] [SYNC] appendScheduledClips() > APPENDING : out of bound > stop appending");
+            return self.timerUnlock(" appendScheduledClips > index_iteration out of bound");
         }
 
         var sched_clip = scheduled_clips[index_iteration];
@@ -409,18 +416,17 @@ function sync( config ) {
             //we break the loading loop at second appearance of a non-queued media...
             //so we must wait to the timer to call it automatically
             //WARNING!!! snap was done in convertPlaylists -> preparePlaylist
-            console.log("mbc-mosto: [INFO] APPENDING : stop appending, schedule_time is not now: " + sched_clip.schedule_time);
-            self.timerUnlock();
-            return;
+            console.log("mbc-mosto: [INFO] [SYNC] APPENDING : stop appending, schedule_time is not now: " + sched_clip.schedule_time);
+            return self.timerUnlock(" appendScheduledClips > stop appending non queued clips");
         } else index_iteration++;
 
         self.server.appendClip( sched_clip.media, function(response) {
-                console.log("mbc-mosto: [INFO] appendScheduledClips() Iteration:" + index_iteration + " Append ok media " + sched_clip.media.file + " resp:" + response);
-                self.appendScheduledClips( index_iteration );
+                console.log("mbc-mosto: [INFO] [SYNC] appendScheduledClips() Iteration:" + index_iteration + " Append ok media " + sched_clip.media.file + " resp:" + response);
+                self.appendScheduledClips( scheduled_clips, index_iteration );
             },
             function(error) {
-                console.error("mbc-mosto: [ERROR] appendScheduledClips() Error appending clip:"+error);
-                self.timerUnlock();
+                console.error("mbc-mosto: [ERROR] [SYNC] appendScheduledClips() Error appending clip:"+error);
+                self.timerUnlock("appendScheduledClips > error append clip ");
             }
           );
 
