@@ -61,7 +61,8 @@ function scheduler( config ) {
                 self.emit('fetch_upstream');
             } else {
                 console.log("mbc-mosto: [INFO] [SCHED] timer unlock from upstreamCheck. No need to fetch upstream");
-                self.player.timerUnlock();
+                //self.player.timerUnlock();
+                self.emit('fetch_upstream');
             }
         
     }
