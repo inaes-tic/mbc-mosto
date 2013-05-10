@@ -15,7 +15,7 @@ var assert = require("assert"),
     mosto_scheduler  = require('../scheduler'),
     mosto_synchronizer  = require('../sync'),
     mosto_player  = require('../play');
-
+/*
 // SILENCE LOG OUTPUT
 var util = require('util');
 var fs = require('fs');
@@ -33,7 +33,7 @@ console.log = console.info = function(t) {
   out && log.write(out + '\n');
 };
 // END SILENCE LOG OUTPUT
-
+*/
 
 silence = function(callback) {
 	var ori_console_log = console.log;
@@ -178,7 +178,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
                     console.log(mess3);
                     if ( mosto_server.player.actual_playing_clip == clipid ) {
                         done();
-                    } else setTimeout( is_playing_media( clipid, intents-1 ), interv);            
+                    } else setTimeout( function() { is_playing_media( clipid, intents-1 ) }, interv);            
                 });
             }
 
@@ -211,7 +211,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
                     console.log(mess3);
                     if ( mosto_server.player.actual_playing_clip == clipid ) {
                         done();
-                    } else setTimeout( is_playing_media( clipid, intents-1 ), interv);            
+                    } else setTimeout( function() { is_playing_media( clipid, intents-1 ) }, interv);            
                 });
             }
             mosto_server.scheduler.once('converted', function(mess1) {
@@ -236,18 +236,19 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
                     console.log(mess3);
                     if ( mosto_server.player.actual_playing_clip == clipid ) {
                         done();
-                    } else setTimeout( is_playing_media( clipid, intents-1 ), interv);
+                    } else setTimeout( function() { is_playing_media( clipid, intents-1 )}, interv);
                 });
             }
-            mosto_server.synchronizer.once('synced', function(mess2) {
-                is_playing_media( "black_id", 4, 500 );
+            mosto_server.fetcher.once('fetch_downstream', function( fplaylists ) {
+                assert.equal( fplaylists.length, 1 );
+                is_playing_media( "black_id", 16, 500 );
             });
             mosto_server.fetcher.removePlaylist( "test_playlist_1_id" );
         });           
         
     });
 
-
+/*
     describe("#[PLAY] Doing a checkoutPlaylists()", function() {
         var driver_playlists = undefined;
 
@@ -284,7 +285,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
         });           
 
     });
-
+*/
 
     describe('#[PLAY] Stop mosto and leave', function() {        
         before(function(done) {
