@@ -86,10 +86,13 @@ function play( config ) {
         var prevClip          = undefined;
         var nextClip          = undefined;
 
+        //console.log("mbc-mosto: [INFO] [PLAY] buildStatus: serverplaylist: " + serverPlaylist + " serverstatus:" + serverStatus + " playlists:"+self.fetcher.playlists );
+
         if (serverStatus.actualClip !== undefined) {
             currentPlaylistId = serverStatus.actualClip.playlistId;
             if (self.fetcher.playlists!==undefined && self.fetcher.playlists.length>0) {
                 // map the playlists list to their ids (converted to string)
+                //console.log("mbc-mosto: [INFO] [PLAY] buildStatus: mapping playlist to their ids" );
                 var index = _.chain(self.fetcher.playlists).map(function(playlist) {
                     return playlist.id.toString() }).indexOf(
                         serverStatus.actualClip.playlistId.toString() ).value();
@@ -196,10 +199,13 @@ function play( config ) {
 
         self.server.getServerPlaylist( function( server_playing_list ) { 
 
+                console.log("mbc-mosto: [INFO] [PLAY] building status.");
                 self.prev_full_status = self.full_status;
                 self.full_status = self.buildStatus( server_playing_list, self.actual_status );
 
+                console.log("mbc-mosto: [INFO] [PLAY] checking if status changed.");
                 if ( self.statusHasChanged() ) {
+                    //console.log("mbc-mosto: [INFO] [PLAY] status has changed so we emit full status : " + self.full_status);
                     self.emit('status', self.full_status );
                 }
 
@@ -253,7 +259,7 @@ function play( config ) {
             self.sync_lock_time = moment();
             self.sync_lock_diff = self.sync_lock_time.diff(self.sync_lock_start);
             console.log("mbc-mosto: [INFO] sync LOCKED, for " + self.sync_lock_diff );
-            if (Math.abs(self.sync_lock_diff)>200000) {
+            if (Math.abs(self.sync_lock_diff)>2000) {
                 //kill server and reconnect!!!
                 self.mosto.server = null;
                 self.mosto.server = new mvcp_server(self.mosto.config.mvcp_server);
