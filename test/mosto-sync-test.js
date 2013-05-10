@@ -148,10 +148,10 @@ describe('Mosto [SYNC/video server synchronizer] tests', function(done) {
             console.log( "scheduled_clips ("+mosto_server.scheduler.scheduled_clips.length+")" );
 
             function is_expected_clip( clipid, intents, interv ) {      
-                var exp_clip = mosto_server.synchronizer.getExpectedClip();
+                var exp_clip = mosto_server.synchronizer.getExpectedClip( mosto_server.scheduler.scheduled_clips );
                 if (intents==0) return done(new Error("max intents reached! expected clip: " + clipid+ " is  not " + exp_clip.media.id ));
                 mosto_server.scheduler.once('converted', function(server_playlist) {
-                    exp_clip = mosto_server.synchronizer.getExpectedClip();
+                    exp_clip = mosto_server.synchronizer.getExpectedClip( mosto_server.scheduler.scheduled_clips );
                     if (exp_clip && exp_clip.media.id == clipid) {                                
                         done();
                     } else setTimeout( is_expected_clip( clipid, intents-1 ), interv);
