@@ -239,11 +239,8 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
                     } else setTimeout( is_playing_media( clipid, intents-1 ), interv);
                 });
             }
-            mosto_server.scheduler.once('converted', function(mess1) {
-                assert.equal( mosto_server.fetcher.playlists.length, 1 );
-                mosto_server.synchronizer.once('synced', function(mess2) {
-                    is_playing_media( "black_id", 4, 500 );
-                });
+            mosto_server.synchronizer.once('synced', function(mess2) {
+                is_playing_media( "black_id", 4, 500 );
             });
             mosto_server.fetcher.removePlaylist( "test_playlist_1_id" );
         });           
