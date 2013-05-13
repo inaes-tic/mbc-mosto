@@ -121,7 +121,10 @@ function mosto(customConfig) {
             self.synchronizer.init();
             self.player.init();
 
-            self.startMvcpServer( function() { self.player.play(); if (callback) callback(); } );
+            self.startMvcpServer( function() { 
+                self.player.play( self.player ); 
+                if (callback) callback(); 
+            } );
         }
 
         function check_and_start() {
