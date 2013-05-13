@@ -281,18 +281,15 @@ sync.prototype.syncroScheduledClips = function( self, scheduled_clips, server_pl
                         next_index = self.player.actual_playing_index+1;
                     }
                     self.server.goto( next_index, expected_clip.expected_frame, function(resp1) {                            
+                        console.log("mbc-mosto: [INFO] [SYNC] GOTO : index:" + next_index + " frame:" + expected_clip.expected_frame + " resp1:" + resp1);
                         self.server.play(  function(resp2) {
-                            console.log("mbc-mosto: [INFO] [SYNC] LOADED start playing!" + resp2);
+                            console.log("mbc-mosto: [INFO] [SYNC] LOADED -> now PLAY: start playing!" + resp2);
                             self.actual_expected_start = sched_clip.expected_start;
                             self.player.actual_playing_index = next_index;
                             self.player.previous_playing_index = next_index;
                             self.ref_sched_index = self.cursor_scheduled_clip;
                             self.previous_cursor_scheduled_clip = -1;
-//                                setTimeout( 
-//                                    function() { 
-                                    self.appendScheduledClips( self, scheduled_clips, self.cursor_scheduled_clip+1 );
-//                                    }, 1800);
-
+                            self.appendScheduledClips( self, scheduled_clips, self.cursor_scheduled_clip+1 );
                         },
                                        function(error) {
                                            console.error("mbc-mosto: [ERROR] error goto :"+error);
