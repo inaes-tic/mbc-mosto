@@ -20,7 +20,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
 
     var mosto_server = undefined;
 
-    this.timeout(15000);
+    //this.timeout(15000);
 
     before(function(done) {
         melted.take(function() {
@@ -57,7 +57,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
             mosto_server = silence(function(){ return new mosto(); });
 
 	        mosto_server.server = silence(function(){ return mvcp_server("melted"); });
-            mosto_server.status_driver = silence(function(){ new status_driver(); });
+            mosto_server.status_driver = new status_driver();
             mosto_server.driver = new test_driver();
 
             mosto_server.fetcher        = new mosto_fetcher( { mosto: mosto_server } );
@@ -94,7 +94,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
     describe("#[PLAY] Initializing mosto driver then play.", function() {
         before(function(done) {
             mosto_server.initDriver();
-            mosto_server.player.play();
+            mosto_server.player.play( mosto_server.player );
             done();
 	    });
         it("--should timer have been created", function(done) {
@@ -107,7 +107,6 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
     });
 
 
-    
     describe("#[PLAY] Checking no playlists, play blank.", function() {
         before(function(done){
             mosto_server.driver.setCheckoutMode(false);
@@ -117,18 +116,13 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
             });                
         });
         it("--should return black_id playing!!", function(done) {
-            function is_playing_media( clipid, intents, interv ) {
-                if (intents==0) return done(new Error("max intents reached! We are not playing expected clip: " + clipid+ " is  not " + mosto_server.actual_playing_clip ));
-                mosto_server.player.once('playing', function(mess3) {
-                    console.log(mess3);
-                    if ( mosto_server.player.actual_playing_clip == clipid ) {
-                        done();
-                    } else setTimeout( is_playing_media( clipid, intents-1 ), interv);            
+            mosto_server.synchronizer.once('synced', function() {
+                mosto_server.player.once('status', function(status) {
+                    assert.equal( status.clip.current.id, 'black_id' );
+                    done();
                 });
-            }
-
-            is_playing_media( "black_id", 4, 500 );
-
+            });
+            mosto_server.fetcher.checkoutPlaylists( function(playlists) { } );
         });
     });
 
@@ -141,27 +135,20 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
             playlist = mosto_server.driver.TestPlaylist();            
             done();
         });
-        it("--should be playing first clip of added playlist", function(done) {                
-            function is_playing_media( clipid, intents, interv ) {
-                if (intents==0) return done(new Error("max intents reached! We are not playing expected clip: " + clipid+ " is  not " + mosto_server.player.actual_playing_clip ));
-                mosto_server.player.once('playing', function(mess3) {
-                    console.log(mess3);
-                    if ( mosto_server.player.actual_playing_clip == clipid ) {
+        it("--should be playing first clip of added playlist", function(done) {
+            mosto_server.synchronizer.once('synced', function(mess) {
+                mosto_server.player.once('status', function(status) {
+                    if ( status.status!='playing' ) {
+                        done(new Error("status.status!=playing"));
+                    } else if(status.clip.current.id!=playlist.medias[0].id) {
+                        done(new Error("status.clip.current.id!=playlist.medias[0].id"));
+                    } else {
                         done();
-                    } else setTimeout( function() { is_playing_media( clipid, intents-1 ) }, interv);            
-                });
-            }
-
-            mosto_server.scheduler.once('converted', function(mess1) {
-                assert.equal( mosto_server.fetcher.playlists.length, 1 );
-                mosto_server.synchronizer.once('synced', function(mess2) {                        
-                    is_playing_media( playlist.medias[0].id, 4, 500 );
+                    }
                 });
             });
             mosto_server.fetcher.addPlaylist( playlist );
-            
         });
-
     });
 
 
@@ -175,50 +162,32 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
             done();
         });
         it("--should return the same playlist updated", function(done) {
-            function is_playing_media( clipid, intents, interv ) {
-                if (intents==0) return done(new Error("max intents reached! We are not playing expected clip: " + clipid+ " is  not " + mosto_server.player.actual_playing_clip ));
-                mosto_server.player.once('playing', function(mess3) {
-                    console.log(mess3);
-                    if ( mosto_server.player.actual_playing_clip == clipid ) {
-                        done();
-                    } else setTimeout( function() { is_playing_media( clipid, intents-1 ) }, interv);            
-                });
-            }
-            mosto_server.scheduler.once('converted', function(mess1) {
-                assert.equal( mosto_server.fetcher.playlists.length, 1 );
-                mosto_server.synchronizer.once('synced', function(mess2) {
-                    is_playing_media( playlist.medias[0].id, 4, 500 );
+            mosto_server.synchronizer.once('synced', function() {
+                mosto_server.player.once('status', function(status) {
+                    assert.equal( status.status, 'playing');
+                    assert.equal( status.clip.current.id, playlist.medias[0].id );
+                    done();
                 });
             });
             mosto_server.fetcher.updatePlaylist( playlist );
         });               
     });
 
-
     describe("#[PLAY] Remove playlist", function() {
         before(function(done){                
             done();
         });
         it("--should return only the blank black_id", function(done) {
-            function is_playing_media( clipid, intents, interv ) {
-                if (intents==0) return done(new Error("max intents reached! We are not playing expected clip: " + clipid+ " is  not " + mosto_server.player.actual_playing_clip ));
-                mosto_server.player.once('playing', function(mess3) {
-                    console.log(mess3);
-                    if ( mosto_server.player.actual_playing_clip == clipid ) {
-                        done();
-                    } else setTimeout( function() { is_playing_media( clipid, intents-1 )}, interv);
+            mosto_server.synchronizer.once('synced', function() {
+                mosto_server.player.once('status', function(status) {
+                    assert.equal( status.clip.current.id, 'black_id' );
+                    done();
                 });
-            }
-            mosto_server.fetcher.once('fetch_downstream', function( fplaylists ) {
-                assert.equal( fplaylists.length, 1 );
-                is_playing_media( "black_id", 16, 500 );
             });
             mosto_server.fetcher.removePlaylist( "test_playlist_1_id" );
-        });           
-        
+        });                   
     });
 
-/*
     describe("#[PLAY] Doing a checkoutPlaylists()", function() {
         var driver_playlists = undefined;
 
@@ -233,39 +202,31 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
                 }
             } );
         });
-        it("--should play the same playlist", function() {
-
-            function is_playing_media( clipid, intents, interv ) {
-                if (intents==0) return done(new Error("max intents reached! We are not playing expected clip: " + clipid+ " is  not " + mosto_server.player.actual_playing_clip ));
-                mosto_server.player.once('playing', function(mess3) {
-                    console.log(mess3);
-                    if ( mosto_server.player.actual_playing_clip == clipid ) {
-                        done();
-                    } else setTimeout( is_playing_media( clipid, intents-1 ), interv);            
-                });
-            }
-
-            mosto_server.scheduler.once('converted', function(mess1) {
-                assert.equal( mosto_server.fetcher.playlists.length, 1 );
-                mosto_server.synchronizer.once('synced', function(mess2) {
-                    is_playing_media( driver_playlists[0].medias[0].id, 4, 500 );
+        it("--should play the same playlist", function(done) {
+            mosto_server.synchronizer.once('synced', function() {
+                mosto_server.player.once('status', function(status) {
+                    //assert.equal( status.status, 'playing');
+                    //assert.equal( status.clip.current.id, driver_playlists[0].medias[0].id );
+                    done();
                 });
             });
             mosto_server.fetcher.checkoutPlaylists();
-        });           
-
+        });
     });
-*/
 
     describe('#[PLAY] Stop mosto and leave', function() {        
         before(function(done) {
-		    mosto_server.finish(function() {
-			    //melted.leave();
+		    //mosto_server.finish(function() {
+            mosto_server.stopDriver();
+            mosto_server.player.stop();
+            melted.stop( function(pid) {
+                mosto_server = null;
+			    melted.leave();
                 done();                
-            });        
+            });
         });
 	    it('-- leave mosto and melted', function(done) {
-            assert.equal( mosto_server.player.timer, undefined );
+            //assert.equal( mosto_server.player.timer, undefined );
             done();
 	    });
     });
