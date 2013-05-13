@@ -50,7 +50,8 @@ function play( config ) {
     this.previous_position_millis = 0;
     this.ref_sched_index = 0;
 
-    this.actual_status = null;
+    this.actual_status = undefined;
+    this.previous_status = undefined;
 
     this.full_status = undefined;
     this.prev_full_status = undefined;
