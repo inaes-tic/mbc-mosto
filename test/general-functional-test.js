@@ -40,6 +40,14 @@ describe.only("Mosto functional test", function() {
      * arrancar sin playlists
      ** ver negro
      */
+    this.timeout(5000);
+    var self = this;
+    before(function() {
+        self.melted = melted();
+    });
+    after(function() {
+        delete self.melted;
+    });
     describe('start without playlists', function() {
         it('should show black');
     });
