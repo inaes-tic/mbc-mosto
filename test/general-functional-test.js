@@ -55,6 +55,12 @@ describe.only("Mosto functional test", function() {
                 done()});
             self.mosto.init();
         });
+        after(function(done) {
+            self.mosto.finish(function() {
+                delete self.mosto;
+                done();
+            });
+        });
     });
     /*
      * arrancar con playlists
