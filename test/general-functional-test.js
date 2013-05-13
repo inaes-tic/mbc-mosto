@@ -113,9 +113,9 @@ describe.only("Mosto functional test", function() {
      ** ver que haya el play correspondiente
      ** ver que este en el frame correcto
      */
-    describe('start with playlists starting now', function() {
+    describe('start with playlists', function() {
         self.playlist_count = _.randint(5, 10, self.rand());
-        before(function(done) {
+        before(function() {
             // I assume all non-hidden files are videos
             self.medias = _.reject(fs.readdirSync('./videos'), function(el){ return el[0] == '.' });
             self.medias = parseXMLs(self.medias);
@@ -125,44 +125,62 @@ describe.only("Mosto functional test", function() {
                 self.playlists.push(create_playlist(_.draw(self.medias,
                                                            playlist_length)));
             }
-            // let playlists start somewhere between now and 30 seconds ago
-            self.setup_playlists(moment(moment() + _.randint(0, -30000)));
         });
-        after(function() {
+        describe('starting now', function() {
+            before(function(done) {
+                self.db.dropDatabase(function(err, success) {
+                    // let playlists start somewhere between now and 30
+                    //  seconds ago
+                    self.setup_playlists(moment(
+                        moment() + _.randint(0, -30000)));
+                    self.mosto = new mosto();
+                    self.mosto.once('playing', function() {
+                        // send pubsub messages with new playlists
+                        done();
+                    });
+                    self.mosto.init();
+                });
+            });
+            after(function(done) {
+                self.mosto.finish(function() {
+                    delete self.mosto;
+                    done();
+                });
+            });
+            it('should start the right clip');
+            it('should start on the right frame');
+            /*
+            ** borrar la playlist
+            *** ver que no se rompa nada
+            *** ver que se este pasando negro
+            */
+            describe('delete currently playing playlist', function() {
+                it('should not break');
+                it('should be playing blank clip');
+            });
         });
-        it('should start the right clip');
-        it('should start on the right frame');
         /*
-        ** borrar la playlist
-        *** ver que no se rompa nada
-        *** ver que se este pasando negro
-        */
-        describe('delete currently playing playlist', function() {
-            it('should not break');
-            it('should be playing blank clip');
-        });
-    });
-    /*
-     * arrancar un playlist empezado hace 5m
-     */
-    describe('start with a playlist started 5m ago', function() {
-        /*
-        ** ver que el frame se mantenga sincronizado durante 10 segundos
-        */
-        it("should keep sync'ed for at least 10 secs");
-        /*
-        ** mover la playlist hacia atras 1m
-        *** ver que el frame se sincronice correctamente
-        */
-        describe('move playlist back', function() {
-            it("should stay sync'ed");
-        });
-        /*
-        ** mover la playlist hacia adelante 2m
-        *** ver que el frame se sincronice correctamente
-        */
-        describe('move playlist forward', function() {
-            it("should stay sync'ed");
+         * arrancar un playlist empezado hace 5m
+         */
+        describe('starting 5m ago', function() {
+            /*
+            ** ver que el frame se mantenga sincronizado durante 10 segundos
+            */
+            it("should keep sync'ed for at least 10 secs");
+            /*
+            ** mover la playlist hacia atras 1m
+            *** ver que el frame se sincronice correctamente
+            */
+            describe('move playlist back', function() {
+                it("should stay sync'ed");
+            });
+            /*
+            ** mover la playlist hacia adelante 2m
+            *** ver que el frame se sincronice correctamente
+            */
+            describe('move playlist forward', function() {
+                it("should stay sync'ed");
+            });
         });
     });
     /*
