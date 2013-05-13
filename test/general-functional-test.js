@@ -1,4 +1,7 @@
-require('should');
+var assert = require('assert');
+var fs = require('fs');
+var mosto = require('../mosto');
+var melted = require('melted-node');
 var _ = require('underscore');
 var seed = require('seed-random');
 
