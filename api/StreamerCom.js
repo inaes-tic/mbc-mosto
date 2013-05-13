@@ -171,8 +171,8 @@ StreamerCom.prototype.ProcessRequest = function(listeners) {
     }
 }
 
-StreamerCom.prototype.ResetListeners = function( self ) {
-    var self = this;
+StreamerCom.prototype.ResetListeners = function( mself ) {
+    var self = mself || this;
 /*
     self.name = "StreamerCom";
     self.receiving = true;
