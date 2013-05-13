@@ -48,6 +48,16 @@ describe.only("Mosto functional test", function() {
     self.start_seed = seed()();
     self.rand = seed(self.start_seed);
 
+    self.create_playlist = function(medias) {
+        var mediamodels = [];
+        medias.forEach(function(media) {
+            mediamodels.push( Media.Piece(media) );
+        });
+        return Media.List({
+            collection: mediamodels,
+        });
+    };
+
     self.setup_playlists = function(start_time) {
         /*
          * sets up playlists to be consecutive starting from start_time
@@ -122,8 +132,8 @@ describe.only("Mosto functional test", function() {
             self.playlists = [];
             for(var i = 0 ; i < self.playlist_count ; i++) {
                 var playlist_length = _.randint(1, 10, self.rand());
-                self.playlists.push(create_playlist(_.draw(self.medias,
-                                                           playlist_length)));
+                self.playlists.push(self.create_playlist(
+                    _.draw(self.medias, playlist_length)));
             }
         });
         describe('starting now', function() {
