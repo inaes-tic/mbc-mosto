@@ -4,23 +4,57 @@ var fs               = require('fs'),
     moment           = require('moment'),
     Playlist         = require('./api/Playlist'),
     Melted           = require('./api/Melted'),
-    Media            = require('./api/Media');
+    Media            = require('./api/Media'),
+    StreamerCom      = require('./api/StreamerCom');
 
 function fetch( config ) {
 
+    StreamerCom.call(this);
+
+    this.mosto = config.mosto;
+    this.driver = config.mosto.driver;
+    this.name = "fetcher";
+
+    this.scheduler = undefined;
+    this.fetcher = undefined;
+    this.player = undefined;
+
+    this.playlists = []; // this is the scheduled playlists....in a range between now and max_playlist_duration
+    this.time_window_from = "";
+    this.time_window_to = "";
+    this.playlists_updated = false;
+
+}
+
+fetch.prototype = new StreamerCom();
+
+fetch.prototype.init = function() {
     var self = this;
 
-    self.mosto = config.mosto;
-    self.driver = undefined;
-    self.scheduler = undefined;
-    self.player = undefined;
+    self.scheduler = self.mosto.scheduler;
+    self.player = self.mosto.player;
 
-    self.playlists = []; // this is the scheduled playlists....in a range between now and max_playlist_duration
-    self.time_window_from = "";
-    self.time_window_to = "";
-    self.playlists_updated = false;
+    self.name = "fetcher";
 
-    fetch.prototype.init = function() {
+    /*GOING DOWN: we listen to ourself and emit on Scheduler*/
+    self.on( 'fetch_downstream', function(playlists) {
+        console.log("mbc-mosto: [INFO] [FETCH] Auto received fetch_downstream: " + playlists.length + " scheduler:"+self.scheduler);
+        if (self.scheduler) self.scheduler.emit('datasend', playlists );
+    });
+
+    /*COMING FROM BELOW: we listen to Scheduler*/
+    if (self.scheduler) self.scheduler.on( 'fetch_upstream', function() {
+        console.log("mbc-mosto: [INFO] [FETCH] timer unlock from fetch_upstream. Top of machine reached.");
+        self.upstreamCheck(self);
+    });
+
+    //open data receiver
+    //open data receiver
+    if (self.Open( self ) && self.IsReceiving()) {
+        console.log('mbc-mosto: [INFO] [FETCH] Opened');        
+    } else throw new Error("mbc-mosto: [ERROR] [FETCH] couldn't open StreamerCom");
+
+}
 
         self.driver = self.mosto.driver;
 
@@ -261,10 +295,9 @@ function fetch( config ) {
         self.playlists.push( new Playlist( BlackMedia.id, BlackMedia.id, moment( sch_expect_start, "DD/MM/YYYY HH:mm:ss.SSS" ).toDate(), medias, moment( sch_expect_end, "DD/MM/YYYY HH:mm:ss.SSS" ).toDate(), "snap" ) );
     }
 
-};
 
 exports = module.exports = function(config) {
-    util.inherits(fetch, events.EventEmitter);
     var mosto_fetch = new fetch(config);
+    mosto_fetch.ResetListeners();
     return mosto_fetch;
 };
