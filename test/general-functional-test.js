@@ -42,6 +42,10 @@ describe.only("Mosto functional test", function() {
      */
     this.timeout(5000);
     var self = this;
+    // use a random seed
+    self.start_seed = seed()();
+    self.rand = seed(self.start_seed);
+
     before(function() {
         self.melted = melted();
     });
