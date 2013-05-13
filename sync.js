@@ -55,12 +55,12 @@ sync.prototype.init = function() {
     });
 
 
-    this.scheduler.on( 'sched_downstream', function( scheduled_clips ) {
+    if (this.scheduler) this.scheduler.on( 'sched_downstream', function( scheduled_clips ) {
             console.log("mbc-mosto: [INFO] [SYNC] receiving sched_downstream.");
             console.log(self);
     });
 
-    self.player.on( 'play_upstream', function(play_status) {
+    if (self.player) self.player.on( 'play_upstream', function(play_status) {
         console.log("mbc-mosto: [INFO] [SYNC] receiving play_upstream: calling upstreamCheck"); 
         self.upstreamCheck( self, play_status ); 
     } );        
