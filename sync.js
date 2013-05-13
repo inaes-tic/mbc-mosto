@@ -94,6 +94,61 @@ sync.prototype.init = function() {
 
         console.log("mbc-mosto: [INFO] syncroScheduledClips > server_playing_list medias = " + server_playing_list.length + " playingidx: " + self.player.actual_playing_index );
 
+sync.prototype.upstreamCheck = function( self, player_status ) {
+
+    //CALLING upstream when clips are needed...
+    // var self = this;
+    var server_playlist = player_status.server_playlist;
+    var server_status = player_status.server_status;
+    var server_previous_status = player_status.server_previous_status;
+
+
+    /*Condicion 0: data has been updated upstream: need an upstream check upstream*/
+    var Condition_0 = self.DataUpdatedUpstream();
+
+    /*Condicion 1: Es condicion que haya datos recibidos nuevos para sincronizar.... */
+    var Condition_1 = self.DataReceived();
+
+    /*Condicion 2: Si hay un clip esperado, verificar que se esta reproduciendo el clip correcto y el cuadro correcto */
+    var expected_clip = self.getExpectedClip( server_status, server_previous_status, self.sched_clips );
+    var is_playing_ex = self.isPlayingExpectedClip( server_status, expected_clip );
+    var Condition_2 = (expected_clip!==undefined);
+
+    /*Condicion 3: Not enough clips... */
+    var Condition_3 = self.ineedMoreClips( server_playlist, server_status, self.sched_clips, 1 );
+
+    console.log("mbc-mosto: [INFO] [SYNC] upstreamcheck() : Condition_0 : " + Condition_0);    
+    console.log("mbc-mosto: [INFO] [SYNC] upstreamcheck() : Condition_1 : " + Condition_1);
+    console.log("mbc-mosto: [INFO] [SYNC] upstreamcheck() : Condition_2 : " + Condition_2);
+    console.log("mbc-mosto: [INFO] [SYNC] upstreamcheck() : Condition_3 : " + Condition_3);
+
+    console.log("mbc-mosto: [INFO] [SYNC] upstreamcheck() : expected_clip : " + expected_clip);
+    console.log("mbc-mosto: [INFO] [SYNC] upstreamcheck() : is_playing_ex : " + is_playing_ex);
+    console.log("mbc-mosto: [INFO] [SYNC] upstreamcheck() : self.sched_clips : " + self.sched_clips.length );
+    console.log("mbc-mosto: [INFO] [SYNC] upstreamcheck() : server_status : " + server_status.status );
+    console.log("mbc-mosto: [INFO] [SYNC] upstreamcheck() : server_status.actualClip : " + server_status.actualClip );
+
+    if ( Condition_0 ) {
+        console.log("mbc-mosto: [INFO] [SYNC] upstreamcheck() > Condition 0: stream data changed");        
+        self.emit('sched_upstream');
+        self.DataUpdatedReset();
+    } else
+    if ( Condition_1 ) {
+        console.log("mbc-mosto: [INFO] [SYNC] upstreamcheck() > Condition 1: DataReceived() " + Condition_1 );
+        self.sched_clips = self.RetreiveData( self );
+        self.syncroScheduledClips( self, self.sched_clips, server_playlist, player_status );
+    } 
+    else 
+    if ( Condition_2) {
+        console.log("mbc-mosto: [INFO] [SYNC] upstreamcheck() > Condition 2: We are playing the expected clip ("+is_playing_ex+")  of expected_clip("+expected_clip.media.id+"): " + Condition_2 );
+        self.syncroScheduledClips( self, self.sched_clips, server_playlist, player_status );
+    } 
+    else 
+    if ( Condition_3 ) {
+        console.log("mbc-mosto: [INFO] [SYNC] upstreamcheck() > Condition 3: i'm hungry, i need more clips!!! emitting sched_upstream");
+        self.emit('sched_upstream');//no message needed...
+    } else self.timerUnlock(" upstreamCheck > no upstream nor synchronization needed.");
+};
         self.emit('syncing', server_playing_list );
 
         self.actual_server_playlist = server_playing_list;
