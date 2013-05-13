@@ -6,61 +6,81 @@ var fs               = require('fs'),
     Playlist         = require('./api/Playlist'),
     Melted           = require('./api/Melted'),
     Media            = require('./api/Media'),
-    ScheduledMedia   = require('./api/ScheduledMedia');
+    ScheduledMedia   = require('./api/ScheduledMedia'),
+    StreamerCom      = require('./api/StreamerCom');
+
 
 function scheduler( config ) {
 
+    StreamerCom.call(this);
+
+    this.name = "scheduler";
+    this.mosto = config.mosto;
+    this.fetcher = undefined;
+    this.synchronizer = undefined;
+    this.player = undefined;
+
+    this.scheduled_clips = []; //here we must have the current playlist up to date...
+    this.scheduled_clips_updated = false;
+}
+
+scheduler.prototype = new StreamerCom();
+
+scheduler.prototype.init = function() {
+
     var self = this;
 
-    self.mosto = config.mosto;
-    self.fetcher = undefined;
-    self.player = undefined;
-
-    self.scheduled_clips = []; //here we must have the current playlist up to date...
-    self.scheduled_clips_updated = false;
-
-    scheduler.prototype.init = function() {
-
-        self.fetcher = self.mosto.fetcher;
-        if (self.fetcher) self.fetcher.on( 'fetch_downstream', function( playlists) {
-            self.convertPlaylistsToScheduledClips( playlists );
-        });
-
-        self.synchronizer = self.mosto.synchronizer;
-        if (self.synchronizer) self.synchronizer.on( 'sched_upstream', function() {
-            console.log('mbc-mosto: [INFO] [SCHED] receiving sched_upstream event');
-            self.upstreamCheck(); 
-        });
-
-        self.player = self.mosto.player;
+    self.fetcher = self.mosto.fetcher;
+    self.synchronizer = self.mosto.synchronizer;
+    self.player = self.mosto.player;
+    self.name = "scheduler";
 
 
-    }
+    /*COMING FROM TOP: we listen to */
 
-    scheduler.prototype.queueBlack = function( schedule_time, sch_duration, sch_expect_start, sch_expect_end ) {
-        //Media(id, orig_order, actual_order, playlist_id, name, type, file, length, fps)
-        var BlackMedia = new Media( 'black_id' /*id*/, '0' /*orig_order*/, '0'/*actual_order*/, '0' /*playlist_id*/, 'black' /*name*/, 'file' /*type*/, self.mosto.config.black, sch_duration/*length*/, ''/*fps*/ );
-        console.log("mbc-mosto: [INFO] [SCHED] queueBlack > media:" + BlackMedia.file + " schedule_time:" + schedule_time + " sch_duration:" + sch_duration + " sch_expect_start:" + sch_expect_start + " sch_expect_end:" + sch_expect_end + " fps?:"+BlackMedia.fps );
-        self.scheduled_clips.push( new ScheduledMedia( BlackMedia, schedule_time, sch_duration, sch_expect_start, sch_expect_end ) );
+    self.on( 'datareceived' , function(data) {
+        console.log("mbc-mosto: [INFO] [SCHED] ["+self.name+"]'datareceived' downstream DATA received. data:" + data + " datareceived:" + self.DataReceived() + " dataBuffer:" + self.dataBuffer + " rec_count:" + self.rec_count + " ret_count:" + self.ret_count );        
+        //console.log(data);
+        //console.log("Inspecting self 'scheduler': " + util.inspect( self, true, 2));
+    });
 
-    }
+    self.on( 'dataupdated' , function(streamer) {
+        console.log("mbc-mosto: [INFO] [SCHED] Propagating from " + streamer + " to synchronizer");
+        if (self.synchronizer) self.synchronizer.emit('dataupdated',streamer);    
+    });
 
-    scheduler.prototype.upstreamCheck = function() {
-        //Check if we need to make a checkout! (upstream syncro!! > sync_lock must be true )
 
-        //UPSTREAM
+    self.on( 'datarejected' , function(data) {
+        console.log('mbc-mosto: [INFO] [SCHED] downstream DATA rejected!!' + data );
+        console.log(data);
+    });
 
-            //if time_window advance for 1 hours (4 hours > 3 hours left ), we make a checkout...[FETCH]
-            var rt_actual_window = self.fetcher.time_window_to.diff( moment() );
-            var rt_min_window = moment.duration( { hours: 3 } ).asMilliseconds();
+    self.on( 'upstreamcheck', function() {
+        console.log('mbc-mosto: [INFO] [SCHED] receiving upstreamcheck command.');
+        self.upstreamCheck( self );
+    });
 
-            console.log("mbc-mosto: [INFO] [SCHED] upstreamCheck > rt_actual_window:" + rt_actual_window + " rt_min_window:" + rt_min_window );
-            console.log("mbc-mosto: [INFO] [SCHED] upstreamCheck > scheduled_clips:" + self.scheduled_clips.length );
-            if (  rt_actual_window < rt_min_window || self.scheduled_clips.length==0 ) {
-                //console.log("mbc-mosto: [INFO] [SCHED] window advanced at least one hour... calling [FETCH] checkoutPlaylists actual:" + rt_actual_window + " min:" + rt_min_window);
-                //return  self.fetcher.checkoutPlaylists();//really updates time window too
-                console.log("mbc-mosto: [INFO] [SCHED] emitting fetch_upstream");
-                self.emit('fetch_upstream');
+    if (self.fetcher) self.fetcher.on( 'fetch_downstream', function( playlists) {
+        console.log("mbc-mosto: [INFO] [SCHED] 'fetch_downstream' Fetch downstream received. Are we Receiving ? = " + self.IsReceiving() + " Received:?" + self.DataReceived() );
+    });
+
+    if (self.synchronizer) self.synchronizer.on( 'sched_upstream', function() {
+        console.log('mbc-mosto: [INFO] [SCHED] receiving sched_upstream event');
+        self.upstreamCheck( self );
+    });
+
+    self.on( 'sched_downstream', function(sched_clips) {
+        console.log('mbc-mosto: [INFO] [SCHED] Auto receiving sched_downstream event to stream...');
+        if (self.synchronizer) self.synchronizer.emit('datasend', sched_clips );
+    });
+
+    //open data receiver
+    if (self.Open( self ) && self.IsReceiving()) {
+        console.log('mbc-mosto: [INFO] [SCHED] Opened');        
+    } else throw new Error("mbc-mosto: [ERROR] [SCHED] couldn't open StreamerCom");
+
+
+}
             } else {
                 console.log("mbc-mosto: [INFO] [SCHED] timer unlock from upstreamCheck. No need to fetch upstream");
                 //self.player.timerUnlock();
