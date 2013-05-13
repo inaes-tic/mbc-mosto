@@ -66,7 +66,7 @@ test/videos/%.mp4: test/images/%.png
 	${MELT} $< in=0 out=750 -consumer avformat:$@ acodec=none
 
 test: videos ${MOCHA} melted-check
-	${NODE} ${MOCHA}
+	@NODE_ENV=test NODE_CONFIG_DIR=$(PWD)/test/config/ ${NODE} ${MOCHA}
 
 clean-test:
 	rm ${TEST_VIDEOS}
