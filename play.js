@@ -8,19 +8,21 @@ var fs               = require('fs'),
     Media            = require('./api/Media'),
     ScheduledMedia   = require('./api/ScheduledMedia'),
     _                = require('underscore'),
-    mvcp_server      = require('./drivers/mvcp/mvcp-driver');
+    mvcp_server      = require('./drivers/mvcp/mvcp-driver'),
+    StreamerCom      = require('./api/StreamerCom');
 
 function play( config ) {
 
-    var self = this;
+    StreamerCom.call(this);
 
-    self.mosto = config.mosto;
-    self.server = config.mosto.server;
-    self.status_driver = config.mosto.status_driver; 
+    this.name = "player";
+    this.mosto = config.mosto;
+    this.server = config.mosto.server;
+    this.status_driver = config.mosto.status_driver; 
 
-    self.synchronizer = undefined;
-    self.fetcher = undefined;
-    self.scheduler = undefined;
+    this.synchronizer = undefined;
+    this.fetcher = undefined;
+    this.scheduler = undefined;
 
     /** PLAY MODULE */
     this.timer = null;
@@ -52,14 +54,27 @@ function play( config ) {
 
     this.full_status = undefined;
     this.prev_full_status = undefined;
+}
 
-    play.prototype.init = function() {
-        self.fetcher = self.mosto.fetcher;
-        self.scheduler = self.mosto.scheduler;
-        self.synchronizer = self.mosto.synchronizer;
-        if (self.synchronizer) self.synchronizer.on('play_downstream', function() {
-            console.log("mbc-mosto: [INFO] [PLAY] received play_downstream from [SYNC]");
+play.prototype = new StreamerCom();
+
+play.prototype.init = function() {
+
+    var self = this;
+
+    this.fetcher = this.mosto.fetcher;
+    this.scheduler = this.mosto.scheduler;
+    this.synchronizer = this.mosto.synchronizer;
+
+    if (this.synchronizer)
+        this.synchronizer.on('sync_downstream', function() {
+            console.log("mbc-mosto: [INFO] [PLAY] received sync_downstream from [SYNC]");
         });
+
+
+}
+
+
     }
 
     play.prototype.sendStatus = function() {
@@ -305,12 +320,11 @@ function play( config ) {
 
     play.prototype.pause = function() {}
 
-};
 
 
 exports = module.exports = function(config) {
-    util.inherits(play, events.EventEmitter);
     var mosto_player = new play(config);
+    mosto_player.ResetListeners();
     return mosto_player;
 };
 
