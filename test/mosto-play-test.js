@@ -153,7 +153,6 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
         });
     });
 
-
     describe("#[PLAY] Updating playlist", function() {
 
         var playlist = null;
@@ -180,10 +179,12 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
             done();
         });
         it("--should return only the blank black_id", function(done) {
-            mosto_server.synchronizer.once('synced', function() {
-                mosto_server.player.once('status', function(status) {
-                    assert.equal( status.clip.current.id, 'black_id' );
-                    done();
+            mosto_server.player.once('dataupdated', function( streamercom_name ) {
+                mosto_server.player.once('play_endstream', function() {
+                    mosto_server.player.once('status', function(status) {
+                        assert.equal( status.clip.current.id, 'black_id' );
+                        done();
+                    });
                 });
             });
             mosto_server.fetcher.removePlaylist( "test_playlist_1_id" );
@@ -195,7 +196,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
 
         before(function(done){           
             mosto_server.driver.setCheckoutMode(true);
-            mosto_server.fetcher.checkoutPlaylists( function(playlists) {
+            mosto_server.driver.getPlaylists( { from: moment(), to: moment().add(moment.duration({milliseconds: 100000 })) }, function(playlists) {
                 driver_playlists = playlists;
                 if (driver_playlists.length>0) {
                     done();
@@ -205,11 +206,15 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
             } );
         });
         it("--should play the same playlist", function(done) {
-            mosto_server.synchronizer.once('synced', function() {
-                mosto_server.player.once('status', function(status) {
-                    //assert.equal( status.status, 'playing');
-                    //assert.equal( status.clip.current.id, driver_playlists[0].medias[0].id );
-                    done();
+            mosto_server.player.once('dataupdated', function() {
+                mosto_server.player.once('play_endstream', function() {
+                   server.getServerPlaylist( function( server_playlist ) {
+                        server.getServerStatus( function( server_status ) {                    
+                            if (server_status.actualClip.id == driver_playlists[0].medias[0].id/* && server_status.status=="playing"*/ )
+                                done();
+                            else done(new Error( server_status.actualClip.id+"!=" + driver_playlists[0].medias[0].id + " status:"+server_status.status ));
+                        },function(error) { done(new Error(error)); });
+                   },function(error) { done(new Error(error)); });
                 });
             });
             mosto_server.fetcher.checkoutPlaylists();
@@ -232,7 +237,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
             done();
 	    });
     });
-    
+
     describe('#last [PLAY] check ', function() {
         it("--should finish PLAY", function(done) {
             done(); 
