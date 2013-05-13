@@ -10,6 +10,7 @@ var assert = require("assert"),
     status_driver    = require('../drivers/status/pubsub'),
     test_driver    = require('../drivers/playlists/test-driver'),
     Media  = require('../api/Media'),
+    ScheduledMedia  = require('../api/ScheduledMedia'),
     mosto_fetcher    = require('../fetch'),
     mosto_scheduler  = require('../scheduler'),
     mosto_synchronizer  = require('../sync'),
@@ -113,12 +114,16 @@ describe('Mosto [SYNC/video server synchronizer] tests', function(done) {
     });
 
     describe("#[SYNC] Checking no playlists, play blank.", function() {
+
+        var my_playlists = undefined;
+        var sched_clips = [];
+
         before(function(done){
             mosto_server.driver.setCheckoutMode(false);
             mosto_server.fetcher.checkoutPlaylists( function(playlists) {
                 if (playlists.length>0) done(new Error("test_driver->getPlaylists must return no playlists when called for first time"));
                 done();
-            });                
+            });
         });
         it("--should return black_id playing!!", function(done) {
             synchronizer.once('datareceived', function() {
@@ -131,8 +136,10 @@ describe('Mosto [SYNC/video server synchronizer] tests', function(done) {
                         },function(error) { done(new Error(error)); });
                    },function(error) { done(new Error(error)); });
                 });
+                synchronizer.emit('upstreamcheck');
             });
-            fetcher.checkoutPlaylists( function(playlists) { } );
+            synchronizer.emit('datasend',sched_clips);
+            
         });
     });
 
