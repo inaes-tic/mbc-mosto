@@ -93,10 +93,15 @@ describe.only("Mosto functional test", function() {
         }
     };
 
-    self.get_media = function(time) {
-        var playlist = _.find(self.playlists, function(pl) {
+    self.get_playlist = function(time) {
+        return _.find(self.playlists, function(pl) {
             return pl.start <= time.unix() && pl.end >= time.unix();
         });
+    };
+
+    self.get_media = function(time) {
+        var playlist = self.get_playlist(time);
+
         return _.find(playlist.medias, function(me) {
             return me.start_time <= time && me.end_time >= time;
         });
