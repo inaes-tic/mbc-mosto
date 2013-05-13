@@ -81,57 +81,12 @@ scheduler.prototype.init = function() {
 
 
 }
-
-scheduler.prototype.upstreamCheck = function( self ) {
-    //Check if we need to make a checkout! (upstream syncro!! > sync_lock must be true )
-
-        /*Condicion 0: data has been updated upstream: need an upstream check upstream*/
-        var Condition_0 = self.DataUpdatedUpstream();
-
-    //UPSTREAM
-        //if time_window advance for 1 hours (4 hours > 3 hours left ), we make a checkout...[FETCH]
-        var rt_actual_window = self.fetcher.time_window_to.diff( moment() );
-        var rt_min_window = moment.duration( { hours: 3 } ).asMilliseconds();
-
-        //Condition 1: Window advance
-        console.log("mbc-mosto: [INFO] [SCHED] upstreamCheck() Condition 1 "+(rt_actual_window<rt_min_window)+" ? for rt_actual_window < rt_min_window ? : " + rt_actual_window + " <? " + rt_min_window );
-
-        //Condition 2: We do not have scheduled clips
-        console.log("mbc-mosto: [INFO] [SCHED] upstreamCheck() Condition 2 "+(self.scheduled_clips.length===0)+" ? for scheduled_clips == 0 " );
-
-        //Condition 3: There is data buffered!
-        var datain = self.DataReceived();
-        console.log("mbc-mosto: [INFO] [SCHED] upstreamCheck() Condition 3 "+datain+" ? this.DataReceived() " + self.dataBuffer );
-
-        //Condition 4: queued clips left are less than xxxxx ( cursor_scheduled_clip ?? vs self.scheduled_clips.length  )
-
-        if ( Condition_0 ) {
-            console.log("mbc-mosto: [INFO] [SCHED] upstreamcheck() > Condition 0: stream data changed");        
-            self.emit('fetch_upstream');
-            self.DataUpdatedReset();
-        } else        
-        if (  rt_actual_window < rt_min_window || self.scheduled_clips.length==0 || datain) {
-            //console.log("mbc-mosto: [INFO] [SCHED] window advanced at least one hour... calling [FETCH] checkoutPlaylists actual:" + rt_actual_window + " min:" + rt_min_window);
-            //return  this.fetcher.checkoutPlaylists();//really updates time window too
-            console.log("mbc-mosto: [INFO] [SCHED] upstreamCheck()... check if we have DATA ? DataReceived: " + self.DataReceived() + " IsReceiving:" + self.IsReceiving());
-            if (self.DataReceived()) {
-                console.log("mbc-mosto: [INFO] [SCHED] upstreamCheck() we have DATA, retreiving....");
-                var playlists = self.RetreiveData(self);
-                console.log("mbc-mosto: [INFO] [SCHED] upstreamCheck() playlists: " + playlists);
-                console.log(playlists);
-                self.convertPlaylistsToScheduledClips( playlists );
-                if (self.player) self.player.timerUnlock(" from [SCHED] upstreamCheck() after converting playlists to sched clips.");
             } else {
-                console.log("mbc-mosto: [INFO] [SCHED] upstreamCheck() : emitting fetch_upstream for Conditions 1 and 2: need more clips... or no clips...");
+                console.log("mbc-mosto: [INFO] [SCHED] timer unlock from upstreamCheck. No need to fetch upstream");
+                //self.player.timerUnlock();
                 self.emit('fetch_upstream');
             }
-        } else {
-            console.log("mbc-mosto: [INFO] [SCHED] upstreamCheck) : timer unlock from upstreamCheck. No need to fetch upstream");            
-            //this.emit('fetch_upstream');
-            if (self.player) self.player.timerUnlock(" from [SCHED] upstreamCheck(). No need to fetch upstream");
-        }
-    
-}
+        
     }
 
     /** LOGIC SCHEDULER MODULE */
