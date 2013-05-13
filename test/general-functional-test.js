@@ -1,4 +1,36 @@
 require('should');
+var _ = require('underscore');
+var seed = require('seed-random');
+
+_.mixin({
+    shuffleSeed: function(list, s) {
+        seed(s, true);
+        var ret = _.shuffle(list);
+        seed(undefined, true);
+    },
+    randint: function(x, y, s) {
+        var from = 0;
+        var to = 0;
+        if( y === undefined )
+            to = x;
+        else {
+            from = x;
+            to = y;
+        }
+        var width = to - from;
+        return (parseInt(seed(s)() * width) + from)
+    },
+    randelem: function(list) {
+        return list[randint(list.length)];
+    },
+    draw: function(list, n) {
+        var ret = [];
+        for(var i = 0 ; i < n ; i++) {
+            ret.push(randelem(list));
+        }
+        return ret;
+    },
+});
 
 describe.only("Mosto functional test", function() {
     /*
