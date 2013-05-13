@@ -117,10 +117,10 @@ describe.only("Mosto functional test", function() {
         self.playlist_count = _.randint(5, 10, self.rand());
         before(function() {
             // I assume all non-hidden files are videos
-            self.medias = _.reject(fs.readdirSync('./videos'), function(el){ return el[0] == '.' });
+            self.medias = _.reject(fs.readdirSync('./test/videos'), function(el){ return el[0] == '.' });
             self.medias = parseXMLs(self.medias);
             self.playlists = [];
-            for(int i = 0 ; i < self.playlist_count ; i++) {
+            for(var i = 0 ; i < self.playlist_count ; i++) {
                 var playlist_length = _.randint(1, 10, self.rand());
                 self.playlists.push(create_playlist(_.draw(self.medias,
                                                            playlist_length)));
