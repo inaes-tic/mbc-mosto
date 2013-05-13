@@ -64,16 +64,32 @@ describe.only("Mosto functional test", function() {
          * and annotates the medias to keep track of start and end times
          */
         var timewalk = moment(start_time);
+        self.occurrences = [];
+        var occcol = self.db.getCollection('scheds');
         for( var i = 0 ; i < self.playlists.length ; i++ ) {
             var playlist = self.playlists[i];
-            playlist.start = timewalk.unix();
+            var occurrence = {
+                start: timewalk.unix();
+            };
             for( var j = 0 ; j < playlist.medias.length ; j++ ) {
                 var media = playlist.medias[j];
                 media.start_time = timewalk.valueOf();
                 timewalk.add(playlist.medias[j].length);
                 media.end_time = timewalk.valueOf();
             }
-            playlist.end = timewalk.unix();
+            occurrence.end = timewalk.unix();
+            var listcol = self.db.getCollection('lists');
+            listcol.insert(playlist, function(err, obj) {
+                obj = obj[0];
+                occurrence = Media.Ocurrence({
+                    list: obj._id,
+                    start: occurrence.start,
+                    end: occurrence.end
+                });
+                occcol.insert(occurrence, function(err, obj) {
+                    self.occurrences.push(obj[0])
+                });
+            });
         }
     };
 
