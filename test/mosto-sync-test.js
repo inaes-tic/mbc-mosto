@@ -19,7 +19,12 @@ describe('Mosto [SYNC/video server synchronizer] tests', function(done) {
     var mosto_server = undefined;
     var server = undefined;
 
-    this.timeout(30000);
+    var player = undefined;
+    var scheduler = undefined;
+    var synchronizer = undefined;
+    var fetcher = undefined;
+
+    //this.timeout(30000);
 
     before(function(done) {
         melted.take(function() {
@@ -55,19 +60,19 @@ describe('Mosto [SYNC/video server synchronizer] tests', function(done) {
 	
             mosto_server = silence(function(){ return new mosto(); });
 
-	        mosto_server.server = silence(function(){ return mvcp_server("melted"); });
+	        server = mosto_server.server = silence(function(){ return mvcp_server("melted"); });
             mosto_server.status_driver = silence(function(){ new status_driver(); });
             mosto_server.driver = new test_driver();
 
-            mosto_server.fetcher        = new mosto_fetcher( { mosto: mosto_server } );
-            mosto_server.scheduler      = new mosto_scheduler( { mosto: mosto_server });
-            mosto_server.synchronizer   = new mosto_synchronizer( { mosto: mosto_server });
-            mosto_server.player         = new mosto_player( { mosto: mosto_server } );
+            fetcher = mosto_server.fetcher        = new mosto_fetcher( { mosto: mosto_server } );
+            scheduler = mosto_server.scheduler      = new mosto_scheduler( { mosto: mosto_server });
+            synchronizer = mosto_server.synchronizer   = new mosto_synchronizer( { mosto: mosto_server });
+            player = mosto_server.player         = new mosto_player( { mosto: mosto_server } );
 
-            mosto_server.fetcher.init();
-            mosto_server.scheduler.init();
-            mosto_server.synchronizer.init();
-            mosto_server.player.init();	     
+            fetcher.init();
+            scheduler.init(scheduler);
+            synchronizer.init();
+            player.init();	     
             done();
 	    });
 	    it('-- mvcp server connected should return false', function() {
@@ -93,15 +98,41 @@ describe('Mosto [SYNC/video server synchronizer] tests', function(done) {
     describe("#[SYNC] Initializing mosto driver then play.", function() {
         before(function(done) {
             mosto_server.initDriver();
-            mosto_server.player.play();
+            mosto_server.player.play( mosto_server.player );
             done();
 	    });
         it("--should timer have been created", function(done) {
+
+            assert.notEqual( mosto_server.player.timer, undefined );
+            assert.notEqual( mosto_server.player.timer, null );
+
             mosto_server.player.once('playing', function(mess) {
-                assert.notEqual( mosto_server.player.timer, undefined );
-                assert.notEqual( mosto_server.player.timer, null );
                 done();
             });
+        });
+    });
+
+    describe("#[SYNC] Checking no playlists, play blank.", function() {
+        before(function(done){
+            mosto_server.driver.setCheckoutMode(false);
+            mosto_server.fetcher.checkoutPlaylists( function(playlists) {
+                if (playlists.length>0) done(new Error("test_driver->getPlaylists must return no playlists when called for first time"));
+                done();
+            });                
+        });
+        it("--should return black_id playing!!", function(done) {
+            synchronizer.once('datareceived', function() {
+                synchronizer.once('sync_downstream', function() {
+                    server.getServerPlaylist( function( server_playlist ) {
+                        server.getServerStatus( function( server_status ) {                    
+                            if (server_status.actualClip.id == "black_id")
+                                done();
+                            else done(new Error( server_status.actualClip.id+"!=black_id"));
+                        },function(error) { done(new Error(error)); });
+                   },function(error) { done(new Error(error)); });
+                });
+            });
+            fetcher.checkoutPlaylists( function(playlists) { } );
         });
     });
 
@@ -114,43 +145,26 @@ describe('Mosto [SYNC/video server synchronizer] tests', function(done) {
             playlist = mosto_server.driver.TestPlaylist();                
             done();
         });
-        it("--should expect first clip from our playlist", function(done) {
-
-            console.log( "scheduled_clips ("+mosto_server.scheduler.scheduled_clips.length+")" );
-
-            function is_expected_clip( clipid, intents, interv ) {      
-                var exp_clip = mosto_server.synchronizer.getExpectedClip( mosto_server.scheduler.scheduled_clips );
-                if (intents==0) return done(new Error("max intents reached! expected clip: " + clipid+ " is  not " + exp_clip.media.id ));
-                mosto_server.scheduler.once('converted', function(server_playlist) {
-                    exp_clip = mosto_server.synchronizer.getExpectedClip( mosto_server.scheduler.scheduled_clips );
-                    if (exp_clip && exp_clip.media.id == clipid) {                                
-                        done();
-                    } else setTimeout( is_expected_clip( clipid, intents-1 ), interv);
+        it("--should expect first clip playing in our playlist", function(done) {
+            synchronizer.once('datareceived', function() {
+                synchronizer.once('sync_downstream', function() {
+                    server.getServerPlaylist( function( server_playlist ) {
+                        server.getServerStatus( function( server_status ) {                    
+                            if (server_status.actualClip.id ==  playlist.medias[0].id ) {
+                                done();
+                            } else done(new Error( server_status.actualClip.id+"!=" + playlist.medias[0].id));
+                        },function(error) { done(new Error(error)); });
+                    },function(error) { done(new Error(error)); });
                 });
-            }
-
-            is_expected_clip( playlist.medias[0].id, 3, 250 );
-            
-            mosto_server.fetcher.addPlaylist( playlist );
+            });
+            fetcher.addPlaylist( playlist );
         });
 
         it("--should be playing the first clip from our playlist ", function(done) {
-           function is_playing_media( clipid, intents, interv ) {
-                if (intents==0) return done(new Error("max intents reached! We are not playing expected clip: " + clipid+ " is  not " + mosto_server.player.actual_playing_clip ));
-                mosto_server.player.once('playing', function(mess3) {
-                    console.log(mess3);
-                    if ( mosto_server.player.actual_playing_clip == clipid ) {
-                        done();
-                    } else setTimeout( is_playing_media( clipid, intents-1 ), interv);            
-                });
-
-            }
-
-            setTimeout( function() { is_playing_media( playlist.medias[0].id, 3, 250 ); } , 1000 );                    
-        });
-
-
+            done();
+        });      
     });
+
 
 
     describe("#[SYNC] Updating playlist", function() {
@@ -158,52 +172,85 @@ describe('Mosto [SYNC/video server synchronizer] tests', function(done) {
         var playlist = undefined;
 
         before(function(done){
-            playlist = mosto_server.driver.TestPlaylist();
-            mosto_server.fetcher.updatePlaylist( playlist );
+            playlist = mosto_server.driver.TestPlaylist();            
             done();
         });
         it("--should return the same playlist updated", function(done) {
-            done();
+            synchronizer.once('datareceived', function() {
+                synchronizer.once('sync_downstream', function() {
+                    server.getServerPlaylist( function( server_playlist ) {
+                        server.getServerStatus( function( server_status ) {                    
+                            if (server_status.actualClip.id ==  playlist.medias[0].id ) {
+                                done();
+                            } else done(new Error( server_status.actualClip.id+"!=" + playlist.medias[0].id));
+                        },function(error) { done(new Error(error)); });
+                    },function(error) { done(new Error(error)); });
+                });
+            });            
+            fetcher.updatePlaylist( playlist );
         });               
     });
 
     describe("#[SYNC] Remove playlist", function() {
         before(function(done){
-            mosto_server.fetcher.removePlaylist( "test_playlist_1_id" );
+            assert.notEqual( fetcher.playlists.length, 0 );
+            assert.equal( fetcher.playlists[0].id, "test_playlist_1_id" );
             done();
         });
         it("--should return only the blank black_id", function(done) {
-            done();
+            synchronizer.once('datareceived', function() {
+                synchronizer.once('sync_downstream', function() {
+                    server.getServerPlaylist( function( server_playlist ) {
+                        server.getServerStatus( function( server_status ) {                    
+                            if (server_status.actualClip.id == "black_id")
+                                done();
+                            else done(new Error( server_status.actualClip.id+"!=black_id"));
+                        },function(error) { done(new Error(error)); });
+                   },function(error) { done(new Error(error)); });
+                });
+            });
+            fetcher.removePlaylist( "test_playlist_1_id" );
         });           
         
     });
 
     describe("#[SYNC] Doing a checkoutPlaylists()", function() {
+
         var driver_playlists = undefined;
 
-        before(function(done){                                
-            done();
-        });
-        it("--should return the same playlist", function(done) {
-            mosto_server.scheduler.once('converted', function(mess) {
-                assert.equal( mosto_server.fetcher.playlists.length, 1 );
-                assert.notEqual( mosto_server.fetcher.playlists[0].id, "black_id" );
-                if (driver_playlists) assert.equal( mosto_server.fetcher.playlists[0].id, driver_playlists[0].id );
+        before(function(done){
+            mosto_server.driver.setCheckoutMode(true);
+            fetcher.checkoutPlaylists( function(playlists) {
+                driver_playlists = playlists;
+                if (playlists.length==0) return done(new Error("test_driver->getPlaylists must return some playlists when called in co_mode:true"));                    
                 done();
             });
+        });
+        it("--should return the same playlist", function(done) {
+            synchronizer.once('datareceived', function() {
+                synchronizer.once('sync_downstream', function() {
+                    server.getServerPlaylist( function( server_playlist ) {
+                        server.getServerStatus( function( server_status ) {                    
+                            if (server_status.actualClip.id ==  driver_playlists[0].medias[0].id ) {
+                                done();
+                            } else done(new Error( server_status.actualClip.id+"!=" + driver_playlists[0].medias[0].id));
+                        },function(error) { done(new Error(error)); });
+                    },function(error) { done(new Error(error)); });
+                });
+            });            
             mosto_server.driver.setCheckoutMode(true);
-            mosto_server.fetcher.checkoutPlaylists( function(playlists) {
-                driver_playlists = playlists;
-            });
+            fetcher.checkoutPlaylists( function(playlists) {});
         });           
 
     });
 
     describe('#[SYNC] leave melted', function() {
 	    it('-- leave melted', function(done) {
-		    mosto_server.finish(function() {
-			    done();
-            });
+            mosto_server.player.stop();
+            melted.stop( function(pid) {
+			    melted.leave();
+                done();                
+            });		   
 	    });
     });
    
