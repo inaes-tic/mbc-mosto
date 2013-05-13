@@ -70,6 +70,7 @@ play.prototype.init = function() {
     if (this.synchronizer)
         this.synchronizer.on('sync_downstream', function() {
             console.log("mbc-mosto: [INFO] [PLAY] received sync_downstream from [SYNC]");
+            self.emit('play_endstream');
         });
 
 
