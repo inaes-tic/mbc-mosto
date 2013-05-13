@@ -44,9 +44,16 @@ function mosto(customConfig) {
 
         console.log("mbc-mosto: [INFO] Initializing playlists driver");
 
-        self.driver.on ("create", self.fetcher.addPlaylist);
-        self.driver.on ("update", self.fetcher.updatePlaylist);
-        self.driver.on ("delete", self.fetcher.removePlaylist);
+        self.driver.on ("create", function(playlist) {
+            
+            self.fetcher.addPlaylist( playlist, self.fetcher );
+        } );
+        self.driver.on ("update", function(playlist) {            
+            self.fetcher.updatePlaylist( playlist, self.fetcher);
+        } );
+        self.driver.on ("delete", function(playlist) {            
+            self.fetcher.removePlaylist( playlist, self.fetcher);
+        } );
 
         self.driver.start();
     };
