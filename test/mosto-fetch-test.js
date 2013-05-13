@@ -33,6 +33,8 @@ describe('Mosto [FETCH/Database] section tests', function(done) {
             mosto_server.driver = new test_driver();
 
             fetcher        = new mosto_fetcher( { mosto: mosto_server } );
+            mosto_server.fetcher = fetcher;
+
             fetcher.init();
 
 	        assert.notEqual(mosto_server, undefined);
@@ -58,19 +60,21 @@ describe('Mosto [FETCH/Database] section tests', function(done) {
 
         before(function(done){
             playlist =  mosto_server.driver.TestPlaylist();
-            fetcher.addPlaylist( playlist );
             done();
         });
-        it("--should return same playlist ", function(done) {
-            var result = true;
-            assert.equal( fetcher.playlists.length, 1 );
-            assert.equal( fetcher.playlists[0].id, playlist.id );
-            assert.equal( fetcher.playlists[0].name, playlist.name );
-            assert.equal( fetcher.playlists[0].startDate, playlist.startDate );
-            assert.equal( fetcher.playlists[0].medias.length, playlist.medias.length );
-            assert.equal( fetcher.playlists[0].endDate, playlist.endDate );
-            assert.equal( fetcher.playlists[0].mode, playlist.mode );
-            done();
+        it("--should return same playlist ", function(done) {            
+            fetcher.once( 'fetch_downstream', function(playlists) {
+                assert.equal( playlists.length, 1 );
+                assert.equal( playlists[0].id, playlist.id );
+                assert.equal( playlists[0].name, playlist.name );
+                assert.equal( playlists[0].startDate, playlist.startDate );
+                assert.equal( playlists[0].medias.length, playlist.medias.length );
+                assert.equal( playlists[0].endDate, playlist.endDate );
+                assert.equal( playlists[0].mode, playlist.mode );
+                done();
+            });
+            fetcher.addPlaylist( playlist );
+
         });
 
     });
@@ -80,31 +84,35 @@ describe('Mosto [FETCH/Database] section tests', function(done) {
         var playlist = undefined;
 
         before(function(done){
-            playlist =  mosto_server.driver.TestPlaylist();
-            fetcher.updatePlaylist( playlist );
+            playlist =  mosto_server.driver.TestPlaylist();            
             done();
         });
         it("--should return the same playlist updated", function(done) {
-            assert.equal( fetcher.playlists.length, 1 );
-            assert.equal( fetcher.playlists[0].id, playlist.id );
-            assert.equal( fetcher.playlists[0].name, playlist.name );
-            assert.equal( fetcher.playlists[0].startDate, playlist.startDate );
-            assert.equal( fetcher.playlists[0].medias.length, playlist.medias.length );
-            assert.equal( fetcher.playlists[0].endDate, playlist.endDate );
-            assert.equal( fetcher.playlists[0].mode, playlist.mode );
-            done();
+            fetcher.once( 'fetch_downstream', function(playlists) {
+                assert.equal( playlists.length, 1 );
+                assert.equal( playlists[0].id, playlist.id );
+                assert.equal( playlists[0].name, playlist.name );
+                assert.equal( playlists[0].startDate, playlist.startDate );
+                assert.equal( playlists[0].medias.length, playlist.medias.length );
+                assert.equal( playlists[0].endDate, playlist.endDate );
+                assert.equal( playlists[0].mode, playlist.mode );
+                done();
+            });
+            fetcher.updatePlaylist( playlist );
         });               
     });
 
     describe("#[FETCH] Remove playlist", function() {
         before(function(done){
-            fetcher.removePlaylist( "test_playlist_1_id" );
             done();
         });
         it("--should return only the blank black_id", function(done) {
-            assert.equal( fetcher.playlists.length, 1 );
-            assert.equal( fetcher.playlists[0].id, "black_id" );
-            done();
+            fetcher.once( 'fetch_downstream', function(playlists) {
+                assert.equal( playlists.length, 1 );
+                assert.equal( playlists[0].id, "black_id" );
+                done();
+            });
+            fetcher.removePlaylist( "test_playlist_1_id" );
         });           
         
     });
