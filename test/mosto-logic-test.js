@@ -10,13 +10,19 @@ var assert = require("assert"),
     Playlist  = require('../api/Playlist'),
     Media  = require('../api/Media'),
     mosto_fetcher  = require('../fetch'),
-    mosto_scheduler  = require('../scheduler');
+    mosto_scheduler  = require('../scheduler'),
+    mosto_synchronizer  = require('../sync'),
+    mosto_player  = require('../play'),
+    _                = require('underscore');
 
 describe('Mosto [LOGIC/Scheduler] section tests', function(done) {
     var mosto_server = undefined;
     var server = undefined;
-    var scheduler = undefined;
+
     var fetcher = undefined;
+    var scheduler = undefined;
+    var synchronizer = undefined;
+    var player = undefined;
 
     this.timeout(15000);
 
@@ -34,11 +40,22 @@ describe('Mosto [LOGIC/Scheduler] section tests', function(done) {
 	        assert.notEqual(mosto_server, undefined);
             mosto_server.driver = new test_driver();
 
-            fetcher = mosto_server.fetcher        = new mosto_fetcher( { mosto: mosto_server } );
-            scheduler = mosto_server.scheduler        = new mosto_scheduler( { mosto: mosto_server } );
+            mosto_server.fetcher        = new mosto_fetcher( { mosto: mosto_server } );
+            mosto_server.scheduler        = new mosto_scheduler( { mosto: mosto_server } );
+            //mosto_server.synchronizer        = new mosto_synchronizer( { mosto: mosto_server } );
+            //mosto_server.player        = new mosto_player( { mosto: mosto_server } );
+
+            fetcher = mosto_server.fetcher;
+            scheduler = mosto_server.scheduler;
 
             mosto_server.fetcher.init();
             mosto_server.scheduler.init();
+            //mosto_server.synchronizer.init();
+            //mosto_server.player.init();
+
+            //synchronizer = mosto_server.synchronizer;
+            //player = mosto_server.player;
+
 	    });
 	    it('-- mvcp server connected should return false', function() {
 	        var r = silence(function(){ return mosto_server.server_started; });
@@ -61,25 +78,28 @@ describe('Mosto [LOGIC/Scheduler] section tests', function(done) {
 
         before(function(done){
             mosto_server.driver.start();
-            playlist = mosto_server.driver.TestPlaylist();
+            playlist = mosto_server.driver.TestPlaylist( 0 );
             done();
         });
-        it("--should return same playlist ", function(done) {                
-            mosto_server.scheduler.once('converted', function(mess) {
-/*
-                console.log("mosto-logic-test.js:         timer clock [ ]: " + mosto_server.timer_clock.format("DD/MM/YYYY HH:mm:ss.SSS") );
-                console.log("mosto-logic-test.js: expected playlist start: " +  moment(mosto_server.playlists[0].startDate).format("DD/MM/YYYY HH:mm:ss.SSS") );
-                console.log("mosto-logic-test.js: expected start clip [0]: " +  mosto_server.scheduled_clips[0].expected_start + " id:" + mosto_server.scheduled_clips[0].media.id );
-                console.log("mosto-logic-test.js: expected start clip [1]: " +  mosto_server.scheduled_clips[1].expected_start + " id:" + mosto_server.scheduled_clips[1].media.id );
-*/
-                assert.equal( scheduler.scheduled_clips.length, 4 );
-                assert.equal( scheduler.scheduled_clips[0].media.id, playlist.medias[0].id );
-                assert.equal( scheduler.scheduled_clips[1].media.id, playlist.medias[1].id );
-                assert.equal( scheduler.scheduled_clips[2].media.id, playlist.medias[2].id );
-                assert.equal( scheduler.scheduled_clips[3].media.id, "black_id" );
-                done();
+        it("--scheduler should receive data and convert to scheduled_clips", function(done) {                
+            scheduler.once('datareceived', function (playlists) {
+                console.log("mosto-logic-test: [SCHED TEST] Adding: fetch_downstream and datareceived ok!");
+                console.log(playlists);
+                (_.isEqual( playlists[0], playlist)) ? done() : done( new Error("playlists[0] and playlist doesn't match."));
             });
             fetcher.addPlaylist( playlist );
+        });
+        it("--scheduler should convert to scheduled_clips for the next upstreamCheck", function(done) {                
+            scheduler.once('sched_downstream', function (sched_clips) {
+                console.log("mosto-logic-test: [SCHED TEST] Adding: sched_downstream ok! sched_clips: " + sched_clips.length + " vs " + playlist.medias.length);
+                for( var i=0; i<playlist.medias.length; i++ ) {                    
+                    if (!_.isEqual( playlist.medias[i], sched_clips[i].media )) {
+                        return done(new Error( playlist.medias[i] + "!=" + sched_clips[i].media ));
+                    }
+                }
+                done();                
+            });        
+            scheduler.emit('upstreamcheck');
         });
 
     });
@@ -90,23 +110,45 @@ describe('Mosto [LOGIC/Scheduler] section tests', function(done) {
 
         before(function(done){
             playlist = mosto_server.driver.TestPlaylist();
-            fetcher.updatePlaylist( playlist );
+            playlist.medias.splice( 2, 1 );
             done();
         });
         it("--should return the first clip of playlist", function(done) {
-            assert.notEqual( scheduler.scheduled_clips.length, 0 );
-            done();
+            scheduler.once( 'datareceived', function( playlists ) {
+                console.log("mosto-logic-test: [SCHED TEST] Updating: fetch_downstream and datareceived ok!" + " rec_count:" + scheduler.rec_count + " ret_count:" + scheduler.ret_count );
+                //console.log(playlists[0].id);                
+                scheduler.once( 'sched_downstream', function( sched_clips ) {
+                    //assert.notEqual( sched_clips.length, 0 );
+                    //assert.equal( sched_clips[0].media.id, playlist.medias[0].id );
+                    console.log("mosto-logic-test: [SCHED TEST] Updating: sched_downstream ok! sched_clips: " + sched_clips.length + " vs " + playlist.medias.length);
+                    for( var i=0; i<playlist.medias.length; i++ ) {                    
+                        if (!_.isEqual( playlist.medias[i], sched_clips[i].media )) {
+                            return done(new Error( playlist.medias[i] + "!=" + sched_clips[i].media ));
+                        }
+                    }
+                    done();
+                });
+                scheduler.emit('upstreamcheck');
+            });
+            fetcher.updatePlaylist( playlist );
         });               
     });
 
-    describe("#[LOGIC] Remove playlist", function() {
+    describe("#[LOGIC] Remove playlist test", function() {
         before(function(done){
-            fetcher.removePlaylist( "test_playlist_1_id" );
             done();
         });
         it("--should return only the blank black_id", function(done) {
-            assert.notEqual( scheduler.scheduled_clips.length, 0 );
-            done();
+            scheduler.once( 'datareceived', function( playlists ) {
+                console.log("mosto-logic-test: [SCHED TEST] Removing: fetch_downstream and datareceived ok!" + " rec_count:" + scheduler.rec_count + " ret_count:" + scheduler.ret_count );
+                scheduler.once( 'sched_downstream', function( sched_clips ) {
+                    if (sched_clips.length==1 && ( sched_clips[0].media.id == "black_id" ) ) {
+                        return done();
+                    } else return done(new Error("No black id"));
+                });
+                scheduler.emit('upstreamcheck');
+            });
+            fetcher.removePlaylist( "test_playlist_1_id" );
         });           
         
     });
@@ -123,8 +165,19 @@ describe('Mosto [LOGIC/Scheduler] section tests', function(done) {
             });
         });
         it("--should return the same playlist", function(done) {
-            assert.notEqual( scheduler.scheduled_clips.length, 0 );
-            done();
+            scheduler.once( 'datareceived', function( data ) {
+                scheduler.once( 'sched_downstream', function( sched_clips ) {
+                    var co_playlist = driver_playlists[0];
+                    for( var i=0; i<co_playlist.medias.length; i++ ) {                    
+                        if (!_.isEqual( co_playlist.medias[i], sched_clips[i].media )) {
+                            return done(new Error( co_playlist.medias[i] + "!=" + sched_clips[i].media ));
+                        }
+                    }                    
+                    done();
+                });
+                scheduler.emit( 'upstreamcheck');
+            });
+            fetcher.checkoutPlaylists( function(playlists) {} );
         });           
 
     });
