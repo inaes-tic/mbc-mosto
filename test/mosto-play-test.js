@@ -19,7 +19,9 @@ var assert = require("assert"),
 describe('Mosto [PLAY/Timer event] tests', function(done) {
 
     var mosto_server = undefined;
-
+    var server = undefined;
+    var player = undefined;
+    
     //this.timeout(15000);
 
     before(function(done) {
@@ -56,14 +58,14 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
 	
             mosto_server = silence(function(){ return new mosto(); });
 
-	        mosto_server.server = silence(function(){ return mvcp_server("melted"); });
+	        server = mosto_server.server = silence(function(){ return mvcp_server("melted"); });
             mosto_server.status_driver = new status_driver();
             mosto_server.driver = new test_driver();
 
             mosto_server.fetcher        = new mosto_fetcher( { mosto: mosto_server } );
             mosto_server.scheduler      = new mosto_scheduler( { mosto: mosto_server });
             mosto_server.synchronizer   = new mosto_synchronizer( { mosto: mosto_server });
-            mosto_server.player         = new mosto_player( { mosto: mosto_server } );
+            player = mosto_server.player         = new mosto_player( { mosto: mosto_server } );
 
             mosto_server.fetcher.init();
             mosto_server.scheduler.init();
