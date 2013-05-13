@@ -37,8 +37,15 @@ console.log = console.info = function(t) {
 */
 
 function mosto(customConfig) {
-    var self = this;
 
+    /** CONFIGURATION */
+    this.config = customConfig || config;
+    this.server = undefined;
+    this.server_started = false;
+    this.driver = undefined;
+    this.status_driver = undefined;
+
+    var self = this;
 
     mosto.prototype.initDriver = function() {
 
@@ -85,13 +92,6 @@ function mosto(customConfig) {
             }, 2000);
         });
     };
-
-    /** CONFIGURATION */
-    this.config = customConfig || config;
-    this.server = undefined;
-    this.server_started = false;
-    this.driver = undefined;
-    this.status_driver = undefined;
 
     /* MODULES */
     this.fetcher = undefined; //retreive lists from playlist driver data source
