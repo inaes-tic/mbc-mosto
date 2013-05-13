@@ -45,14 +45,8 @@ describe('Mosto init test', function(done) {
         it('-- mvcp server connected should return true', function(done) {
             melted.start(function(pid){
                 mosto_server.server = new mvcp_server( "melted" );
-                melted.setup(undefined, undefined, function(has_err) {
-                    mosto_server.startMvcpServer( function(done) { done(); } );
-                    // time to next server_started update.
-                    setTimeout(function(){
-                        var r = mosto_server.server_started;
-                        assert.equal(r, true);
-                        done();
-                    }, 1000);
+                melted.setup(undefined, undefined, function(has_err) {                    
+                    done();                    
                 });
 
             });
