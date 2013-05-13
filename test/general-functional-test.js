@@ -81,6 +81,13 @@ describe.only("Mosto functional test", function() {
      ** ver que este en el frame correcto
      */
     describe('start with playlists starting now', function() {
+        before(function(done) {
+            // I assume all non-hidden files are videos
+            self.medias = _.reject(fs.readdirSync('./videos'), function(el){ return el[0] == '.' });
+            self.medias = parseXMLs(self.medias);
+        });
+        after(function() {
+        });
         it('should start the right clip');
         it('should start on the right frame');
         /*
