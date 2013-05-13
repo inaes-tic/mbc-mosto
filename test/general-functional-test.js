@@ -61,6 +61,15 @@ describe.only("Mosto functional test", function() {
                 done();
             });
         });
+        it('should show black', function(done) {
+            var promise = self.melted.sendPromisedCommand('USTA U0', '202 OK');
+            promise.then(function(result) {
+                console.log(result);
+                result = result.split('\r\n')[1].split(' ');
+                var file = result[2];
+                file.should.include('black_id');
+            }).then(done, done);
+        });
     });
     /*
      * arrancar con playlists
