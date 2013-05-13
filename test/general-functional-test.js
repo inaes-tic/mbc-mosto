@@ -46,6 +46,25 @@ describe.only("Mosto functional test", function() {
     self.start_seed = seed()();
     self.rand = seed(self.start_seed);
 
+    self.setup_playlists = function(start_time) {
+        /*
+         * sets up playlists to be consecutive starting from start_time
+         * and annotates the medias to keep track of start and end times
+         */
+        var timewalk = moment(start_time);
+        for( var i = 0 ; i < self.playlists.length ; i++ ) {
+            var playlist = self.playlists[i];
+            playlist.start = timewalk.unix();
+            for( var j = 0 ; j < playlist.medias.length ; j++ ) {
+                var media = playlist.medias[j];
+                media.start_time = timewalk.valueOf();
+                timewalk.add(playlist.medias[j].length);
+                media.end_time = timewalk.valueOf();
+            }
+            playlist.end = timewalk.unix();
+        }
+    };
+
     before(function() {
         self.melted = melted();
     });
@@ -92,6 +111,8 @@ describe.only("Mosto functional test", function() {
                 self.playlists.push(create_playlist(_.draw(self.medias,
                                                            playlist_length)));
             }
+            // let playlists start somewhere between now and 30 seconds ago
+            self.setup_playlists(moment(moment() + _.randint(0, -30000)));
         });
         after(function() {
         });
