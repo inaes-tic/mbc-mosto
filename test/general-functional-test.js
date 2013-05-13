@@ -4,6 +4,7 @@ var mosto = require('../mosto');
 var melted = require('melted-node');
 var _ = require('underscore');
 var seed = require('seed-random');
+var mbc = require('mbc-common');
 
 _.mixin({
     shuffleSeed: function(list, s) {
@@ -73,6 +74,9 @@ describe.only("Mosto functional test", function() {
             return me.start_time <= time && me.end_time >= time;
         });
     };
+
+    self.publisher = mbc.pubsub();
+    self.listener = mbc.pubsub();
 
     before(function() {
         self.melted = melted();
