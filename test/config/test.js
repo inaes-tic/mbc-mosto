@@ -97,7 +97,7 @@ module.exports = {
                 name: 'Database',
                 description: 'Authentication params',
             },
-            dbName: "mediadb",
+            dbName: "mediadb_test",
             dbHost: "localhost",
             dbPort: 27017,
         },
