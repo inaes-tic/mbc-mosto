@@ -6,82 +6,71 @@ var fs               = require('fs'),
     Playlist         = require('./api/Playlist'),
     Melted           = require('./api/Melted'),
     Media            = require('./api/Media'),
-    ScheduledMedia   = require('./api/ScheduledMedia');
+    ScheduledMedia   = require('./api/ScheduledMedia'),
+    StreamerCom      = require('./api/StreamerCom');
 
 function sync( config ) {
 
-    var self = this;
+    StreamerCom.call(this);
 
-    self.mosto = config.mosto;
-    self.server = config.mosto.server;
-    self.scheduler = undefined;
-    self.player = undefined;
+    this.name = "synchronizer";
+    this.mosto = config.mosto;
+    this.server = config.mosto.server;
+
+    this.scheduler = undefined;
+    this.player = undefined;
 
     /** SYNC MODULE */
-    self.actual_server_playlist = [];
-    self.cursor_playing_clip = -1;
-    self.cursor_next_clip = -1;
-  
-    self.scheduled_clips_index_last_to_queue = -1;
-    self.cursor_scheduled_clip = -1;
-    self.previous_cursor_scheduled_clip = -1;
+    this.actual_server_playlist = [];
+    this.cursor_playing_clip = -1;
+    this.cursor_next_clip = -1;
 
-    self.ref_sched_index = -1;
+    this.scheduled_clips_index_last_to_queue = -1;
+    this.cursor_scheduled_clip = -1;
+    this.previous_cursor_scheduled_clip = -1;
+    this.ref_sched_index = -1;
 
+    this.sched_clips = [];
 
-    self.sync_clips = [];
+}
 
-    sync.prototype.init = function() {
-        self.scheduler = self.mosto.scheduler;
-        self.scheduler.on( 'sync_downstream', function( scheduled_clips ) { 
-                console.log("mbc-mosto: [INFO] [SYNC] receiving sync_downstream"); 
-                self.server.getServerPlaylist( function( server_playlist ) {
-                        self.syncroScheduledClips( scheduled_clips, server_playlist );
-                    },
-                    function(error) {
-                        console.error("mbc-mosto: [ERROR] [SYNC] receiving sync_downstream event: on self.server.getServerPlaylist(...) " + error);
-                    });
-            }
-        );
+sync.prototype = new StreamerCom();
 
-        self.player = self.mosto.player;
-        self.player.on( 'sync_upstream', function(play_status) {
-            console.log("mbc-mosto: [INFO] [SYNC] receiving sync_upstream"); 
-            self.upstreamCheck( play_status ); 
-        } );        
+sync.prototype.init = function() {
 
-    }
+    var self = this;
 
-    sync.prototype.timerUnlock = function( mess ) {
-        console.log("mbc-mosto: [INFO] [SYNC] Unlocking from " + mess);
-        self.player.timerUnlock();
-    }
+    this.scheduler = this.mosto.scheduler;
+    this.player = this.mosto.player;
 
-    sync.prototype.timerLock = function(mess) {
-        console.log("mbc-mosto: [INFO] [SYNC] Locking from " + mess);
-        self.player.timerLock();
-    }
+    self.on( 'datareceived' , function(data) {
+        console.log("mbc-mosto: [INFO] [SYNC] ["+self.name+"] 'datareceived' downstream DATA received. data:" + data + " datareceived:" + self.DataReceived() + " dataBuffer:" + self.dataBuffer + " rec_count:" + self.rec_count + " ret_count:" + self.ret_count );        
+//        console.log(data);
+//        console.log("Inspecting self 'synchronizer': " + util.inspect( self, true, 2));
+    });
 
-    sync.prototype.timerLocked = function() {
-        return self.player.timerLocked();
-    }
+    self.on( 'dataupdated' , function(streamer) {
+        console.log("mbc-mosto: [INFO] [SYNC] Propagating from " + streamer + " to player");
+        if (self.player) self.player.emit('dataupdated',streamer);    
+    });
 
 
-    sync.prototype.validatePlaylist = function( playlist ) {
-        for( var i=0; i<playlist.length; i++) {
-            element = playlist[i];
-            if ( element.fps != self.config.fps ) {
-                console.error("Playlist is not valid! media: " + element.file + " fps:" + element.fps );
-                return false;
-            }
-        };
-        return true;
-    };
+    this.scheduler.on( 'sched_downstream', function( scheduled_clips ) {
+            console.log("mbc-mosto: [INFO] [SYNC] receiving sched_downstream.");
+            console.log(self);
+    });
 
-    sync.prototype.convertMediaFileToClipId = function( media ) {
-        return media.id;
-    };
+    self.player.on( 'play_upstream', function(play_status) {
+        console.log("mbc-mosto: [INFO] [SYNC] receiving play_upstream: calling upstreamCheck"); 
+        self.upstreamCheck( self, play_status ); 
+    } );        
 
+    //open data receiver
+    if (self.Open( self ) && self.IsReceiving()) {
+        console.log('mbc-mosto: [INFO] [SYNC] Opened');        
+    } else throw new Error("mbc-mosto: [ERROR] [SYNC] couldn't open StreamerCom");
+    
+}
 
     sync.prototype.upstreamCheck = function( play_status ) {
 
@@ -438,9 +427,9 @@ function sync( config ) {
 
 };
 
-exports = module.exports = function(config) {
-    util.inherits(sync, events.EventEmitter);
+exports = module.exports = function(config) {    
     var mosto_synchronizer = new sync(config);
+    mosto_synchronizer.ResetListeners();
     return mosto_synchronizer;
 };
 
