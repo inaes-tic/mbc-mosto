@@ -49,7 +49,12 @@ describe.only("Mosto functional test", function() {
         delete self.melted;
     });
     describe('start without playlists', function() {
-        it('should show black');
+        before(function(done) {
+            self.mosto = new mosto();
+            self.mosto.once('playing', function() {
+                done()});
+            self.mosto.init();
+        });
     });
     /*
      * arrancar con playlists
