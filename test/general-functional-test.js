@@ -88,6 +88,7 @@ describe.only("Mosto functional test", function() {
 
     self.publisher = mbc.pubsub();
     self.listener = mbc.pubsub();
+    self.db = mbc.db();
 
     before(function() {
         self.melted = melted();
