@@ -253,4 +253,7 @@ describe.only("Mosto functional test", function() {
      * idem anterior con una playlist de un solo clip
      ** si tengo un clip (playlist?) mas largo que la ventana, deberia haber n+1 cargados
      */
+    describe("modify melted test", function() {
+        it("should rectify things");
+    });
 });
