@@ -7,6 +7,7 @@ var _ = require('underscore');
 var seed = require('seed-random');
 var mbc = require('mbc-common');
 var Media = require('mbc-common/models/Media');
+var Q = require('q');
 
 _.mixin({
     shuffleSeed: function(list, s) {
@@ -63,10 +64,15 @@ describe.only("Mosto functional test", function() {
         /*
          * sets up playlists to be consecutive starting from start_time
          * and annotates the medias to keep track of start and end times
+         *
+         * returns a promise
          */
         var timewalk = moment(start_time);
         self.occurrences = [];
-        var occcol = self.db.getCollection('scheds');
+        var defer = Q.defer();
+        var done = _.after(self.playlists.length, defer.resolve);
+        var occcol = self.db.collection('scheds');
+        var listcol = self.db.collection('lists');
         for( var i = 0 ; i < self.playlists.length ; i++ ) {
             var playlist = self.playlists[i];
             var occurrence = {
@@ -79,7 +85,6 @@ describe.only("Mosto functional test", function() {
                 media.end_time = timewalk.valueOf();
             }
             occurrence.end = timewalk.unix();
-            var listcol = self.db.getCollection('lists');
             listcol.insert(playlist, function(err, obj) {
                 obj = obj[0];
                 occurrence = Media.Ocurrence({
@@ -88,10 +93,12 @@ describe.only("Mosto functional test", function() {
                     end: occurrence.end
                 });
                 occcol.insert(occurrence, function(err, obj) {
-                    self.occurrences.push(obj[0])
+                    self.occurrences.push(obj[0]);
+                    done();
                 });
             });
         }
+        return defer.promise;
     };
 
     self.get_playlist = function(time) {
@@ -165,14 +172,16 @@ describe.only("Mosto functional test", function() {
                 self.db.dropDatabase(function(err, success) {
                     // let playlists start somewhere between now and 30
                     //  seconds ago
-                    self.setup_playlists(moment(
+                    var setup = self.setup_playlists(moment(
                         moment() + _.randint(0, -30000)));
-                    self.mosto = new mosto();
-                    self.mosto.once('playing', function() {
-                        // send pubsub messages with new playlists
-                        done();
+                    setup.then(function() {
+                        self.mosto = new mosto();
+                        self.mosto.once('playing', function() {
+                            // send pubsub messages with new playlists
+                            done();
+                        });
+                        self.mosto.init();
                     });
-                    self.mosto.init();
                 });
             });
             after(function(done) {
