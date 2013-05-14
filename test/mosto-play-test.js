@@ -58,7 +58,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
 
             mosto_server = silence(function(){ return new mosto(); });
 
-	        server = mosto_server.server = silence(function(){ return mvcp_server("melted"); });
+            server = mosto_server.server = silence(function(){ return mvcp_server("melted"); });
             mosto_server.status_driver = new status_driver();
             mosto_server.driver = new test_driver();
 
@@ -75,9 +75,9 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
 	    });
 	    it('-- mvcp server connected should return false', function() {
             assert.notEqual( mosto_server, undefined);
-	        assert.notEqual( mosto_server.server, undefined);
+	          assert.notEqual( mosto_server.server, undefined);
             assert.notEqual( mosto_server.driver, undefined);
-	        assert.equal( mosto_server.server_started, false);
+	          assert.equal( mosto_server.server_started, false);
 	    });
     });
 
@@ -228,7 +228,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
             mosto_server.player.stop();
             melted.stop( function(pid) {
                 mosto_server = null;
-			    melted.leave();
+			          melted.leave();
                 done();
             });
         });
