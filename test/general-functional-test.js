@@ -87,6 +87,8 @@ describe.only("Mosto functional test", function() {
             occurrence.end = timewalk.unix();
             listcol.insert(playlist, function(err, obj) {
                 obj = obj[0];
+                // update self.playlists
+                _.extend(playlist, obj);
                 occurrence = Media.Ocurrence({
                     list: obj._id,
                     start: occurrence.start,
