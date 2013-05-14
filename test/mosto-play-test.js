@@ -118,10 +118,12 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
             });
         });
         it("--should return black_id playing!!", function(done) {
-            mosto_server.synchronizer.once('synced', function() {
-                mosto_server.player.once('status', function(status) {
-                    assert.equal( status.clip.current.id, 'black_id' );
-                    done();
+            player.once('dataupdated', function() {
+                player.once('play_endstream', function() {
+                    player.once('status', function(status) {
+                        assert.equal( status.clip.current.id, 'black_id' );
+                        done();
+                    });
                 });
             });
             mosto_server.fetcher.checkoutPlaylists( function(playlists) { } );
@@ -138,15 +140,17 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
             done();
         });
         it("--should be playing first clip of added playlist", function(done) {
-            mosto_server.synchronizer.once('synced', function(mess) {
-                mosto_server.player.once('status', function(status) {
-                    if ( status.status!='playing' ) {
-                        done(new Error("status.status!=playing"));
-                    } else if(status.clip.current.id!=playlist.medias[0].id) {
-                        done(new Error("status.clip.current.id!=playlist.medias[0].id"));
-                    } else {
-                        done();
-                    }
+            player.once('dataupdated', function() {
+                player.once('play_endstream', function() {
+                    player.once('status', function(status) {
+                        if ( status.status!='playing' ) {
+                            done(new Error("status.status!=playing"));
+                        } else if(status.clip.current.id!=playlist.medias[0].id) {
+                            done(new Error("status.clip.current.id!=playlist.medias[0].id"));
+                        } else {
+                            done();
+                        }
+                    });
                 });
             });
             mosto_server.fetcher.addPlaylist( playlist );
@@ -163,11 +167,13 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
             done();
         });
         it("--should return the same playlist updated", function(done) {
-            mosto_server.synchronizer.once('synced', function() {
-                mosto_server.player.once('status', function(status) {
-                    assert.equal( status.status, 'playing');
-                    assert.equal( status.clip.current.id, playlist.medias[0].id );
-                    done();
+            player.once('dataupdated', function() {
+                player.once('play_endstream', function() {
+                    player.once('status', function(status) {
+                        assert.equal( status.status, 'playing');
+                        assert.equal( status.clip.current.id, playlist.medias[0].id );
+                        done();
+                    });
                 });
             });
             mosto_server.fetcher.updatePlaylist( playlist );
@@ -179,9 +185,9 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
             done();
         });
         it("--should return only the blank black_id", function(done) {
-            mosto_server.player.once('dataupdated', function( streamercom_name ) {
-                mosto_server.player.once('play_endstream', function() {
-                    mosto_server.player.once('status', function(status) {
+            player.once('dataupdated', function( streamercom_name ) {
+                player.once('play_endstream', function() {
+                    player.once('status', function(status) {
                         assert.equal( status.clip.current.id, 'black_id' );
                         done();
                     });
@@ -206,8 +212,8 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
             } );
         });
         it("--should play the same playlist", function(done) {
-            mosto_server.player.once('dataupdated', function() {
-                mosto_server.player.once('play_endstream', function() {
+            player.once('dataupdated', function() {
+                player.once('play_endstream', function() {
                    server.getServerPlaylist( function( server_playlist ) {
                         server.getServerStatus( function( server_status ) {
                             if (server_status.actualClip.id == driver_playlists[0].medias[0].id/* && server_status.status=="playing"*/ )
