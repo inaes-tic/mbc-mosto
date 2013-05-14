@@ -1,4 +1,5 @@
 var assert = require('assert');
+var should = require('should');
 var fs = require('fs');
 var mosto = require('../mosto');
 var melted = require('melted-node');
@@ -26,12 +27,12 @@ _.mixin({
         return (parseInt(seed(s)() * width) + from)
     },
     randelem: function(list) {
-        return list[randint(list.length)];
+        return list[_.randint(list.length)];
     },
     draw: function(list, n) {
         var ret = [];
         for(var i = 0 ; i < n ; i++) {
-            ret.push(randelem(list));
+            ret.push(_.randelem(list));
         }
         return ret;
     },
@@ -69,7 +70,7 @@ describe.only("Mosto functional test", function() {
         for( var i = 0 ; i < self.playlists.length ; i++ ) {
             var playlist = self.playlists[i];
             var occurrence = {
-                start: timewalk.unix();
+                start: timewalk.unix(),
             };
             for( var j = 0 ; j < playlist.medias.length ; j++ ) {
                 var media = playlist.medias[j];
@@ -150,7 +151,8 @@ describe.only("Mosto functional test", function() {
         before(function() {
             // I assume all non-hidden files are videos
             self.medias = _.reject(fs.readdirSync('./test/videos'), function(el){ return el[0] == '.' });
-            self.medias = parseXMLs(self.medias);
+            // self.medias = parseXMLs(self.medias);
+            self.medias = [];
             self.playlists = [];
             for(var i = 0 ; i < self.playlist_count ; i++) {
                 var playlist_length = _.randint(1, 10, self.rand());
