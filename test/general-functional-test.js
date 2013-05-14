@@ -108,12 +108,14 @@ describe.only("Mosto functional test", function() {
     }
 
     self.get_playlist = function(time) {
+        time = time || moment();
         return _.find(self.playlists, function(pl) {
             return pl.start <= time.unix() && pl.end >= time.unix();
         });
     };
 
     self.get_media = function(time) {
+        time = time || moment;
         var playlist = self.get_playlist(time);
 
         return _.find(playlist.medias, function(me) {
