@@ -100,6 +100,12 @@ describe.only("Mosto functional test", function() {
         }
         return defer.promise;
     };
+    self.clean_playlists = function(done) {
+        // Cleans the playlists and occurrences from the database
+        var ready = _.after(2, function(){ done(); });
+        self.db.collection('scheds').drop(ready);
+        self.db.collection('lists').drop(ready);
+    }
 
     self.get_playlist = function(time) {
         return _.find(self.playlists, function(pl) {
@@ -187,7 +193,7 @@ describe.only("Mosto functional test", function() {
             after(function(done) {
                 self.mosto.finish(function() {
                     delete self.mosto;
-                    done();
+                    self.clean_playlists(done);
                 });
             });
             it('should start the right clip');
