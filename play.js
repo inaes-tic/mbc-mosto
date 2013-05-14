@@ -18,7 +18,7 @@ function play( config ) {
     this.name = "player";
     this.mosto = config.mosto;
     this.server = config.mosto.server;
-    this.status_driver = config.mosto.status_driver; 
+    this.status_driver = config.mosto.status_driver;
 
     this.synchronizer = undefined;
     this.fetcher = undefined;
@@ -78,7 +78,7 @@ play.prototype.init = function() {
 
 
 play.prototype.buildStatus = function( myself, serverPlaylist, serverStatus) {
-    
+
     var self = myself;
 
     var status = {};
@@ -161,7 +161,7 @@ play.prototype.statusHasChanged = function( self ) {
                  || self.prev_full_status.show.prev!=self.full_status.show.prev
                  || self.prev_full_status.show.current!=self.full_status.show.current
                  || self.prev_full_status.show.next!=self.full_status.show.next
-                ) 
+                )
             );
     }
 
@@ -190,7 +190,7 @@ play.prototype.timer_fun_status = function( myself, actual_status ) {
 
     self.actual_playing_status = self.actual_status.status;
 
-    if (    self.actual_playing_status=="playing" 
+    if (    self.actual_playing_status=="playing"
             || (self.actual_playing_status=="paused" && self.actual_status.actualClip.id=="black_id") ) {
         self.actual_playing_clip = self.actual_status.actualClip.id;
         self.actual_playing_index = parseInt(self.actual_status.actualClip.order);
@@ -223,7 +223,7 @@ play.prototype.timer_fun_status = function( myself, actual_status ) {
 
             self.prev_full_status = self.full_status;
             self.full_status = self.buildStatus( self, server_playing_list, self.actual_status );
-            
+
             console.log(self.full_status);
 
             console.log("mbc-mosto: [INFO] [PLAY] checking if status changed. ");
@@ -234,21 +234,21 @@ play.prototype.timer_fun_status = function( myself, actual_status ) {
 
             //self.emit('status', self.full_status );
 
-            //this.synchronizer.syncroScheduledClips( server_playing_list ); 
+            //this.synchronizer.syncroScheduledClips( server_playing_list );
             console.log("mbc-mosto: [INFO] [PLAY] emitting play_upstream");
 
-            self.emit('play_upstream', { 
-                server_playlist: server_playing_list, 
-                server_status: self.actual_status, 
+            self.emit('play_upstream', {
+                server_playlist: server_playing_list,
+                server_status: self.actual_status,
                 server_previous_status: self.previous_status
             } );
 
             self.DataUpdatedReset();
-        
-        }, 
-        function(error) { 
-            console.error("mbc-mosto: [ERROR] timer_fun_status >  getServerPlaylist() : " + error ); 
-        } 
+
+        },
+        function(error) {
+            console.error("mbc-mosto: [ERROR] timer_fun_status >  getServerPlaylist() : " + error );
+        }
     );
 
 }
@@ -288,13 +288,13 @@ play.prototype.timer_fun = function(myself) {
         //get status
         console.log("mbc-mosto: [INFO] [PLAY] Calling for Server Status");
         self.server.getServerStatus( function _timer_fun_status_bind_self(server_status) {
-                console.log("mbc-mosto: [INFO] [PLAY] Calling for Server Status: function _timer_fun_status_bind_self is():" + self);                
+                console.log("mbc-mosto: [INFO] [PLAY] Calling for Server Status: function _timer_fun_status_bind_self is():" + self);
                 self.timer_fun_status(self, server_status);
                 //self.timer_fun_status.apply( self, server_status );
-            }, 
-            function( error ) { 
-                console.error("mbc-mosto: [ERROR] [PLAY] mosto.timer_fun > getServerStatus failed: " + error ); 
-            } 
+            },
+            function( error ) {
+                console.error("mbc-mosto: [ERROR] [PLAY] mosto.timer_fun > getServerStatus failed: " + error );
+            }
         );
     } else {
         self.sync_lock_time = moment();
@@ -331,8 +331,8 @@ play.prototype.play = function( myself ) {
         self.timer = setInterval( function _timer_fun_bind_self() {
                 console.log("Interval Call: _timer_fun_bind_self ; self.actual_playing_clip = " + self.actual_playing_clip);
                 self.timer_fun(self);
-            }, 
-            self.mosto.config.timer_interval 
+            },
+            self.mosto.config.timer_interval
         );
         self.timer_fun(self);
 

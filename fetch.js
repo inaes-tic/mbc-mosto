@@ -51,7 +51,7 @@ fetch.prototype.init = function() {
     //open data receiver
     //open data receiver
     if (self.Open( self ) && self.IsReceiving()) {
-        console.log('mbc-mosto: [INFO] [FETCH] Opened');        
+        console.log('mbc-mosto: [INFO] [FETCH] Opened');
     } else throw new Error("mbc-mosto: [ERROR] [FETCH] couldn't open StreamerCom");
 
 }
@@ -65,7 +65,7 @@ fetch.prototype.init = function() {
  *       add a new playlist
  */
 fetch.prototype.addPlaylist = function( playlist, mself ) {
-    var self = mself || this;    
+    var self = mself || this;
     console.log("mbc-mosto: [INFO] Adding playlist " + playlist.name);
     self.playlists.push(playlist);
     console.log("mbc-mosto: [INFO] Added playlist:\nid: " + playlist.id
@@ -96,7 +96,7 @@ fetch.prototype.updatePlaylist = function(playlist, mself) {
     } else {
         if ( (moment(playlist.startDate) <= self.time_window_to &&
               moment(playlist.endDate) >= self.time_window_from ) ) {
-            self.playlists[i] = playlist;            
+            self.playlists[i] = playlist;
         } else return self.removePlaylist(playlist.id);
     }
 
@@ -145,12 +145,12 @@ fetch.prototype.removePlaylist = function(id, mself) {
  */
 fetch.prototype.orderPlaylists = function() {
 
-    this.removeBlackPlaylist();        
+    this.removeBlackPlaylist();
     this.trimPlaylists();
 
     if (this.playlists.length==0) {
 
-        var sch_rightnow = moment().add( moment.duration({ milliseconds: -1000 }) ).format("DD/MM/YYYY HH:mm:ss.SSS");            
+        var sch_rightnow = moment().add( moment.duration({ milliseconds: -1000 }) ).format("DD/MM/YYYY HH:mm:ss.SSS");
         this.startBlack( sch_rightnow, "22:22:22.22", sch_rightnow, moment( sch_rightnow,"DD/MM/YYYY HH:mm:ss.SSS").add(moment.duration({ milliseconds: 80542220 }) ).format('DD/MM/YYYY HH:mm:ss.SSS') );
     }
 
@@ -165,7 +165,7 @@ fetch.prototype.orderPlaylists = function() {
     });
     console.log("mbc-mosto: [INFO] [FETCH] Finish ordering playlists (" + this.playlists.length + ")");
     this.playlists_updated = true;
-    console.log("mbc-mosto: [INFO] [FETCH] this.emit : 'fetch_downstream'" + this.playlists );  
+    console.log("mbc-mosto: [INFO] [FETCH] this.emit : 'fetch_downstream'" + this.playlists );
     this.emit('fetch_downstream', this.playlists );
 }
 
@@ -181,7 +181,7 @@ fetch.prototype.trimPlaylists = function() {
     for(var i=0; i<this.playlists.length;i++) {
         var playlist = this.playlists[i];
         if ( (moment(playlist.startDate) <= this.time_window_to &&
-              moment(playlist.endDate) >= this.time_window_from ) 
+              moment(playlist.endDate) >= this.time_window_from )
             && (playlist.id != 'black_id') ) {
             console.log("mbc-mosto: [INFO] [FETCH] trimming playlists:" + playlist.id );
             newplaylists.push(playlist);
@@ -204,7 +204,7 @@ fetch.prototype.removeBlackPlaylist = function() {
             }
         });
     }
-    if (i!=-1) this.playlists.splice(i, 1);        
+    if (i!=-1) this.playlists.splice(i, 1);
 }
 
 fetch.prototype.updateTimeWindow = function() {
@@ -230,7 +230,7 @@ fetch.prototype.upstreamCheck = function(self) {
 
         console.log("mbc-mosto: [INFO] [FETCH] upstreamcheck() > calllback from checkoutPlaylist : timer unlock from fetch_upstream.");
         if (self.player) self.player.timerUnlock("from [FETCH] upstreamcheck");
-    });        
+    });
 
 
 }
@@ -286,18 +286,18 @@ fetch.prototype.checkoutPlaylists = function(callback) {
 }
 
 fetch.prototype.startBlack = function( schedule_time, sch_duration, sch_expect_start, sch_expect_end ) {
-    var BlackMedia = new Media( 'black_id' /*id*/, 
-        '0' /*orig_order*/, 
-        '0'/*actual_order*/, 
-        'black_id' /*playlist_id*/, 
-        'black' /*name*/, 
-        'file' /*type*/, 
-        this.mosto.config.black, 
-        sch_duration/*length*/, 
+    var BlackMedia = new Media( 'black_id' /*id*/,
+        '0' /*orig_order*/,
+        '0'/*actual_order*/,
+        'black_id' /*playlist_id*/,
+        'black' /*name*/,
+        'file' /*type*/,
+        this.mosto.config.black,
+        sch_duration/*length*/,
         ''/*fps*/ );
-    console.log("mbc-mosto: [INFO] [FETCH] startBlack > media: " + BlackMedia.file 
-        + " schedule_time: " + schedule_time 
-        + " sch_duration: "  + sch_duration 
+    console.log("mbc-mosto: [INFO] [FETCH] startBlack > media: " + BlackMedia.file
+        + " schedule_time: " + schedule_time
+        + " sch_duration: "  + sch_duration
         + " sch_expect_start: " + sch_expect_start
         + " sch_expect_end: " + sch_expect_end
         + " fps: "+BlackMedia.fps );

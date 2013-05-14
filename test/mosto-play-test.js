@@ -21,7 +21,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
     var mosto_server = undefined;
     var server = undefined;
     var player = undefined;
-    
+
     //this.timeout(15000);
 
     before(function(done) {
@@ -45,17 +45,17 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
 
     describe('#[PLAY] Setup Melted', function() {
         it("--should not throw error", function(done) {
-            melted.setup(undefined, undefined, function(has_err) {                        
+            melted.setup(undefined, undefined, function(has_err) {
                 if (has_err) {
                     done(new Error(has_err));
                 } else done();
-            });            
+            });
         });
     });
 
     describe('#[PLAY] start mosto', function() {
 	    before(function(done) {
-	
+
             mosto_server = silence(function(){ return new mosto(); });
 
 	        server = mosto_server.server = silence(function(){ return mvcp_server("melted"); });
@@ -70,7 +70,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
             mosto_server.fetcher.init();
             mosto_server.scheduler.init();
             mosto_server.synchronizer.init();
-            mosto_server.player.init();	     
+            mosto_server.player.init();
             done();
 	    });
 	    it('-- mvcp server connected should return false', function() {
@@ -84,7 +84,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
     describe("#[PLAY] Initializing mosto video server", function() {
         before(function(done) {
             mosto_server.startMvcpServer( function() {
-                done();                    
+                done();
             });
 	    });
         it("--should server has started", function() {
@@ -115,7 +115,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
             mosto_server.fetcher.checkoutPlaylists( function(playlists) {
                 if (playlists.length>0) done(new Error("test_driver->getPlaylists must return no playlists when called for first time"));
                 done();
-            });                
+            });
         });
         it("--should return black_id playing!!", function(done) {
             mosto_server.synchronizer.once('synced', function() {
@@ -134,7 +134,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
         var playlist = null;
 
         before(function(done){
-            playlist = mosto_server.driver.TestPlaylist();            
+            playlist = mosto_server.driver.TestPlaylist();
             done();
         });
         it("--should be playing first clip of added playlist", function(done) {
@@ -159,7 +159,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
 
         before(function(done){
             playlist = mosto_server.driver.TestPlaylist();
-            playlist.medias.splice( 2, 1 );                
+            playlist.medias.splice( 2, 1 );
             done();
         });
         it("--should return the same playlist updated", function(done) {
@@ -171,11 +171,11 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
                 });
             });
             mosto_server.fetcher.updatePlaylist( playlist );
-        });               
+        });
     });
 
     describe("#[PLAY] Remove playlist", function() {
-        before(function(done){                
+        before(function(done){
             done();
         });
         it("--should return only the blank black_id", function(done) {
@@ -188,13 +188,13 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
                 });
             });
             mosto_server.fetcher.removePlaylist( "test_playlist_1_id" );
-        });                   
+        });
     });
 
     describe("#[PLAY] Doing a checkoutPlaylists()", function() {
         var driver_playlists = undefined;
 
-        before(function(done){           
+        before(function(done){
             mosto_server.driver.setCheckoutMode(true);
             mosto_server.driver.getPlaylists( { from: moment(), to: moment().add(moment.duration({milliseconds: 100000 })) }, function(playlists) {
                 driver_playlists = playlists;
@@ -209,7 +209,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
             mosto_server.player.once('dataupdated', function() {
                 mosto_server.player.once('play_endstream', function() {
                    server.getServerPlaylist( function( server_playlist ) {
-                        server.getServerStatus( function( server_status ) {                    
+                        server.getServerStatus( function( server_status ) {
                             if (server_status.actualClip.id == driver_playlists[0].medias[0].id/* && server_status.status=="playing"*/ )
                                 done();
                             else done(new Error( server_status.actualClip.id+"!=" + driver_playlists[0].medias[0].id + " status:"+server_status.status ));
@@ -221,7 +221,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
         });
     });
 
-    describe('#[PLAY] Stop mosto and leave', function() {        
+    describe('#[PLAY] Stop mosto and leave', function() {
         before(function(done) {
 		    //mosto_server.finish(function() {
             mosto_server.stopDriver();
@@ -229,7 +229,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
             melted.stop( function(pid) {
                 mosto_server = null;
 			    melted.leave();
-                done();                
+                done();
             });
         });
 	    it('-- leave mosto and melted', function(done) {
@@ -240,7 +240,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
 
     describe('#last [PLAY] check ', function() {
         it("--should finish PLAY", function(done) {
-            done(); 
+            done();
         });
     });
 

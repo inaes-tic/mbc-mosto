@@ -44,14 +44,14 @@ sync.prototype.init = function() {
     this.player = this.mosto.player;
 
     self.on( 'datareceived' , function(data) {
-        console.log("mbc-mosto: [INFO] [SYNC] ["+self.name+"] 'datareceived' downstream DATA received. data:" + data + " datareceived:" + self.DataReceived() + " dataBuffer:" + self.dataBuffer + " rec_count:" + self.rec_count + " ret_count:" + self.ret_count );        
+        console.log("mbc-mosto: [INFO] [SYNC] ["+self.name+"] 'datareceived' downstream DATA received. data:" + data + " datareceived:" + self.DataReceived() + " dataBuffer:" + self.dataBuffer + " rec_count:" + self.rec_count + " ret_count:" + self.ret_count );
 //        console.log(data);
 //        console.log("Inspecting self 'synchronizer': " + util.inspect( self, true, 2));
     });
 
     self.on( 'dataupdated' , function(streamer) {
         console.log("mbc-mosto: [INFO] [SYNC] Propagating from " + streamer + " to player");
-        if (self.player) self.player.emit('dataupdated',streamer);    
+        if (self.player) self.player.emit('dataupdated',streamer);
     });
 
 
@@ -61,15 +61,15 @@ sync.prototype.init = function() {
     });
 
     if (self.player) self.player.on( 'play_upstream', function(play_status) {
-        console.log("mbc-mosto: [INFO] [SYNC] receiving play_upstream: calling upstreamCheck"); 
-        self.upstreamCheck( self, play_status ); 
-    } );        
+        console.log("mbc-mosto: [INFO] [SYNC] receiving play_upstream: calling upstreamCheck");
+        self.upstreamCheck( self, play_status );
+    } );
 
     //open data receiver
     if (self.Open( self ) && self.IsReceiving()) {
-        console.log('mbc-mosto: [INFO] [SYNC] Opened');        
+        console.log('mbc-mosto: [INFO] [SYNC] Opened');
     } else throw new Error("mbc-mosto: [ERROR] [SYNC] couldn't open StreamerCom");
-    
+
 }
 
 sync.prototype.timerUnlock = function( mess ) {
@@ -126,7 +126,7 @@ sync.prototype.upstreamCheck = function( self, player_status ) {
     /*Condicion 3: Not enough clips... */
     var Condition_3 = self.ineedMoreClips( server_playlist, server_status, self.sched_clips, 1 );
 
-    console.log("mbc-mosto: [INFO] [SYNC] upstreamcheck() : Condition_0 : " + Condition_0);    
+    console.log("mbc-mosto: [INFO] [SYNC] upstreamcheck() : Condition_0 : " + Condition_0);
     console.log("mbc-mosto: [INFO] [SYNC] upstreamcheck() : Condition_1 : " + Condition_1);
     console.log("mbc-mosto: [INFO] [SYNC] upstreamcheck() : Condition_2 : " + Condition_2);
     console.log("mbc-mosto: [INFO] [SYNC] upstreamcheck() : Condition_3 : " + Condition_3);
@@ -138,7 +138,7 @@ sync.prototype.upstreamCheck = function( self, player_status ) {
     console.log("mbc-mosto: [INFO] [SYNC] upstreamcheck() : server_status.actualClip : " + server_status.actualClip );
 
     if ( Condition_0 ) {
-        console.log("mbc-mosto: [INFO] [SYNC] upstreamcheck() > Condition 0: stream data changed");        
+        console.log("mbc-mosto: [INFO] [SYNC] upstreamcheck() > Condition 0: stream data changed");
         self.emit('sched_upstream');
         self.DataUpdatedReset();
     } else
@@ -146,13 +146,13 @@ sync.prototype.upstreamCheck = function( self, player_status ) {
         console.log("mbc-mosto: [INFO] [SYNC] upstreamcheck() > Condition 1: DataReceived() " + Condition_1 );
         self.sched_clips = self.RetreiveData( self );
         self.syncroScheduledClips( self, self.sched_clips, server_playlist, player_status );
-    } 
-    else 
+    }
+    else
     if ( Condition_2) {
         console.log("mbc-mosto: [INFO] [SYNC] upstreamcheck() > Condition 2: We are playing the expected clip ("+is_playing_ex+")  of expected_clip("+expected_clip.media.id+"): " + Condition_2 );
         self.syncroScheduledClips( self, self.sched_clips, server_playlist, player_status );
-    } 
-    else 
+    }
+    else
     if ( Condition_3 ) {
         console.log("mbc-mosto: [INFO] [SYNC] upstreamcheck() > Condition 3: i'm hungry, i need more clips!!! emitting sched_upstream");
         self.emit('sched_upstream');//no message needed...
@@ -214,9 +214,9 @@ sync.prototype.syncroScheduledClips = function( self, scheduled_clips, server_pl
                     console.log("mbc-mosto: [INFO] [SYNC] clips to be queued: " + self.scheduled_clips_index_last_to_queue );
                 }
             }
-            
+
             if (self.player.actual_playing_status=="playing") {
-                
+
                 for( i=self.player.actual_playing_index,j=self.cursor_scheduled_clip; i<server_playing_list.length && j<scheduled_clips.length; i++,j++) {
                     //COMPARE EACH ONE
                     //media on video server
@@ -238,10 +238,10 @@ sync.prototype.syncroScheduledClips = function( self, scheduled_clips, server_pl
 
 
                 // Force sync if there are more scheduled clips to queue....
-                
+
                 if ( (server_playing_list.length-breakpoint_playing_cursor) < ( self.scheduled_clips_index_last_to_queue - breakpoint_scheduled_cursor) ) {
                     need_sync_clips = true;
-                }                
+                }
 
                 // REMOVE PLAYING CLIPS: WIPE AFTER BREAKING CURSOR....
                 // AND ADD MISSING SCHEDULED CLIPS
@@ -280,7 +280,7 @@ sync.prototype.syncroScheduledClips = function( self, scheduled_clips, server_pl
                     if ( self.player.actual_playing_index>-1 ) {
                         next_index = self.player.actual_playing_index+1;
                     }
-                    self.server.goto( next_index, expected_clip.expected_frame, function(resp1) {                            
+                    self.server.goto( next_index, expected_clip.expected_frame, function(resp1) {
                         console.log("mbc-mosto: [INFO] [SYNC] GOTO : index:" + next_index + " frame:" + expected_clip.expected_frame + " resp1:" + resp1);
                         self.server.play(  function(resp2) {
                             console.log("mbc-mosto: [INFO] [SYNC] LOADED -> now PLAY: start playing!" + resp2);
@@ -332,11 +332,11 @@ sync.prototype.syncroScheduledClips = function( self, scheduled_clips, server_pl
         } else {
             console.log("mbc-mosto: [WARNING] [SYNC] NOT BLACK!!! calling upstream scheduler... to fix it ASAP.");
             self.emit( 'sched_upstream' );
-        }            
+        }
         self.emit('sync_downstream');
         self.emit('synced', 'finished ' );
         self.timerUnlock("synchronizing > no expected clip");
-        
+
     }
 
 }
@@ -355,7 +355,7 @@ sync.prototype.ineedMoreClips = function( server_playing_list, server_status, sc
 
     console.log("mbc-mosto: [INFO] [SYNC] ineedMoreClips ? : lists:"+server_playing_list.length + " status:" + server_status.status + " sched_clips:" + scheduled_clips.length + " queued:" +   queued_clips );
 
-    return (    !server_playing_list 
+    return (    !server_playing_list
                 ||
                 server_playing_list.length==0
                 ||
@@ -405,7 +405,7 @@ sync.prototype.getExpectedClip = function( server_status, server_previous_status
 
 
     console.log( "mbc-mosto: [INFO] [SYNC] Selecting reference clock :" + this.player.timer_difference );
-   
+
     //if diff minimal, use absolute, if diff too big using absolute > to force re-load and re-sync!
     if( Math.abs(this.player.timer_difference) < 20 || Math.abs(this.player.timer_difference) > 10000 ) {
         console.log("mbc-mosto: [INFO] [SYNC] using absolute clock > forcing");
@@ -436,7 +436,7 @@ sync.prototype.getExpectedClip = function( server_status, server_previous_status
             }
 
             if ( ex_start <= reference_clock
-                 && reference_clock <= ex_end 
+                 && reference_clock <= ex_end
                 && expected_clip==undefined) {
                 this.cursor_scheduled_clip = i;
                 expected_clip = sched_clip;
@@ -460,7 +460,7 @@ sync.prototype.isPlayingExpectedClip = function( server_status, expected_clip ) 
 //    console.log("mbc-mosto: [INFO] [SYNC] COMPARE!!!" + server_status.status + " actual_playing_clip:"+server_status.actualClip + " vs expected: " + expected_clip.media.id );
     return (    server_status.actualClip
                 && expected_clip
-                && server_status.actualClip.id != "" 
+                && server_status.actualClip.id != ""
                 && (server_status.status == "playing" || server_status.status == "paused")
                 && server_status.actualClip.id  == expected_clip.media.id );
 }
@@ -526,7 +526,7 @@ sync.prototype.appendScheduledClips = function( self, scheduled_clips, index_ite
 
 }
 
-exports = module.exports = function(config) {    
+exports = module.exports = function(config) {
     var mosto_synchronizer = new sync(config);
     mosto_synchronizer.ResetListeners();
     return mosto_synchronizer;

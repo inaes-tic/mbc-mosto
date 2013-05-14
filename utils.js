@@ -40,7 +40,7 @@ exports = module.exports = {
         return parseFloat(actualFrame / totalFrames);
     },
 
-    getFramePositionFromClock: function( clock_position, clip_start, frames_length, fps ) {        
+    getFramePositionFromClock: function( clock_position, clip_start, frames_length, fps ) {
         var millis = moment.duration( clock_position - clip_start ).asMilliseconds();
         var frame_position = Math.max( (millis / 1000.0 ) * fps, frames_length - 1);
         return frame_position;
@@ -55,8 +55,8 @@ exports = module.exports = {
         return m.hours()*60*60*1000 + m.minutes()*60*1000 + m.seconds()*1000 + m.milliseconds();
     },
 
-    convertFramesToMilliseconds: function ( frames, fps ) {        
-        if ( isNaN(frames) || fps+""=="NaN" || fps==undefined || fps===false || fps==0) {            
+    convertFramesToMilliseconds: function ( frames, fps ) {
+        if ( isNaN(frames) || fps+""=="NaN" || fps==undefined || fps===false || fps==0) {
             var m = moment( frames, "HH:mm:ss.SS");
             if (m) return m.hours()*60*60*1000 + m.minutes()*60*1000 + m.seconds()*1000 + m.milliseconds();
         }

@@ -52,13 +52,13 @@ function mosto(customConfig) {
         console.log("mbc-mosto: [INFO] Initializing playlists driver");
 
         self.driver.on ("create", function(playlist) {
-            
+
             self.fetcher.addPlaylist( playlist, self.fetcher );
         } );
-        self.driver.on ("update", function(playlist) {            
+        self.driver.on ("update", function(playlist) {
             self.fetcher.updatePlaylist( playlist, self.fetcher);
         } );
-        self.driver.on ("delete", function(playlist) {            
+        self.driver.on ("delete", function(playlist) {
             self.fetcher.removePlaylist( playlist, self.fetcher);
         } );
 
@@ -121,9 +121,9 @@ function mosto(customConfig) {
             self.synchronizer.init();
             self.player.init();
 
-            self.startMvcpServer( function() { 
-                self.player.play( self.player ); 
-                if (callback) callback(); 
+            self.startMvcpServer( function() {
+                self.player.play( self.player );
+                if (callback) callback();
             } );
         }
 
@@ -144,10 +144,10 @@ function mosto(customConfig) {
         if (melted!==undefined) {
             Melted = melted;
             check_and_start();
-        } 
-        else 
+        }
+        else
         Melted.take( check_and_start );
-      
+
     }
 
     mosto.prototype.finish = function(callback) {
@@ -159,7 +159,7 @@ function mosto(customConfig) {
                 Melted.leave();
                 if (callback) callback();
             }, 1000 );
-        });        
+        });
     }
 
 }

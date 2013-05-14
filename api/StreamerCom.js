@@ -50,7 +50,7 @@ StreamerCom.prototype.PushData = function(data) {
 
 StreamerCom.prototype.SaveData = function(data) {
     this.dataBuffer = data;
-    return true;    
+    return true;
 }
 
 StreamerCom.prototype.DataReceived = function() {
@@ -79,14 +79,14 @@ StreamerCom.prototype.ReceiveData = function(data) {
 
     if (data===undefined) {
         console.log('mbc-mosto: [INFO] [StreamerCom] ReceiveData: data undefined!');
-        this.rej_count++;        
+        this.rej_count++;
         this.emit('datarejected', undefined );
         return false;
     }
 
     if (this.receiving) {
-        console.log('mbc-mosto: [INFO] [StreamerCom]  ['+this.name+'] receiving data mode: ' + this.mode);        
-        if (this.mode=="PUSH") { 
+        console.log('mbc-mosto: [INFO] [StreamerCom]  ['+this.name+'] receiving data mode: ' + this.mode);
+        if (this.mode=="PUSH") {
             this.PushData(data);
         } else if (this.mode=="SAVE" || 1==1) {
             this.SaveData(data);
@@ -102,21 +102,21 @@ StreamerCom.prototype.ReceiveData = function(data) {
         this.rej_count++;
         this.emit('datarejected', data );
         return false;
-    }    
+    }
 }
 
 /**
 *   RetreiveData : reset buffers.
 */
-StreamerCom.prototype.RetreiveData = function( self ) {       
-    var self = this;    
+StreamerCom.prototype.RetreiveData = function( self ) {
+    var self = this;
     var datatemp = undefined;
 
     if (self.mode=="SAVE") {
         datatemp = self.dataBuffer;
         console.log("mbc-mosto: [INFO] [StreamerCom] RetreiveData: " + datatemp);
         self.dataBuffer = undefined;//empty, retreival
-        console.log("mbc-mosto: [INFO] [StreamerCom] RetreiveData: "+datatemp);        
+        console.log("mbc-mosto: [INFO] [StreamerCom] RetreiveData: "+datatemp);
     } else if (self.mode=="PUSH") {
         datatemp = self.dataBuffer.shift();
     }
@@ -138,7 +138,7 @@ StreamerCom.prototype.IsReceiving = function() {
 }
 
 StreamerCom.prototype.Receiving = function() {
-    return (this.receiving);    
+    return (this.receiving);
 }
 
 StreamerCom.prototype.Open = function( mself ) {
@@ -164,10 +164,10 @@ StreamerCom.prototype.ProcessRequest = function(listeners) {
             if (listener) {
                 //TODO: check if it's an EventListener and if we have data
                 listener.emit('datarequestresponse', 'dataready' );
-                this.requestBuffer[i] = undefined;                    
+                this.requestBuffer[i] = undefined;
             } else new_requestBuffer.push(listener);
         }
-        this.requestBuffer = new_requestBuffer;            
+        this.requestBuffer = new_requestBuffer;
     }
 }
 
@@ -186,10 +186,10 @@ StreamerCom.prototype.ResetListeners = function( mself ) {
     self.removeAllListeners();
     self.on('datasend', function(data) {
         console.log('mbc-mosto: [INFO] [StreamerCom] ['+self.name+'] datasend received, receiving data...: ' + data + " receiving:" + self.receiving + " DataReceived:" + self.DataReceived() );
-        
+
         if (self.ReceiveData(data)) {
             console.log('mbc-mosto: [INFO] [StreamerCom] ['+self.name+'] received data OK!');
-            console.log( self.ReadData() );            
+            console.log( self.ReadData() );
         } else console.log('mbc-mosto: [INFO] [StreamerCom] ['+self.name+'] data rejected!');
     });
     self.on( 'dataupdated' , function(streamer) {
@@ -202,7 +202,7 @@ StreamerCom.prototype.ResetListeners = function( mself ) {
     });
 }
 
-exports = module.exports = function() {        
+exports = module.exports = function() {
     var streamercom = new StreamerCom();
     return streamercom;
 };

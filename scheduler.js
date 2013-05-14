@@ -39,14 +39,14 @@ scheduler.prototype.init = function() {
     /*COMING FROM TOP: we listen to */
 
     self.on( 'datareceived' , function(data) {
-        console.log("mbc-mosto: [INFO] [SCHED] ["+self.name+"]'datareceived' downstream DATA received. data:" + data + " datareceived:" + self.DataReceived() + " dataBuffer:" + self.dataBuffer + " rec_count:" + self.rec_count + " ret_count:" + self.ret_count );        
+        console.log("mbc-mosto: [INFO] [SCHED] ["+self.name+"]'datareceived' downstream DATA received. data:" + data + " datareceived:" + self.DataReceived() + " dataBuffer:" + self.dataBuffer + " rec_count:" + self.rec_count + " ret_count:" + self.ret_count );
         //console.log(data);
         //console.log("Inspecting self 'scheduler': " + util.inspect( self, true, 2));
     });
 
     self.on( 'dataupdated' , function(streamer) {
         console.log("mbc-mosto: [INFO] [SCHED] Propagating from " + streamer + " to synchronizer");
-        if (self.synchronizer) self.synchronizer.emit('dataupdated',streamer);    
+        if (self.synchronizer) self.synchronizer.emit('dataupdated',streamer);
     });
 
 
@@ -76,7 +76,7 @@ scheduler.prototype.init = function() {
 
     //open data receiver
     if (self.Open( self ) && self.IsReceiving()) {
-        console.log('mbc-mosto: [INFO] [SCHED] Opened');        
+        console.log('mbc-mosto: [INFO] [SCHED] Opened');
     } else throw new Error("mbc-mosto: [ERROR] [SCHED] couldn't open StreamerCom");
 
 
@@ -115,10 +115,10 @@ scheduler.prototype.upstreamCheck = function( self ) {
         //Condition 4: queued clips left are less than xxxxx ( cursor_scheduled_clip ?? vs self.scheduled_clips.length  )
 
         if ( Condition_0 ) {
-            console.log("mbc-mosto: [INFO] [SCHED] upstreamcheck() > Condition 0: stream data changed");        
+            console.log("mbc-mosto: [INFO] [SCHED] upstreamcheck() > Condition 0: stream data changed");
             self.emit('fetch_upstream');
             self.DataUpdatedReset();
-        } else        
+        } else
         if (  rt_actual_window < rt_min_window || self.scheduled_clips.length==0 || datain) {
             //console.log("mbc-mosto: [INFO] [SCHED] window advanced at least one hour... calling [FETCH] checkoutPlaylists actual:" + rt_actual_window + " min:" + rt_min_window);
             //return  this.fetcher.checkoutPlaylists();//really updates time window too
@@ -135,11 +135,11 @@ scheduler.prototype.upstreamCheck = function( self ) {
                 self.emit('fetch_upstream');
             }
         } else {
-            console.log("mbc-mosto: [INFO] [SCHED] upstreamCheck) : timer unlock from upstreamCheck. No need to fetch upstream");            
+            console.log("mbc-mosto: [INFO] [SCHED] upstreamCheck) : timer unlock from upstreamCheck. No need to fetch upstream");
             //this.emit('fetch_upstream');
             if (self.player) self.player.timerUnlock(" from [SCHED] upstreamCheck(). No need to fetch upstream");
         }
-    
+
 }
 
 /** LOGIC SCHEDULER MODULE */
@@ -164,7 +164,7 @@ scheduler.prototype.upstreamCheck = function( self ) {
 scheduler.prototype.convertPlaylistsToScheduledClips = function( playlists ) {
 
     console.log("mbc-mosto: [INFO] [SCHED] converting Playlists to scheduled clips : " + playlists );
-    
+
     this.emit('converting', '[SCHED] Scheduler start' );
 
     //clean scheduled clips
@@ -183,7 +183,7 @@ scheduler.prototype.convertPlaylistsToScheduledClips = function( playlists ) {
     //or wait for timer synchronization
     console.log("mbc-mosto: [INFO] [SCHED] emitting sched_downstream");
     this.emit('sched_downstream', this.scheduled_clips );
-    
+
 }
 
 
@@ -258,9 +258,9 @@ scheduler.prototype.preparePlaylist = function( playlists, next_playlist_id, las
                             //if this is the first and only playlist, check if an empty void is left before it...., so we can put our blackmedia...
                             var rever = moment.duration( { milliseconds: -3000 } );//negative duration to assure black media will be present at this time
                             var tnow = moment();
-                            if (this.player) {                                    
+                            if (this.player) {
                                 if (!this.player.timer_clock) this.player.timer_clock = moment();
-                                if (this.player.timer_clock) tnow = moment(this.player.timer_clock);              
+                                if (this.player.timer_clock) tnow = moment(this.player.timer_clock);
                             }
                             var sch_time_mom = moment(sch_time, "DD/MM/YYYY HH:mm:ss.SSS");
                             var sch_rightnow = moment(tnow).add(rever).format("DD/MM/YYYY HH:mm:ss.SSS");
