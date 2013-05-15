@@ -91,7 +91,7 @@ scheduler.prototype.queueBlack = function( schedule_time, sch_duration, sch_expe
 
 }
 
-scheduler.prototype.upstreamCheck = function( self ) {
+scheduler.prototype.upstreamCheck = function( self, clock ) {
     //Check if we need to make a checkout! (upstream syncro!! > sync_lock must be true )
 
         /*Condicion 0: data has been updated upstream: need an upstream check upstream*/
@@ -99,8 +99,17 @@ scheduler.prototype.upstreamCheck = function( self ) {
 
     //UPSTREAM
         //if time_window advance for 1 hours (4 hours > 3 hours left ), we make a checkout...[FETCH]
-        var rt_actual_window = self.fetcher.time_window_to.diff( moment() );
+        var rt_actual_window = moment();
         var rt_min_window = moment.duration( { hours: 3 } ).asMilliseconds();
+
+        if (clock) {
+            rt_actual_window = moment(clock).diff( moment() );
+        }
+
+        if (clock===undefined && self.fetcher && self.fetcher.time_window_to) {
+            rt_actual_window = self.fetcher.time_window_to.diff( moment() );
+            rt_min_window = moment.duration( { hours: 3 } ).asMilliseconds();
+        }
 
         //Condition 1: Window advance
         console.log("mbc-mosto: [INFO] [SCHED] upstreamCheck() Condition 1 "+(rt_actual_window<rt_min_window)+" ? for rt_actual_window < rt_min_window ? : " + rt_actual_window + " <? " + rt_min_window );
@@ -127,7 +136,6 @@ scheduler.prototype.upstreamCheck = function( self ) {
                 console.log("mbc-mosto: [INFO] [SCHED] upstreamCheck() we have DATA, retreiving....");
                 var playlists = self.RetreiveData(self);
                 console.log("mbc-mosto: [INFO] [SCHED] upstreamCheck() playlists: " + playlists);
-                console.log(playlists);
                 self.convertPlaylistsToScheduledClips( playlists );
                 if (self.player) self.player.timerUnlock(" from [SCHED] upstreamCheck() after converting playlists to sched clips.");
             } else {
@@ -170,7 +178,7 @@ scheduler.prototype.convertPlaylistsToScheduledClips = function( playlists ) {
     //clean scheduled clips
     //if ( playlists_updated ) {
     this.scheduled_clips = [];
-    if ( playlists && playlists.length>0 ) {
+    if ( playlists /* && playlists.length>0*/ ) {
         console.log("mbc-mosto: [INFO] [SCHED] actually converting playlists ("+playlists.length+").");
         this.preparePlaylist( playlists, 0, -1 );
     }
@@ -205,7 +213,16 @@ scheduler.prototype.preparePlaylist = function( playlists, next_playlist_id, las
       console.log("mbc-mosto: [ERROR] in preparePlaylist: " + pl.name );
       }
     */
-    if (pl==undefined) return;
+    if (pl==undefined) {
+        var tnow_empty = moment().add( moment.duration( { milliseconds: -3000 } ) );
+        var black_duration = moment.duration( { hours: 23 } );
+        this.queueBlack(    tnow_empty.format("DD/MM/YYYY HH:mm:ss.SSS"),
+                            "23:00:00.00",
+                            tnow_empty.format("DD/MM/YYYY HH:mm:ss.SSS"), 
+                            tnow_empty.add( black_duration ).format('DD/MM/YYYY HH:mm:ss.SSS') 
+        );
+        return;
+    }
 
     pl_tc = moment( pl.startDate );
 
@@ -260,7 +277,7 @@ scheduler.prototype.preparePlaylist = function( playlists, next_playlist_id, las
                             var tnow = moment();
                             if (this.player) {
                                 if (!this.player.timer_clock) this.player.timer_clock = moment();
-                                if (this.player.timer_clock) tnow = moment(this.player.timer_clock);
+                                tnow = moment(this.player.timer_clock);
                             }
                             var sch_time_mom = moment(sch_time, "DD/MM/YYYY HH:mm:ss.SSS");
                             var sch_rightnow = moment(tnow).add(rever).format("DD/MM/YYYY HH:mm:ss.SSS");
@@ -300,7 +317,8 @@ scheduler.prototype.preparePlaylist = function( playlists, next_playlist_id, las
     if ( playlists.length==next_playlist_id) {
         if (next_playlist_id > 0 && lastTimeCode!=-1 && pl.id!="black_id") {
             var black_duration, black_duration_str;
-            black_duration = moment.duration( this.fetcher.time_window_to - last_tc );
+            if (this.fetcher) black_duration = moment.duration( this.fetcher.time_window_to - last_tc );
+            else black_duration = moment.duration( moment().add(moment.duration({hours: 1000})) - last_tc );//adding black to infinite
             black_duration_str = utils.convertDurationToString(black_duration);
             //queue blackness to the end of the last playlist (no after a black media!) till last frame window
             this.queueBlack( "now", black_duration_str, lastTimeCode, moment( lastTimeCode,"DD/MM/YYYY HH:mm:ss.SSS").add(black_duration).format('DD/MM/YYYY HH:mm:ss.SSS') );
