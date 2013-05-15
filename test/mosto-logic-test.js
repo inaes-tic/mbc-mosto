@@ -102,6 +102,57 @@ describe('Mosto [LOGIC/Scheduler] section tests', function(done) {
             scheduler.emit('upstreamcheck');
         });
 
+
+    });
+
+    describe("#[LOGIC/SCHED] Adding playlists in the near future", function() {
+
+        var playlist1 = undefined;
+        var playlist2 = undefined;
+        var splaylists = [];
+        var start_playlist = undefined;
+
+        before(function(done){
+
+            mosto_server.driver.start();
+
+            playlist1 = mosto_server.driver.TestPlaylist( 20000 );
+            playlist2 = mosto_server.driver.TestPlaylist( 20000+90000 );
+
+            splaylists.push(playlist1);
+            splaylists.push(playlist2);
+
+            start_playlist = moment( playlist1.startDate ).format("DD/MM/YYYY HH:mm:ss");
+
+            done();
+        });
+        it("--scheduler should receive data", function(done) {                
+            scheduler.once('datareceived', function (playlists) {
+                console.log("mosto-logic-test: [SCHED TEST] datareceived ok!");
+                //console.log( playlists );
+                (_.isEqual( splaylists[0], playlist1) && _.isEqual( splaylists[1], playlist2)) ? done() : done( new Error("playlists[0] and playlist doesn't match."));
+            });
+            scheduler.emit('datasend', splaylists);
+        });
+
+        it("--scheduler should convert to scheduled_clips", function(done) {                
+            scheduler.once('sched_downstream', function (sched_clips) {
+                console.log("mosto-logic-test: [SCHED TEST] Adding: sched_downstream ok! sched_clips: " + sched_clips.length);
+                console.log(sched_clips);
+                assert.equal( sched_clips.length, 8 );//1 black at the start, 6 clips + 1 black at the end
+                for( var i=1; i<sched_clips.length-1; i++ ) {
+                    var pl_index = Math.floor( (i-1) / 3 );
+                    var cl_index = Math.floor( (i-1) % 3 );
+                    console.log("pl_index:"+ pl_index + " cl_index:" + cl_index);
+                    if (!_.isEqual( sched_clips[i].media, splaylists[ pl_index ].medias[cl_index] )) {
+                        return done(new Error( sched_clips[i].media.id+" not Equal to "+ splaylists[pl_index].medias[cl_index] ));
+                    }
+                }
+                done();                
+            });        
+            scheduler.emit('upstreamcheck');
+        });
+
     });
 
     describe("#[LOGIC] Updating playlist", function() {
