@@ -7,6 +7,12 @@ MELTED = $(shell sh -c "which melted || echo ${MELTED_INTREE}")
 MELT=$(shell which melt | head -1)
 NC=$(shell which nc netcat telnet | head -1)
 TEST_VIDEOS=test/videos/SMPTE_Color_Bars_01.mp4 test/videos/SMPTE_Color_Bars_02.mp4 test/videos/SMPTE_Color_Bars_03.mp4
+TEST_LENGTHS=200 400 800 1600 3200 6400
+TEST_XMLS=$(foreach frames, $(TEST_LENGTHS), test/videos/Bars-$(frames).xml)
+MELT_TIME_FILTER=-filter dynamictext:"\#frame\#/\#out\#" halign=centre valign=middle \
+                         fgcolour=white size=72 pad=1 geometry=0%/-42:100%x100%:100 \
+                 -filter dynamictext halign=centre valign=middle fgcolour=white size=72 \
+                         geometry=0%/43:100%x100%:100 pad=1
 
 export NODE_CONFIG_DIR ?= $(PWD)/node_modules/mbc-common/config
 
@@ -56,11 +62,10 @@ images: test/images/SMPTE_Color_Bars_01.png test/images/SMPTE_Color_Bars_02.png 
 %.png: test/images/SMPTE_Color_Bars.png
 	cp $< $@
 
-videos: test/videos/SMPTE_Color_Bars_01.mp4 test/videos/SMPTE_Color_Bars_02.mp4 test/videos/SMPTE_Color_Bars_03.mp4
+videos: ${TEST_VIDEOS} ${TEST_XMLS}
 
-
-test/videos/%.avi: test/images/%.png
-	avconv -loop 1 -f image2 -i $< -t 30 $@ &> /dev/null
+test/videos/Bars-%.xml: test/images/SMPTE_Color_Bars.png
+	${MELT} $< out=$* ${MELT_TIME_FILTER} -consumer xml:$@
 
 test/videos/%.mp4: test/images/%.png
 	${MELT} $< in=0 out=750 -consumer avformat:$@ acodec=none
@@ -69,4 +74,5 @@ test: videos ${MOCHA} melted-check
 	@NODE_ENV=test NODE_CONFIG_DIR=$(PWD)/test/config/ ${NODE} ${MOCHA}
 
 clean-test:
-	rm ${TEST_VIDEOS}
+	rm ${TEST_VIDEOS} ${TEST_XMLS}
+
