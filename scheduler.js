@@ -99,7 +99,7 @@ scheduler.prototype.upstreamCheck = function( self, clock ) {
 
     //UPSTREAM
         //if time_window advance for 1 hours (4 hours > 3 hours left ), we make a checkout...[FETCH]
-        var rt_actual_window = moment();
+        var rt_actual_window = 0;
         var rt_min_window = moment.duration( { hours: 3 } ).asMilliseconds();
 
         if (clock) {
@@ -275,10 +275,12 @@ scheduler.prototype.preparePlaylist = function( playlists, next_playlist_id, las
                             //if this is the first and only playlist, check if an empty void is left before it...., so we can put our blackmedia...
                             var rever = moment.duration( { milliseconds: -3000 } );//negative duration to assure black media will be present at this time
                             var tnow = moment();
+
                             if (this.player) {
                                 if (!this.player.timer_clock) this.player.timer_clock = moment();
                                 tnow = moment(this.player.timer_clock);
                             }
+
                             var sch_time_mom = moment(sch_time, "DD/MM/YYYY HH:mm:ss.SSS");
                             var sch_rightnow = moment(tnow).add(rever).format("DD/MM/YYYY HH:mm:ss.SSS");
 
