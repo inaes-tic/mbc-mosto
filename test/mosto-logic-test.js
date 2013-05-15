@@ -34,7 +34,7 @@ describe('Mosto [LOGIC/Scheduler] section tests', function(done) {
 	    });
     });
 
-    describe('#[LOGIC] start mosto', function() {
+    describe('#[LOGIC/SCHED] start mosto', function() {
 	    it('-- starting mosto shouldnt throw error', function() {
 	        mosto_server = silence(function(){ return new mosto(); });
 	        assert.notEqual(mosto_server, undefined);
@@ -64,15 +64,14 @@ describe('Mosto [LOGIC/Scheduler] section tests', function(done) {
     });
 
 
-    describe("#[LOGIC] Checking start with no playlists", function() {
+    describe("#[LOGIC/SCHED] Checking start with no playlists", function() {
         it("--should return no clips", function(done) {
             assert.equal( scheduler.scheduled_clips.length, 0 );
             done();
         });
     });
 
-
-    describe("#[LOGIC] Adding playlist", function() {
+    describe("#[LOGIC/SCHED] Adding playlists", function() {
 
         var playlist = undefined;
 
@@ -233,7 +232,7 @@ describe('Mosto [LOGIC/Scheduler] section tests', function(done) {
 
     });
 
-    describe('#[LOGIC] leave melted', function() {
+    describe('#[LOGIC/SCHED] leave melted', function() {
 	    it('-- leave melted', function(done) {
 		    //mosto_server.stop();
 		    mosto_server = null;
@@ -244,7 +243,7 @@ describe('Mosto [LOGIC/Scheduler] section tests', function(done) {
 	    });
     });
 
-    describe('#last [LOGIC] check ', function() {
+    describe('#last [LOGIC/SCHED] check ', function() {
         it("--should finish LOGIC", function(done) {
             done(); 
         });
