@@ -5,10 +5,14 @@ MELTED_BUILD=${ROOT}/melted/BUILD
 MELTED_INTREE=${MELTED_BUILD}/bin/melted
 MELTED = $(shell sh -c "which melted || echo ${MELTED_INTREE}")
 MELT=$(shell which melt | head -1)
-MELT_TIME_FILTER=-filter dynamictext:"\#frame\#/\#out\#" halign=centre valign=middle fgcolour=white size=72 pad=1 geometry=0%/-42:100%x100%:100 -filter dynamictext halign=centre valign=middle fgcolour=white size=72 geometry=0%/43:100%x100%:100 pad=1
 NC=$(shell which nc netcat telnet | head -1)
 TEST_VIDEOS=test/videos/SMPTE_Color_Bars_01.mp4 test/videos/SMPTE_Color_Bars_02.mp4 test/videos/SMPTE_Color_Bars_03.mp4
-TEST_XMLS=test/videos/Bars-200.xml test/videos/Bars-400.xml test/videos/Bars-800.xml test/videos/Bars-1600.xml test/videos/Bars-3200.xml test/videos/Bars-6400.xml
+TEST_LENGTHS=200 400 800 1600 3200 6400
+TEST_XMLS=$(foreach frames, $(TEST_LENGTHS), test/videos/Bars-$(frames).xml)
+MELT_TIME_FILTER=-filter dynamictext:"\#frame\#/\#out\#" halign=centre valign=middle \
+                         fgcolour=white size=72 pad=1 geometry=0%/-42:100%x100%:100 \
+                 -filter dynamictext halign=centre valign=middle fgcolour=white size=72 \
+                         geometry=0%/43:100%x100%:100 pad=1
 
 export NODE_CONFIG_DIR ?= $(PWD)/node_modules/mbc-common/config
 
