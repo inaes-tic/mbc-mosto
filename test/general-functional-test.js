@@ -195,13 +195,14 @@ describe.only("Mosto functional test", function() {
             });
             it('should start the right clip', function(done) {
                 var result = self.melted.sendPromisedCommand('USTA U0', '202 OK');
-                var expected_playlist = self.get_playlist();
-                var expected_media = self.get_media();
+                var time = moment();
+                var expected_occurrence = self.get_occurrence(time);
+                var expected_media = self.get_media(time);
                 result.then(function(val) {
                     var lines = val.split("\r\n");
                     lines[0].should.eql('202 OK');
                     var filename = lines[1].split(' ')[2];
-                    filename.match(expected_playlist._id + '-' + expected_media._id).should.be.ok;
+                    filename.match(expected_occurrence._id + '-' + expected_media.get('_id')).should.be.ok;
                 }).then(done, done);
             });
             it('should start on the right frame');
