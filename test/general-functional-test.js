@@ -93,10 +93,18 @@ describe.only("Mosto functional test", function() {
         self.db.collection('lists').drop(ready);
     }
 
+    self.get_occurrence = function(time) {
+        time = time || moment();
+        return _.find(self.occurrences, function(pl) {
+            return pl.start <= time.unix() && pl.end >= time.unix();
+        });
+    };
+
     self.get_playlist = function(time) {
         time = time || moment();
+        var occurrence = self.get_occurrence(time);
         return _.find(self.playlists, function(pl) {
-            return pl.start <= time.unix() && pl.end >= time.unix();
+            return pl._id == occurrence.list;
         });
     };
 
