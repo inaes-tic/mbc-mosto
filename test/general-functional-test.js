@@ -56,7 +56,8 @@ describe.only("Mosto functional test", function() {
             for( var j = 0 ; j < medias.length ; j++ ) {
                 var media = medias.at(j);
                 media.start_time = timewalk.valueOf();
-                timewalk.add(playlist.medias[j].length);
+                timewalk.add(helper.framesToMilliseconds(
+                    media.get('durationraw'), media.get('fps')));
                 media.end_time = timewalk.valueOf();
             }
             occurrence.end = timewalk.unix();
