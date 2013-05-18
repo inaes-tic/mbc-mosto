@@ -178,6 +178,10 @@ exports.mediaLengthToMilliseconds = function(length) {
     });
 };
 
+exports.framesToMilliseconds = function(frames, fps) {
+    return parseInt((frames / fps) * 1000);
+};
+
 
 // Extend underscore with fixed seed random methods
 _.mixin({
