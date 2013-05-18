@@ -6,7 +6,7 @@ var fs      = require('fs'),
     _       = require('underscore'),
     ScheduledMedia   = require('../api/ScheduledMedia'),
     Media   = require('../api/Media');
-
+CMedia  = require('mbc-common/models/Media');
 
 function parseXMLs(path) {
     if (path === undefined) {
@@ -63,6 +63,30 @@ exports.getMedia = function(path) {
     });
 
     return all_media;
+};
+
+/*
+ *   getMBCMedia(path)
+ *    - path: optional path
+ *
+ *   Scans given path (or default) getting media files and returns mbc-common.models.Media objects array
+ */
+exports.getMBCMedia = function(path) {
+    if (path === undefined) {
+        path = "test/videos/"; // TODO FIXME XXX: ugly hardcoded -> should be in config?
+    }
+
+    var parsed = parseXMLs(path);
+    var medias = parsed.map(function(elem) {
+        var params = {};
+        params.name = elem.filename;
+        params._id = crypto.createHash('md5').update(params.name).digest('hex');
+        params.file = process.cwd() + '/' + path + elem.filename;
+        params.fps = parseInt(elem.data.mlt.profile[0]["$"].frame_rate_num, 10);
+        params.durationraw = parseInt(elem.data.mlt.producer[0]["$"].out, 10);
+        return new CMedia.Model(params);
+    });
+    return medias;
 };
 
 
