@@ -100,6 +100,10 @@ describe.only("Mosto functional test", function() {
         });
     };
 
+    function idToString(id) {
+        return (id.toHexString && id.toHexString()) || id;
+    }
+
     self.publisher = mbc.pubsub();
     self.listener = mbc.pubsub();
     self.db = mbc.db();
