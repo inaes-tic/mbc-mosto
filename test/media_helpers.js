@@ -8,14 +8,7 @@ var fs      = require('fs'),
     Media   = require('../api/Media');
 
 
-/*
-*   getMedia(path)
-*    - path: optional path
-*
-*   Scans given path (or default) getting media files and returns Media objects array
-*/
-exports.getMedia = function(path) {
-    // Default path
+function parseXMLs(path) {
     if (path === undefined) {
         path = "test/videos/"; // TODO FIXME XXX: ugly hardcoded -> should be in config?
     }
@@ -25,9 +18,6 @@ exports.getMedia = function(path) {
     var xmls = files.filter(function(elem) {
         return elem.substr(elem.length - 4).toLowerCase() == ".xml";
     });
-    //var mp4s = files.filter(function(elem) {
-    //    return elem.substr(elem.length - 4).toLowerCase() == ".mp4";
-    //});
 
     // Pars'em
     var parsed = [];
@@ -37,6 +27,22 @@ exports.getMedia = function(path) {
             parsed.push({filename: String(xmls[i]), data: result});
         });
     }
+    return parsed;
+}
+
+/*
+ *   getMedia(path)
+ *    - path: optional path
+ *
+ *   Scans given path (or default) getting media files and returns Media objects array
+ */
+exports.getMedia = function(path) {
+    // Default path
+    if (path === undefined) {
+        path = "test/videos/"; // TODO FIXME XXX: ugly hardcoded -> should be in config?
+    }
+
+    var parsed = parseXMLs(path);
 
     // Populate Media
     var all_media = parsed.map(function(elem) {
