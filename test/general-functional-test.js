@@ -60,20 +60,29 @@ describe.only("Mosto functional test", function() {
                 media.end_time = timewalk.valueOf();
             }
             occurrence.end = timewalk.unix();
-            listcol.insert(playlist, function(err, obj) {
-                obj = obj[0];
-                // update self.playlists
-                _.extend(playlist, obj);
-                occurrence = Media.Ocurrence({
-                    list: obj._id,
-                    start: occurrence.start,
-                    end: occurrence.end
+            var playlist_json = _.omit(playlist.toJSON(), 'collection');
+            playlist_json.models = _.invoke(playlist_json.models, 'toJSON');
+            // I need to wrap this in order to keep the `playlist` variable
+            (function(pl, oc) {
+                listcol.insert(playlist_json, function(err, obj) {
+                    console.log("BBBBBBBBBBBBBBB", err, obj);
+                    obj = obj[0];
+                    obj._id = idToString(obj._id);
+                    // update self.playlists
+                    _.extend(pl, obj);
+                    occurrence = new Media.Occurrence({
+                        list: obj._id,
+                        start: oc.start,
+                        end: oc.end
+                    });
+                    occcol.insert(occurrence.toJSON(), function(err, obj) {
+                        var obj = obj[0];
+                        obj._id = idToString(obj._id);
+                        self.occurrences.push(obj);
+                        done();
+                    });
                 });
-                occcol.insert(occurrence, function(err, obj) {
-                    self.occurrences.push(obj[0]);
-                    done();
-                });
-            });
+            })(playlist, occurrence);
         }
         return defer.promise;
     };
