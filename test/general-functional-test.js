@@ -22,12 +22,13 @@ describe.only("Mosto functional test", function() {
     self.rand = seed(self.start_seed);
 
     self.create_playlist = function(medias) {
+        medias = medias || [];
         var mediamodels = [];
         medias.forEach(function(media) {
-            mediamodels.push( Media.Piece(media) );
+            mediamodels.push( new Media.Piece(media.toJSON()) );
         });
-        return Media.List({
-            collection: mediamodels,
+        return new Media.List({
+            models: mediamodels,
         });
     };
 
@@ -41,7 +42,9 @@ describe.only("Mosto functional test", function() {
         var timewalk = moment(start_time);
         self.occurrences = [];
         var defer = Q.defer();
-        var done = _.after(self.playlists.length, defer.resolve);
+        var done = _.after(self.playlists.length, function(){
+            defer.resolve()
+        });
         var occcol = self.db.collection('scheds');
         var listcol = self.db.collection('lists');
         for( var i = 0 ; i < self.playlists.length ; i++ ) {
@@ -49,8 +52,9 @@ describe.only("Mosto functional test", function() {
             var occurrence = {
                 start: timewalk.unix(),
             };
-            for( var j = 0 ; j < playlist.medias.length ; j++ ) {
-                var media = playlist.medias[j];
+            var medias = playlist.get('collection');
+            for( var j = 0 ; j < medias.length ; j++ ) {
+                var media = medias.at(j);
                 media.start_time = timewalk.valueOf();
                 timewalk.add(playlist.medias[j].length);
                 media.end_time = timewalk.valueOf();
@@ -88,10 +92,10 @@ describe.only("Mosto functional test", function() {
     };
 
     self.get_media = function(time) {
-        time = time || moment;
+        time = time || moment();
         var playlist = self.get_playlist(time);
 
-        return _.find(playlist.medias, function(me) {
+        return _.find(playlist.get('models'), function(me) {
             return me.start_time <= time && me.end_time >= time;
         });
     };
@@ -122,11 +126,10 @@ describe.only("Mosto functional test", function() {
         it('should show black', function(done) {
             var promise = self.melted.sendPromisedCommand('USTA U0', '202 OK');
             promise.then(function(result) {
-                console.log(result);
                 result = result.split('\r\n')[1].split(' ');
                 var file = result[2];
                 file.should.include('black_id');
-            }).then(done, done);
+            }).then(done).done();
         });
     });
     /*
