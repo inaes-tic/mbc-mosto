@@ -1,13 +1,14 @@
 var assert = require('assert');
 var should = require('should');
-var fs = require('fs');
-var mosto = require('../mosto');
+var fs     = require('fs');
+var mosto  = require('../mosto');
 var melted = require('melted-node');
-var _ = require('underscore');
-var seed = require('seed-random');
-var mbc = require('mbc-common');
-var Media = require('mbc-common/models/Media');
-var Q = require('q');
+var _      = require('underscore');
+var seed   = require('seed-random');
+var mbc    = require('mbc-common');
+var Media  = require('mbc-common/models/Media');
+var Q      = require('q');
+var moment = require('moment');
 var helper = require('./media_helpers.js');
 
 describe.only("Mosto functional test", function() {

@@ -6,7 +6,7 @@ var fs      = require('fs'),
     _       = require('underscore'),
     ScheduledMedia   = require('../api/ScheduledMedia'),
     Media   = require('../api/Media');
-CMedia  = require('mbc-common/models/Media');
+    CMedia  = require('mbc-common/models/Media');
 
 function parseXMLs(path) {
     if (path === undefined) {
