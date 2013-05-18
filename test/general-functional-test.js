@@ -8,36 +8,7 @@ var seed = require('seed-random');
 var mbc = require('mbc-common');
 var Media = require('mbc-common/models/Media');
 var Q = require('q');
-
-_.mixin({
-    shuffleSeed: function(list, s) {
-        seed(s, true);
-        var ret = _.shuffle(list);
-        seed(undefined, true);
-    },
-    randint: function(x, y, s) {
-        var from = 0;
-        var to = 0;
-        if( y === undefined )
-            to = x;
-        else {
-            from = x;
-            to = y;
-        }
-        var width = to - from;
-        return (parseInt(seed(s)() * width) + from)
-    },
-    randelem: function(list) {
-        return list[_.randint(list.length)];
-    },
-    draw: function(list, n) {
-        var ret = [];
-        for(var i = 0 ; i < n ; i++) {
-            ret.push(_.randelem(list));
-        }
-        return ret;
-    },
-});
+var helper = require('./media_helpers.js');
 
 describe.only("Mosto functional test", function() {
     /*

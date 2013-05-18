@@ -196,5 +196,31 @@ _.mixin({
         var ret = Math.random();
         seed(undefined, true);
         return ret;
-    }
+    },
+    randint: function(x, y, s) {
+        var from = 0;
+        var to = 0;
+        if( y === undefined )
+            to = x;
+        else {
+            from = x;
+            to = y;
+        }
+        var width = to - from;
+        return (parseInt(seed(s)() * width) + from)
+    },
+    randelem: function(list) {
+        if( !(list && list.length) )
+            return;
+        return list[_.randint(list.length)];
+    },
+    draw: function(list, n) {
+        if( !(list && list.length) )
+            return;
+        var ret = [];
+        for(var i = 0 ; i < n ; i++) {
+            ret.push(_.randelem(list));
+        }
+        return ret;
+    },
 });
