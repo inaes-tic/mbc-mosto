@@ -140,10 +140,7 @@ describe.only("Mosto functional test", function() {
     describe('start with playlists', function() {
         self.playlist_count = _.randint(5, 10, self.rand());
         before(function() {
-            // I assume all non-hidden files are videos
-            self.medias = _.reject(fs.readdirSync('./test/videos'), function(el){ return el[0] == '.' });
-            // self.medias = parseXMLs(self.medias);
-            self.medias = [];
+            self.medias = helper.getMBCMedia();
             self.playlists = [];
             for(var i = 0 ; i < self.playlist_count ; i++) {
                 var playlist_length = _.randint(1, 10, self.rand());
