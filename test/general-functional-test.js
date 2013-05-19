@@ -237,6 +237,13 @@ describe.only("Mosto functional test", function() {
             *** ver que se este pasando negro
             */
             describe('delete currently playing playlist', function() {
+                before(function(done) {
+                    self.delete_occurrence(self.get_occurrence(), function() {
+                        self.mosto.once('status', function() {
+                            done();
+                        });
+                    });
+                });
                 it('should not break');
                 it('should be playing blank clip');
             });
