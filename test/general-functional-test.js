@@ -203,7 +203,21 @@ describe.only("Mosto functional test", function() {
                     filename.match(expected_occurrence._id + '-' + expected_media.get('_id')).should.be.ok;
                 }).then(done).done();
             });
-            it('should start on the right frame');
+            it('should start on the right frame (within the second)', function(done){
+                var time = moment();
+                var expected_media = self.get_media(time);
+
+                var result = self.melted.sendPromisedCommand('USTA U0', '202 OK');
+                result.then(function(val) {
+                    var lines = val.split("\r\n");
+                    lines[0].should.eql('202 OK');
+                    var splitted = lines[1].split(' ');
+                    var frame = parseInt(splitted[3]);
+                    var fps = parseInt(splitted[5]);
+                    var elapsed = helper.framesToMilliseconds(frame, fps);
+                    elapsed.should.be.approximately((time - expected_media.start_time).valueOf(), 1000);
+                }).then(done).done();
+            });
             /*
             ** borrar la playlist
             *** ver que no se rompa nada
