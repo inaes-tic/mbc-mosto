@@ -10,6 +10,7 @@ var Media  = require('mbc-common/models/Media');
 var Q      = require('q');
 var moment = require('moment');
 var helper = require('./media_helpers.js');
+var uuid   = require('node-uuid');
 
 describe.only("Mosto functional test", function() {
     /*
@@ -64,22 +65,22 @@ describe.only("Mosto functional test", function() {
             occurrence.end = timewalk.unix();
             var playlist_json = _.omit(playlist.toJSON(), 'collection');
             playlist_json.models = _.invoke(playlist_json.models, 'toJSON');
+            playlist_json._id = uuid.v4();
             // I need to wrap this in order to keep the `playlist` variable
             (function(pl, oc) {
                 listcol.insert(playlist_json, function(err, obj) {
                     console.log("BBBBBBBBBBBBBBB", err, obj);
                     obj = obj[0];
-                    obj._id = idToString(obj._id);
                     // update self.playlists
                     _.extend(pl, obj);
                     occurrence = new Media.Occurrence({
                         list: obj._id,
                         start: oc.start,
-                        end: oc.end
+                        end: oc.end,
+                        _id: uuid.v4(),
                     });
                     occcol.insert(occurrence.toJSON(), function(err, obj) {
                         var obj = obj[0];
-                        obj._id = idToString(obj._id);
                         self.occurrences.push(obj);
                         done();
                     });
@@ -118,10 +119,6 @@ describe.only("Mosto functional test", function() {
             return me.start_time <= time && me.end_time >= time;
         });
     };
-
-    function idToString(id) {
-        return (id.toHexString && id.toHexString()) || id;
-    }
 
     self.publisher = mbc.pubsub();
     self.listener = mbc.pubsub();
