@@ -245,7 +245,14 @@ describe.only("Mosto functional test", function() {
                     });
                 });
                 it('should not break');
-                it('should be playing blank clip');
+                it('should be playing blank clip', function(done) {
+                    var promise = self.melted.sendPromisedCommand('USTA U0', '202 OK');
+                    promise.then(function(result) {
+                        result = result.split('\r\n')[1].split(' ');
+                        var file = result[2];
+                        file.should.include('black_id');
+                    }).then(done).done();
+                });
             });
         });
         /*
