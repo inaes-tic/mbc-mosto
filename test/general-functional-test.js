@@ -69,7 +69,6 @@ describe.only("Mosto functional test", function() {
             // I need to wrap this in order to keep the `playlist` variable
             (function(pl, oc) {
                 listcol.insert(playlist_json, function(err, obj) {
-                    console.log("BBBBBBBBBBBBBBB", err, obj);
                     obj = obj[0];
                     // update self.playlists
                     _.extend(pl, obj);
