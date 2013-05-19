@@ -88,12 +88,25 @@ describe.only("Mosto functional test", function() {
         }
         return defer.promise;
     };
+
     self.clean_playlists = function(done) {
         // Cleans the playlists and occurrences from the database
         var ready = _.after(2, function(){ done(); });
         self.db.collection('scheds').drop(ready);
         self.db.collection('lists').drop(ready);
     }
+
+    self.delete_occurrence = function(occurrence, done) {
+        var occurrences = self.db.collection('scheds');
+        occurrences.remove({ _id: occurrence._id }, function(err, obj) {
+            self.listener.once('message', function(chan, msg) {
+                if( chan == 'schedbackend.delete' )
+                    done();
+            });
+            self.listener.subscribe('schedbackend.delete');
+            self.publisher.publishJSON('schedbackend.delete', { model: occurrence });
+        });
+    };
 
     self.get_occurrence = function(time) {
         time = time || moment();
