@@ -201,7 +201,7 @@ describe.only("Mosto functional test", function() {
                     lines[0].should.eql('202 OK');
                     var filename = lines[1].split(' ')[2];
                     filename.match(expected_occurrence._id + '-' + expected_media.get('_id')).should.be.ok;
-                }).then(done, done);
+                }).then(done).done();
             });
             it('should start on the right frame');
             /*
