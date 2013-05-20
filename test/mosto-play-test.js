@@ -21,6 +21,8 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
     var mosto_server = undefined;
     var server = undefined;
     var player = undefined;
+    var fetcher = undefined;
+    var synchronizer = undefined;
 
     //this.timeout(15000);
 
@@ -62,9 +64,9 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
             mosto_server.status_driver = new status_driver();
             mosto_server.driver = new test_driver();
 
-            mosto_server.fetcher        = new mosto_fetcher( { mosto: mosto_server } );
+            fetcher = mosto_server.fetcher        = new mosto_fetcher( { mosto: mosto_server } );
             mosto_server.scheduler      = new mosto_scheduler( { mosto: mosto_server });
-            mosto_server.synchronizer   = new mosto_synchronizer( { mosto: mosto_server });
+            synchronizer = mosto_server.synchronizer   = new mosto_synchronizer( { mosto: mosto_server });
             player = mosto_server.player         = new mosto_player( { mosto: mosto_server } );
 
             mosto_server.fetcher.init();
@@ -181,19 +183,17 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
     });
 
     describe("#[PLAY] Remove playlist", function() {
-        before(function(done){
+        before(function(done){            
             done();
         });
         it("--should return only the blank black_id", function(done) {
-            player.once('dataupdated', function( streamercom_name ) {
-                player.once('play_endstream', function() {
-                    player.once('status', function(status) {
-                        assert.equal( status.clip.current.id, 'black_id' );
-                        done();
-                    });
+            player.once('play_endstream', function() {
+                player.once('status', function(status) {
+                    assert.equal( status.clip.current.id, 'black_id' );
+                    done();
                 });
-            });
-            mosto_server.fetcher.removePlaylist( "test_playlist_1_id" );
+            });            
+            fetcher.removePlaylist( "test_playlist_1_id" );
         });
     });
 
