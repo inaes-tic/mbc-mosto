@@ -136,6 +136,23 @@ describe.only("Mosto functional test", function() {
     self.listener = mbc.pubsub();
     self.db = mbc.db();
 
+    /* generic tests */
+    self.is_synced = function(done) {
+        var result = self.melted.sendPromisedCommand('USTA U0', '202 OK').then(function(val) {
+            var time = moment();
+            var expected_media = self.get_media(time);
+
+            var lines = val.split("\r\n");
+            lines[0].should.eql('202 OK');
+            var splitted = lines[1].split(' ');
+            var frame = parseInt(splitted[3]);
+            var fps = parseInt(splitted[5]);
+            var elapsed = helper.framesToMilliseconds(frame, fps);
+            elapsed.should.be.approximately((time - expected_media.start_time).valueOf(), 1000);
+        });
+        return result;
+    };
+
     before(function() {
         self.melted = melted();
     });
@@ -219,19 +236,8 @@ describe.only("Mosto functional test", function() {
                 }).then(done).done();
             });
             it('should start on the right frame (within the second)', function(done){
-                var time = moment();
-                var expected_media = self.get_media(time);
-
-                var result = self.melted.sendPromisedCommand('USTA U0', '202 OK');
-                result.then(function(val) {
-                    var lines = val.split("\r\n");
-                    lines[0].should.eql('202 OK');
-                    var splitted = lines[1].split(' ');
-                    var frame = parseInt(splitted[3]);
-                    var fps = parseInt(splitted[5]);
-                    var elapsed = helper.framesToMilliseconds(frame, fps);
-                    elapsed.should.be.approximately((time - expected_media.start_time).valueOf(), 1000);
-                }).then(done).done();
+                var result = self.is_synced(1000);
+                result.then(done).done();
             });
             /*
             ** borrar la playlist
