@@ -275,6 +275,28 @@ describe.only("Mosto functional test", function() {
          * arrancar un playlist empezado hace 5m
          */
         describe('starting 5m ago', function() {
+            before(function(done) {
+                self.db.dropDatabase(function(err, success) {
+                    // let playlists start somewhere between now and 30
+                    //  seconds ago
+                    var setup = self.setup_playlists(moment(
+                        moment() - 5 * 60 * 1000));
+                    setup.then(function() {
+                        self.mosto = new mosto();
+                        self.mosto.once('playing', function() {
+                            // send pubsub messages with new playlists
+                            done();
+                        });
+                        self.mosto.init();
+                    });
+                });
+            });
+            after(function(done) {
+                self.mosto.finish(function() {
+                    delete self.mosto;
+                    self.clean_playlists(done);
+                });
+            });
             /*
             ** ver que el frame se mantenga sincronizado durante 10 segundos
             */
