@@ -144,10 +144,12 @@ describe.only("Mosto functional test", function() {
     });
     describe('start without playlists', function() {
         before(function(done) {
-            self.mosto = new mosto();
-            self.mosto.once('playing', function() {
-                done()});
-            self.mosto.init();
+            self.db.dropDatabase(function(err, success) {
+                self.mosto = new mosto();
+                self.mosto.once('playing', function() {
+                    done()});
+                self.mosto.init();
+            });
         });
         after(function(done) {
             self.mosto.finish(function() {
