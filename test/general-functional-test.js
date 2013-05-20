@@ -113,6 +113,24 @@ describe.only("Mosto functional test", function() {
         return defer.promise;
     };
 
+    self.move_occurrence = function(occurrence, delta) {
+        var defer = Q.defer();
+        occurrence.start += delta / 1000;
+        occurrence.end += delta / 1000;
+        var occurrences = self.db.collection('scheds');
+        occurrences.save(occurrence, function(err, res) {
+            self.listener.once('message', function(chan, msg) {
+                if( chan == 'schedbackend.update' ) {
+                    self.listener.unsubscribe('schedbackend.update');
+                    defer.resolve();
+                }
+            });
+            self.listener.subscribe('schedbackend.update');
+            self.publisher.publishJSON('schedbackend.update', { model: occurrence });
+        });
+        return defer.promise;
+    };
+
     self.get_occurrence = function(time) {
         time = time || moment();
         return _.find(self.occurrences, function(pl) {
@@ -317,7 +335,19 @@ describe.only("Mosto functional test", function() {
             *** ver que el frame se sincronice correctamente
             */
             describe('move playlist back', function() {
-                it("should stay sync'ed");
+                before(function(done) {
+                    var occurrence = self.get_occurrence();
+                    self.move_occurrence(occurrence, -60000).then(function(){
+                        setTimeout(function() {
+                            self.mosto.once('status', function(status) {
+                                done();
+                            });
+                        }, mosto_config.timer_interval + 10);
+                    }).done();
+                });
+                it("should stay sync'ed", function(done) {
+                    self.is_synced(1000).then(done).done();
+                });
             });
             /*
             ** mover la playlist hacia adelante 2m
