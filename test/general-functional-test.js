@@ -301,8 +301,17 @@ describe.only("Mosto functional test", function() {
         describe('starting 5m ago', function() {
             before(function(done) {
                 self.db.dropDatabase(function(err, success) {
-                    // let playlists start somewhere between now and 30
-                    //  seconds ago
+                    // Create a playlist that is at least 10 minutes long
+                    var length = 0;
+                    self._playlists = self.playlists;
+                    var medias = [];
+                    while(length < 10 * 60 * 1000) {
+                        var media = _.randelem(self.medias);
+                        length += (helper.framesToMilliseconds(
+                            media.get('durationraw'), media.get('fps')));
+                        medias.push(media);
+                    }
+                    self.playlists = [self.create_playlist(medias)];
                     var setup = self.setup_playlists(moment(
                         moment() - 5 * 60 * 1000));
                     setup.then(function() {
@@ -316,6 +325,8 @@ describe.only("Mosto functional test", function() {
                 });
             });
             after(function(done) {
+                self.playlists = self._playlists;
+                delete self._playlists;
                 self.mosto.finish(function() {
                     delete self.mosto;
                     self.clean_playlists().then(done).done();
