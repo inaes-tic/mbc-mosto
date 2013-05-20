@@ -114,6 +114,9 @@ function mosto(customConfig) {
             self.synchronizer   = new mosto_synchronizer( { mosto: self } );
             self.player         = new mosto_player( { mosto: self } );
 
+            self.player.on('playing', function(x) { self.emit('playing', x) });
+            self.player.on('status', function(x) { self.emit('status', x) });
+
             self.initDriver();
 
             self.fetcher.init();
