@@ -173,7 +173,8 @@ describe.only("Mosto functional test", function() {
             var frame = parseInt(splitted[3]);
             var fps = parseInt(splitted[5]);
             var elapsed = helper.framesToMilliseconds(frame, fps);
-            elapsed.should.be.approximately((time - expected_media.start_time).valueOf(), 1000);
+            var expected = (time - expected_media.start_time).valueOf();
+            elapsed.should.be.approximately(expected, 1000);
         });
         return result;
     };
