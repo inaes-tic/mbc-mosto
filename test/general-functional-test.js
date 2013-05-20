@@ -90,11 +90,13 @@ describe.only("Mosto functional test", function() {
         return defer.promise;
     };
 
-    self.clean_playlists = function(done) {
+    self.clean_playlists = function() {
+        var defer = Q.defer();
         // Cleans the playlists and occurrences from the database
-        var ready = _.after(2, function(){ done(); });
+        var ready = _.after(2, function(){ defer.resolve(); });
         self.db.collection('scheds').drop(ready);
         self.db.collection('lists').drop(ready);
+        return defer.promise;
     }
 
     self.delete_occurrence = function(occurrence) {
@@ -242,7 +244,7 @@ describe.only("Mosto functional test", function() {
             after(function(done) {
                 self.mosto.finish(function() {
                     delete self.mosto;
-                    self.clean_playlists(done);
+                    self.clean_playlists().then(done).done();
                 });
             });
             it('should start the right clip', function(done) {
@@ -312,7 +314,7 @@ describe.only("Mosto functional test", function() {
             after(function(done) {
                 self.mosto.finish(function() {
                     delete self.mosto;
-                    self.clean_playlists(done);
+                    self.clean_playlists().then(done).done();
                 });
             });
             /*
