@@ -225,6 +225,9 @@ describe.only("Mosto functional test", function() {
                     _.draw(self.medias, playlist_length)));
             }
         });
+        after(function() {
+            delete self.playlists;
+        });
         describe('starting now', function() {
             before(function(done) {
                 self.db.dropDatabase(function(err, success) {
