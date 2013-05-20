@@ -11,6 +11,7 @@ var Q      = require('q');
 var moment = require('moment');
 var helper = require('./media_helpers.js');
 var uuid   = require('node-uuid');
+var mosto_config = require('mbc-common').config.Mosto.General;
 
 describe.only("Mosto functional test", function() {
     /*
@@ -96,16 +97,20 @@ describe.only("Mosto functional test", function() {
         self.db.collection('lists').drop(ready);
     }
 
-    self.delete_occurrence = function(occurrence, done) {
+    self.delete_occurrence = function(occurrence) {
+        var defer = Q.defer();
         var occurrences = self.db.collection('scheds');
         occurrences.remove({ _id: occurrence._id }, function(err, obj) {
             self.listener.once('message', function(chan, msg) {
-                if( chan == 'schedbackend.delete' )
-                    done();
+                if( chan == 'schedbackend.delete' ) {
+                    self.listener.unsubscribe('schedbackend.delete');
+                    defer.resolve();
+                }
             });
             self.listener.subscribe('schedbackend.delete');
             self.publisher.publishJSON('schedbackend.delete', { model: occurrence });
         });
+        return defer.promise;
     };
 
     self.get_occurrence = function(time) {
@@ -246,11 +251,14 @@ describe.only("Mosto functional test", function() {
             */
             describe('delete currently playing playlist', function() {
                 before(function(done) {
-                    self.delete_occurrence(self.get_occurrence(), function() {
-                        self.mosto.once('status', function() {
-                            done();
-                        });
-                    });
+                    var occurrence = self.get_occurrence();
+                    self.delete_occurrence(occurrence).then(function() {
+                        setTimeout(function() {
+                            self.mosto.once('status', function(status) {
+                                done();
+                            });
+                        }, mosto_config.timer_interval);
+                    }).done();
                 });
                 it('should not break');
                 it('should be playing blank clip', function(done) {
