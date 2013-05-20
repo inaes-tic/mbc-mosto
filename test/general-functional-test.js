@@ -300,7 +300,18 @@ describe.only("Mosto functional test", function() {
             /*
             ** ver que el frame se mantenga sincronizado durante 10 segundos
             */
-            it("should keep sync'ed for at least 10 secs");
+            it("should keep sync'ed for at least 10 secs", function(done) {
+                var timer = setInterval(function() {
+                    self.is_synced(100).fail(function(err){
+                        clearInterval(timer);
+                        throw err;
+                    });
+                }, 10);
+                setTimeout(function() {
+                    clearInterval(timer);
+                    done();
+                }, 10000);
+            });
             /*
             ** mover la playlist hacia atras 1m
             *** ver que el frame se sincronice correctamente
