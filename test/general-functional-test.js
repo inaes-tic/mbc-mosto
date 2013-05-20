@@ -50,23 +50,32 @@ describe.only("Mosto functional test", function() {
         });
         var occcol = self.db.collection('scheds');
         var listcol = self.db.collection('lists');
+        var log = [];
         for( var i = 0 ; i < self.playlists.length ; i++ ) {
             var playlist = self.playlists[i];
             var occurrence = {
                 start: timewalk.unix(),
             };
+            log.push(i+':');
+            log.push('occurrence.start: ' + occurrence.start);
             var medias = playlist.get('collection');
             for( var j = 0 ; j < medias.length ; j++ ) {
                 var media = medias.at(j);
                 media.start_time = timewalk.valueOf();
+                log.push('media ' + j + ' id      :' + media.get('_id'));
+                log.push('media ' + j + ' start   : ' + media.start_time);
                 timewalk.add(helper.framesToMilliseconds(
                     media.get('durationraw'), media.get('fps')));
                 media.end_time = timewalk.valueOf();
+                log.push('media ' + j + ' end     : ' + media.end_time);
             }
             occurrence.end = timewalk.unix();
+            log.push('occurrence.end  : ' + occurrence.end);
             var playlist_json = _.omit(playlist.toJSON(), 'collection');
             playlist_json.models = _.invoke(playlist_json.models, 'toJSON');
             playlist_json._id = uuid.v4();
+            log.forEach(function(l) { console.log('[setup_playlists]:', l) });
+            console.log('[setup_playlists] final:', playlist_json);
             // I need to wrap this in order to keep the `playlist` variable
             (function(pl, oc) {
                 listcol.insert(playlist_json, function(err, obj) {
@@ -166,6 +175,8 @@ describe.only("Mosto functional test", function() {
         var result = self.melted.sendPromisedCommand('USTA U0', '202 OK').then(function(val) {
             var time = moment();
             var expected_media = self.get_media(time);
+            console.log('[is_synced] time:', time.valueOf());
+            console.log('[is_synced] expected media', expected_media.get('_id'));
 
             var lines = val.split("\r\n");
             lines[0].should.eql('202 OK');
@@ -174,6 +185,7 @@ describe.only("Mosto functional test", function() {
             var fps = parseInt(splitted[5]);
             var elapsed = helper.framesToMilliseconds(frame, fps);
             var expected = (time - expected_media.start_time).valueOf();
+            console.log('[is_synced] got', lines[1], 'at', frame, ':', elapsed, 'expected', expected);
             elapsed.should.be.approximately(expected, 1000);
         });
         return result;
