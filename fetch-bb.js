@@ -19,6 +19,7 @@ function Fetch() {
 util.inherits(Fetch, events.EventEmitter);
 
 Fetch.prototype.addPlaylist = function(playlist) {
+    this.playlists.add(playlist, { merge: true });
 };
 
 Fetch.prototype.updatePlaylist = function(playlist) {
