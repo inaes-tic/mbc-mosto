@@ -62,6 +62,7 @@ Mosto.Collection = Backbone.Collection.extend({
     model: Mosto.Playlist,
     comparator: function(playlist) {
         // remember, comparator is called only on insert, update doesn't re-sort
+        //  but .add(.., {merge: true}) DOES re-sort!
         return playlist.get("start"); //XXX(xaiki): should it be _id ?
     },
 
