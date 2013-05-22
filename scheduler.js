@@ -94,40 +94,40 @@ scheduler.prototype.queueBlack = function( schedule_time, sch_duration, sch_expe
 scheduler.prototype.upstreamCheck = function( self, clock ) {
     //Check if we need to make a checkout! (upstream syncro!! > sync_lock must be true )
 
-        /*Condicion 0: data has been updated upstream: need an upstream check upstream*/
-        var Condition_0 = self.DataUpdatedUpstream();
+    /*Condicion 0: data has been updated upstream: need an upstream check upstream*/
+    var Condition_0 = self.DataUpdatedUpstream();
 
     //UPSTREAM
-        //if time_window advance for 1 hours (4 hours > 3 hours left ), we make a checkout...[FETCH]
-        var rt_actual_window = 0;
-        var rt_min_window = moment.duration( { hours: 3 } ).asMilliseconds();
+    //if time_window advance for 1 hours (4 hours > 3 hours left ), we make a checkout...[FETCH]
+    var rt_actual_window = 0;
+    var rt_min_window = moment.duration( { hours: 3 } ).asMilliseconds();
 
-        if (clock) {
-            rt_actual_window = moment(clock).diff( moment() );
-        }
+    if (clock) {
+        rt_actual_window = moment(clock).diff( moment() );
+    }
 
-        if (clock===undefined && self.fetcher && self.fetcher.time_window_to) {
-            rt_actual_window = self.fetcher.time_window_to.diff( moment() );
-            rt_min_window = moment.duration( { hours: 3 } ).asMilliseconds();
-        }
+    if (clock===undefined && self.fetcher && self.fetcher.time_window_to) {
+        rt_actual_window = self.fetcher.time_window_to.diff( moment() );
+        rt_min_window = moment.duration( { hours: 3 } ).asMilliseconds();
+    }
 
-        //Condition 1: Window advance
-        console.log("mbc-mosto: [INFO] [SCHED] upstreamCheck() Condition 1 "+(rt_actual_window<rt_min_window)+" ? for rt_actual_window < rt_min_window ? : " + rt_actual_window + " <? " + rt_min_window );
+    //Condition 1: Window advance
+    console.log("mbc-mosto: [INFO] [SCHED] upstreamCheck() Condition 1 "+(rt_actual_window<rt_min_window)+" ? for rt_actual_window < rt_min_window ? : " + rt_actual_window + " <? " + rt_min_window );
 
-        //Condition 2: We do not have scheduled clips
-        console.log("mbc-mosto: [INFO] [SCHED] upstreamCheck() Condition 2 "+(self.scheduled_clips.length===0)+" ? for scheduled_clips == 0 " );
+    //Condition 2: We do not have scheduled clips
+    console.log("mbc-mosto: [INFO] [SCHED] upstreamCheck() Condition 2 "+(self.scheduled_clips.length===0)+" ? for scheduled_clips == 0 " );
 
-        //Condition 3: There is data buffered!
-        var datain = self.DataReceived();
-        console.log("mbc-mosto: [INFO] [SCHED] upstreamCheck() Condition 3 "+datain+" ? this.DataReceived() " + self.dataBuffer );
+    //Condition 3: There is data buffered!
+    var datain = self.DataReceived();
+    console.log("mbc-mosto: [INFO] [SCHED] upstreamCheck() Condition 3 "+datain+" ? this.DataReceived() " + self.dataBuffer );
 
-        //Condition 4: queued clips left are less than xxxxx ( cursor_scheduled_clip ?? vs self.scheduled_clips.length  )
+    //Condition 4: queued clips left are less than xxxxx ( cursor_scheduled_clip ?? vs self.scheduled_clips.length  )
 
-        if ( Condition_0 ) {
-            console.log("mbc-mosto: [INFO] [SCHED] upstreamcheck() > Condition 0: stream data changed");
-            self.emit('fetch_upstream');
-            self.DataUpdatedReset();
-        } else
+    if ( Condition_0 ) {
+        console.log("mbc-mosto: [INFO] [SCHED] upstreamcheck() > Condition 0: stream data changed");
+        self.emit('fetch_upstream');
+        self.DataUpdatedReset();
+    } else
         if (  rt_actual_window < rt_min_window || self.scheduled_clips.length==0 || datain) {
             //console.log("mbc-mosto: [INFO] [SCHED] window advanced at least one hour... calling [FETCH] checkoutPlaylists actual:" + rt_actual_window + " min:" + rt_min_window);
             //return  this.fetcher.checkoutPlaylists();//really updates time window too
@@ -218,9 +218,9 @@ scheduler.prototype.preparePlaylist = function( playlists, next_playlist_id, las
         var black_duration = moment.duration( { hours: 23 } );
         this.queueBlack(    tnow_empty.format("DD/MM/YYYY HH:mm:ss.SSS"),
                             "23:00:00.00",
-                            tnow_empty.format("DD/MM/YYYY HH:mm:ss.SSS"), 
-                            tnow_empty.add( black_duration ).format('DD/MM/YYYY HH:mm:ss.SSS') 
-        );
+                            tnow_empty.format("DD/MM/YYYY HH:mm:ss.SSS"),
+                            tnow_empty.add( black_duration ).format('DD/MM/YYYY HH:mm:ss.SSS')
+                       );
         return;
     }
 
