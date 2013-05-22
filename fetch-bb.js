@@ -13,7 +13,9 @@ function Fetch() {
     this.driver.on('delete', this.removePlaylist.bind(this));
 
     this.playlists = new Mosto.Collection();
-    this.playlists.on('add', this.onCollectionUpdated.bind(this));
+    this.playlists.on('add',    this.onCollectionUpdated.bind(this));
+    this.playlists.on('remove', this.onCollectionUpdated.bind(this));
+    this.playlists.on('change', this.onCollectionUpdated.bind(this));
 }
 
 util.inherits(Fetch, events.EventEmitter);
