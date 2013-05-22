@@ -461,7 +461,7 @@ sync.prototype.isPlayingExpectedClip = function( server_status, expected_clip ) 
     return (    server_status.actualClip
                 && expected_clip
                 && server_status.actualClip.id != ""
-                && (server_status.status == "playing" || server_status.status == "paused")
+                && (server_status.status == "playing" || ( server_status.status == "paused" && server_status.actualClip.id=='black_id' ) )
                 && server_status.actualClip.id  == expected_clip.media.id );
 }
 
