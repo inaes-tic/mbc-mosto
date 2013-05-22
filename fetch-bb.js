@@ -38,4 +38,5 @@ Fetch.prototype.removePlaylist = function(id) {
 };
 
 Fetch.prototype.onCollectionUpdated = function() {
+    this.emit('fetch_downstream', this.playlists);
 };
