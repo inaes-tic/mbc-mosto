@@ -35,6 +35,7 @@ Fetch.prototype.updatePlaylist = function(playlist) {
 };
 
 Fetch.prototype.removePlaylist = function(id) {
+    this.playlists.remove(id);
 };
 
 Fetch.prototype.onCollectionUpdated = function() {
