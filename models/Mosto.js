@@ -83,6 +83,11 @@ Mosto.PlaylistCollection = Backbone.Collection.extend({
         Backbone.Collection.sort.apply(this);
     },
     removeBlanks: function(options) {
+        /*
+         * forwards `options` to `remove`
+         */
+        this.remove(this.where({ name: Mosto.BlankClip.get('name') }),
+                    options);
     },
     addBlanks: function(collection, options) {
         for(var i=1 ; i < this.length ; i++) {
