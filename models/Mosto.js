@@ -34,25 +34,7 @@ Mosto.Playlist = Backbone.Model.extend({
         return attributes;
     },
 
-    play: function (server) {
-        console.log("mbc-mosto: [INFO] Start playing playlists", this);
-        this.forEach(function(element, index, array) {
-            console.log("mbc-mosto: [INFO] looking at playlist", element);
-            if (element.loaded)
-                return;
 
-            server.playPlaylist(element, function() {
-                server.getServerPlaylist(function(data) {
-                    element.loaded = true;
-                    console.log("Playlist loaded: ") ;
-                    console.log(data);
-                    server.getServerStatus(function(data) {
-                        console.log("Currently playing: ") ;
-                        console.log(data);
-                    });
-                });
-            });
-        });
     },
     defaults: {
         name: null,
