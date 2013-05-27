@@ -85,8 +85,28 @@ Mosto.PlaylistCollection = Backbone.Collection.extend({
     removeBlanks: function(options) {
     },
     addBlanks: function(collection, options) {
+        for(var i=1 ; i < this.length ; i++) {
+            var prev = this.at(i-1);
+            var curr = this.at(i);
+            var end = prev.get('end');
+            var start = curr.get('start');
+            if( end < start ) {
+                this.addBlankPlaylist(end, start, i);
+            }
+        }
     },
     addBlankPlaylist: function(from, to, at) {
+        var options = at && { at: at } || {};
+        var blank = Mosto.BlankClip.clone();
+        var duration = to - from;
+        var playlist = new Playlist({
+            name: blank.get('name'),
+            start: from,
+            end: to,
+        });
+        blank.set({'id': uuid.v4()});
+        playlist.medias.add(blank);
+        this.add(playlist, options);
     },
 });
 
