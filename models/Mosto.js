@@ -79,7 +79,10 @@ Mosto.PlaylistCollection = Backbone.Collection.extend({
         this.on('sorted', this.addBlanks.bind(this));
     },
     sort: function(options) {
+        this.removeBlanks({ silent: true });
         Backbone.Collection.sort.apply(this);
+    },
+    removeBlanks: function(options) {
     },
     addBlanks: function(collection, options) {
     },
