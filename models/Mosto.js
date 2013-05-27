@@ -1,4 +1,10 @@
-var Backbone = require('backbone')
+var Backbone   = require('backbone')
+,   relational = require('backbone-relational')
+,   config     = require('mbc-common').config.Mosto.General
+,   path       = require('path')
+,   uuid       = require('node-uuid')
+,   _          = require('underscore')
+,   moment     = require('moment')
 ;
 
 var Mosto = {};
