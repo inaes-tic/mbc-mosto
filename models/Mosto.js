@@ -73,6 +73,9 @@ Mosto.Playlist = Backbone.RelationalModel.extend({
             throw new Error("Must provide an end date");
         this.set('end', moment(this.get('end')));
     },
+    getMedias: function() {
+        return this.get('medias').toArray();
+    },
 });
 
 Mosto.PlaylistCollection = Backbone.Collection.extend({
@@ -118,7 +121,7 @@ Mosto.PlaylistCollection = Backbone.Collection.extend({
         this.add(playlist, options);
     },
     getMedias: function() {
-        var medias = this.map(function(playlist) { return playlist.get('medias').toArray() })
+        var medias = this.map(function(playlist) { return playlist.getMedias() })
         return _.flatten(medias);
     },
 });
