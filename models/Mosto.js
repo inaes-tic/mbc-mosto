@@ -35,6 +35,15 @@ Mosto.MediaCollection = Backbone.Collection.extend({
     comparator: 'playlist_order',
 });
 
+Mosto.MeltedCollection = Backbone.Collection.extend({
+    model: Mosto.Media,
+    comparator: function(a, b) {
+        /* this sorts by playlist + playlist_order */
+        return (a.get('playlist').get('start') - b.get('playlist').get('start')) ||
+            (a.get('playlist_order') - b.get('playlist_order'));
+    },
+});
+
 Mosto.Playlist = Backbone.RelationalModel.extend({
     defaults: {
         name: null,
