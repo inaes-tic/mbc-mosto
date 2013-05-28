@@ -27,7 +27,7 @@ Mosto.BlankClip = new Mosto.Media({
     name: path.basename(config.black).replace(path.extname(config.black, '')),
     file: config.black,
     fps: config.fps,
-})
+});
 
 Mosto.MediaCollection = Backbone.Collection.extend({
     /* this is a playlist's list of clips */
