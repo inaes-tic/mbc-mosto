@@ -117,6 +117,10 @@ Mosto.PlaylistCollection = Backbone.Collection.extend({
         playlist.medias.add(blank);
         this.add(playlist, options);
     },
+    getMedias: function() {
+        var medias = this.map(function(playlist) { return playlist.get('medias').toArray() })
+        return _.flatten(medias);
+    },
 });
 
 Mosto.LoadedPlaylists = Backbone.RelationalModel.extend({
@@ -130,6 +134,10 @@ Mosto.LoadedPlaylists = Backbone.RelationalModel.extend({
     initialize: function() {
         Backbone.RelationalModel.prototype.initialize.apply(this, arguments);
         this.meltedCollection = new Mosto.MeltedCollection();
+    },
+
+    save: function() {
+        this.meltedCollection.set(this.get('playlists').getMedias());
     },
 });
 
