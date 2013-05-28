@@ -63,7 +63,7 @@ Mosto.Playlist = Backbone.RelationalModel.extend({
     }],
     initialize: function (attributes, options) {
         console.log ('creating new Mosto.Playlist', attributes, options);
-        Backbone.Model.prototype.initialize.apply(this, attributes, options);
+        Backbone.RelationalModel.prototype.initialize.apply(this, attributes, options);
         this.set('name', this.get('name') || this.get('_id'));
 
         if( !attributes.start )
@@ -79,11 +79,12 @@ Mosto.PlaylistCollection = Backbone.Collection.extend({
     model: Mosto.Playlist,
     comparator: 'start',
     initialize: function() {
+        Backbone.Collection.prototype.initialize.apply(this, arguments);
         this.on('sorted', this.addBlanks.bind(this));
     },
     sort: function(options) {
         this.removeBlanks({ silent: true });
-        Backbone.Collection.sort.apply(this);
+        Backbone.Collection.prototype.sort.apply(this);
     },
     removeBlanks: function(options) {
         /*
