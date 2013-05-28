@@ -30,11 +30,9 @@ Mosto.BlankClip = new Mosto.Media({
 });
 
 Mosto.MediaCollection = Backbone.Collection.extend({
-    /* this is a playlist's list of clips */
+    /* this is a playlist's list of clips, it sorts by playlist_order */
     model: Mosto.Media,
-    comparator: function(model) {
-        return model.get('playlist_order');
-    },
+    comparator: 'playlist_order',
 });
 
 Mosto.Playlist = Backbone.RelationalModel.extend({
@@ -70,11 +68,7 @@ Mosto.Playlist = Backbone.RelationalModel.extend({
 
 Mosto.PlaylistCollection = Backbone.Collection.extend({
     model: Mosto.Playlist,
-    comparator: function(playlist) {
-        // remember, comparator is called only on insert, update doesn't re-sort
-        //  but .add(.., {merge: true}) DOES re-sort!
-        return playlist.get("start");
-    },
+    comparator: 'start',
     initialize: function() {
         this.on('sorted', this.addBlanks.bind(this));
     },
