@@ -124,20 +124,23 @@ Mosto.PlaylistCollection = Backbone.Collection.extend({
 });
 
 Mosto.LoadedPlaylists = Backbone.RelationalModel.extend({
-    relations: [{
-        type: Backbone.HasMany,
-        key: 'playlists',
-        relatedModel: Mosto.Playlist,
-        collectionType: Mosto.PlaylistCollection,
-    }],
-
-    initialize: function() {
-        Backbone.RelationalModel.prototype.initialize.apply(this, arguments);
-        this.meltedCollection = new Mosto.MeltedCollection();
-    },
+    relations: [
+        {
+            type: Backbone.HasMany,
+            key: 'playlists',
+            relatedModel: Mosto.Playlist,
+            collectionType: Mosto.PlaylistCollection,
+        },
+        {
+            type: Backbone.HasMany,
+            key: 'melted_medias',
+            relatedModel: Mosto.Media,
+            collectionType: Mosto.MeltedCollection,
+        },
+    ],
 
     save: function() {
-        this.meltedCollection.set(this.get('playlists').getMedias());
+        this.get('melted_medias').set(this.get('playlists').getMedias());
     },
 });
 
