@@ -126,6 +126,11 @@ Mosto.LoadedPlaylists = Backbone.RelationalModel.extend({
         relatedModel: Mosto.Playlist,
         collectionType: Mosto.PlaylistCollection,
     }],
+
+    initialize: function() {
+        Backbone.RelationalModel.prototype.initialize.apply(this, arguments);
+        this.meltedCollection = new Mosto.MeltedCollection();
+    },
 });
 
 exports = module.exports = Mosto;
