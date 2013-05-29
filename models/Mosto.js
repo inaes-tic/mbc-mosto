@@ -19,7 +19,6 @@ function bubbleEvents(self, name) {
     }).bind(self)
 }
 
-
 Mosto.Media = Backbone.Model.extend({
     defaults: {
         playlist_order: undefined,
