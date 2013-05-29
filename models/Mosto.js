@@ -9,6 +9,16 @@ var Backbone   = require('backbone')
 
 var Mosto = {};
 
+function bubbleEvents(self, name) {
+    return (function(event) {
+        var args = [].slice(arguments, 1);
+        var event_name = event.split(':');
+        event_name.splice(1,0,name);
+        event_name = event_name.join(':');
+        this.trigger(event_name, args);
+    }).bind(self)
+}
+
 
 Mosto.Media = Backbone.Model.extend({
     defaults: {
@@ -67,6 +77,7 @@ Mosto.Playlist = Backbone.Model.extend({
 
         if (!attributes.medias)
             this.set('medias', new Mosto.MediaCollection());
+        this.get('medias').on('all', bubbleEvents(this, 'medias'));
     },
     getMedias: function() {
         return this.get('medias').toArray();
@@ -131,8 +142,10 @@ Mosto.LoadedPlaylists = Backbone.Model.extend({
         attributes = attributes || {};
         if (!attributes.playlists)
             this.set('playlists', new Mosto.PlaylistCollection());
+        this.get('playlists').on('all', bubbleEvents(this, 'playlists'));
         if (!attributes.melted_medias)
             this.set('melted_medias', new Mosto.MeltedCollection());
+        this.get('melted_medias').on('all', bubbleEvents(this, 'melted_medias'));
     },
 
     save: function() {
