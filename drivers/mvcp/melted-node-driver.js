@@ -58,8 +58,8 @@ function melted(host, port) {
         });
     };
 
-    melted.prototype.getServerStatus = function(successCallback, errorCallback) {
-        self.mlt.sendCommand("usta u0", "202 OK", function(response) {
+    melted.prototype.getServerStatus = function() {
+        return self.mlt.sendPromisedCommand("usta u0", "202 OK").then(function(response) {
             // HACK: Converting the promise object to a string :)
             var data = "." + response;
 
@@ -92,15 +92,15 @@ function melted(host, port) {
                     } else {
                         st = new Status(status, undefined, 0);
                     }
-                    return successCallback(st);
+                    return st;
                 }
             }
             var err = new Error("mbc-mosto: [ERROR] Error getting server status in response object: " + response)
-            errorCallback(err);
+            throw (err);
         }, function(error) {
             var err = new Error("mbc-mosto: [ERROR] Error getting server status: " + error);
             console.error(err);
-            errorCallback(err);
+            throw err;
         });
     };
 
