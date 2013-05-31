@@ -5,6 +5,7 @@ var Backbone   = require('backbone')
 ,   uuid       = require('node-uuid')
 ,   _          = require('underscore')
 ,   moment     = require('moment')
+,   mvcp       = require('../drivers/mvcp/mvcp-driver')
 ,   semaphore  = require('semaphore')
 ;
 
@@ -54,9 +55,31 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
             (a.get('playlist_order') - b.get('playlist_order'));
     },
     initialize: function() {
+        this.driver = new mvcp('melted');
+        this.fetch();
         this.semaphore = semaphore(1);
         this.take = this.semaphore.take;
         this.leave = this.semaphore.leave;
+    },
+    sync: function(method, model, options) {
+        /*
+         * override this collection's sync method so it reads and writes from / to
+         * melted
+         */
+        var self = this;
+        self.take(function() {
+            if( method == 'read' ) {
+                var promise = self.driver.getServerPlaylist().then(self.loadFromMelted.bind(self));
+                promise.fin(self.leave);
+            }
+        });
+    },
+    loadFromMelted: function(clips) {
+        var toAdd = [];
+        clips.forEach((function(clip) {
+            toAdd.push(Mosto.Media(clip));
+        }).bind(this));
+        this.add(toAdd, { merge: true });
     },
 });
 
