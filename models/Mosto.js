@@ -82,6 +82,11 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                          * stopped, I should start it on the first clip. If I'm not empty and the
                          * player is running, I should sync the start / end for each of my Medias
                          */
+                        if( !self.length )
+                            return;
+                        if( status.status == 'stopped' )
+                            return self.driver.play();
+
                         }
                     });
                 promise.fin(self.leave);
