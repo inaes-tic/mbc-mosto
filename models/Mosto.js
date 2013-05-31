@@ -147,4 +147,8 @@ Mosto.LoadedPlaylists = Backbone.RelationalModel.extend({
     },
 });
 
+var playlists = new Mosto.LoadedPlaylists();
+
+Mosto.Playlists = playlists;
+
 exports = module.exports = Mosto;
