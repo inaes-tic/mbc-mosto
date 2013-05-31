@@ -18,8 +18,8 @@ function melted(host, port) {
         self.mlt.sendCommand(command, "200 OK", successCallback, errorCallback);
     };
 
-    melted.prototype.getServerPlaylist = function(successCallback, errorCallback) {
-        self.mlt.sendCommand("list u0", "201 OK", function(response) {
+    melted.prototype.getServerPlaylist = function() {
+        return self.mlt.sendPromisedCommand("list u0", "201 OK").then(function(response) {
             // HACK: Converting the promise object to a string :)
             var data = "." + response;
 
@@ -50,11 +50,11 @@ function melted(host, port) {
                     clips.push(clip);
                 }
             }
-            successCallback(clips);
-        }, function(error) {
+            return clips;
+        }).fail(function(error) {
             var err = new Error("mbc-mosto: [ERROR] Error getting server playlist: " + error);
             console.error(err);
-            errorCallback(err);
+            throw err;
         });
     };
 
