@@ -79,5 +79,11 @@ exports = module.exports = {
     convertDateToUnix:  function ( date_timestamp ) {
         var date = new moment(date_timestamp);
         return date.unix();
+    },
+    
+    convertTimeToFrames: function(time, fps) {
+        var mTime = moment(time, "HH:mm:ss");
+        var seconds = mTime.seconds() + (mTime.minutes() * 60) + (mTime.hours() * 60 * 60);
+        return seconds * fps;
     }
 };
