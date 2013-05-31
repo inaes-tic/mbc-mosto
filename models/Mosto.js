@@ -9,7 +9,17 @@ var Backbone   = require('backbone')
 
 var Mosto = {};
 
-Mosto.Media = Backbone.RelationalModel.extend({
+function bubbleEvents(self, name) {
+    return (function(event) {
+        var args = [].slice(arguments, 1);
+        var event_name = event.split(':');
+        event_name.splice(1,0,name);
+        event_name = event_name.join(':');
+        this.trigger(event_name, args);
+    }).bind(self)
+}
+
+Mosto.Media = Backbone.Model.extend({
     defaults: {
         playlist_order: undefined,
         actual_order: undefined,
@@ -44,26 +54,17 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
     },
 });
 
-Mosto.Playlist = Backbone.RelationalModel.extend({
+Mosto.Playlist = Backbone.Model.extend({
     defaults: {
         name: null,
         start: null,   // moment
         end: null,     // moment
         mode: "snap",
         loaded: false,
+        medias: null,
     },
-    relations:[{
-        type: Backbone.HasMany,
-        key: 'medias',
-        relatedModel: Mosto.Media,
-        collectionType: Mosto.MediaCollection,
-        reverseRelation: {
-            key: 'playlist'
-        },
-    }],
     initialize: function (attributes, options) {
         console.log ('creating new Mosto.Playlist', attributes, options);
-        Backbone.RelationalModel.prototype.initialize.apply(this, attributes, options);
         this.set('name', this.get('name') || this.get('_id'));
 
         if( !attributes.start )
@@ -72,6 +73,10 @@ Mosto.Playlist = Backbone.RelationalModel.extend({
         if (!attributes.end )
             throw new Error("Must provide an end date");
         this.set('end', moment(this.get('end')));
+
+        if (!attributes.medias)
+            this.set('medias', new Mosto.MediaCollection());
+        this.get('medias').on('all', bubbleEvents(this, 'medias'));
     },
     getMedias: function() {
         return this.get('medias').toArray();
@@ -126,21 +131,21 @@ Mosto.PlaylistCollection = Backbone.Collection.extend({
     },
 });
 
-Mosto.LoadedPlaylists = Backbone.RelationalModel.extend({
-    relations: [
-        {
-            type: Backbone.HasMany,
-            key: 'playlists',
-            relatedModel: Mosto.Playlist,
-            collectionType: Mosto.PlaylistCollection,
-        },
-        {
-            type: Backbone.HasMany,
-            key: 'melted_medias',
-            relatedModel: Mosto.Media,
-            collectionType: Mosto.MeltedCollection,
-        },
-    ],
+Mosto.LoadedPlaylists = Backbone.Model.extend({
+    defaults: {
+        playlists: null,
+        melted_medias: null,
+    },
+
+    initialize: function(attributes, options) {
+        attributes = attributes || {};
+        if (!attributes.playlists)
+            this.set('playlists', new Mosto.PlaylistCollection());
+        this.get('playlists').on('all', bubbleEvents(this, 'playlists'));
+        if (!attributes.melted_medias)
+            this.set('melted_medias', new Mosto.MeltedCollection());
+        this.get('melted_medias').on('all', bubbleEvents(this, 'melted_medias'));
+    },
 
     save: function() {
         this.get('melted_medias').set(this.get('playlists').getMedias());
