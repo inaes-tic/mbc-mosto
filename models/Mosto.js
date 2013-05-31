@@ -5,6 +5,7 @@ var Backbone   = require('backbone')
 ,   uuid       = require('node-uuid')
 ,   _          = require('underscore')
 ,   moment     = require('moment')
+,   semaphore  = require('semaphore')
 ;
 
 var Mosto = {};
@@ -51,6 +52,11 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         /* this sorts by playlist + playlist_order */
         return (a.get('playlist').get('start') - b.get('playlist').get('start')) ||
             (a.get('playlist_order') - b.get('playlist_order'));
+    },
+    initialize: function() {
+        this.semaphore = semaphore(1);
+        this.take = this.semaphore.take;
+        this.leave = this.semaphore.leave;
     },
 });
 
