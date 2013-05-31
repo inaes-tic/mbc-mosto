@@ -71,6 +71,19 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         self.take(function() {
             if( method == 'read' ) {
                 var promise = self.driver.getServerPlaylist().then(self.loadFromMelted.bind(self));
+                promise = promise.then(function() { return self.driver.getServerStatus() }).then(
+                    function(status) {
+                        /*
+                         * Now I represent the playlist on the melted driver exactly. But I don't
+                         * know the start and end times for each of the clips (because they weren't
+                         * loaded from the database), so I need to build it.
+                         *
+                         * if I'm empty, I shouldn't do anything. If I'm not empty and the player is
+                         * stopped, I should start it on the first clip. If I'm not empty and the
+                         * player is running, I should sync the start / end for each of my Medias
+                         */
+                        }
+                    });
                 promise.fin(self.leave);
             }
         });
