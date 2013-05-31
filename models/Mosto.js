@@ -56,10 +56,11 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
     },
     initialize: function() {
         this.driver = new mvcp('melted');
-        this.fetch();
         this.semaphore = semaphore(1);
         this.take = this.semaphore.take;
         this.leave = this.semaphore.leave;
+
+        this.fetch();
     },
     sync: function(method, model, options) {
         /*
