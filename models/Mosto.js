@@ -7,6 +7,7 @@ var Backbone   = require('backbone')
 ,   moment     = require('moment')
 ,   mvcp       = require('../drivers/mvcp/mvcp-driver')
 ,   semaphore  = require('semaphore')
+,   utils      = require('../utils')
 ;
 
 var Mosto = {};
@@ -87,6 +88,35 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                         if( status.status == 'stopped' )
                             return self.driver.play();
 
+                        var ftms = function(f, fps) {
+                            return utils.convertFramesToSeconds(f, fps) * 1000;
+                        };
+
+                        var current = self.findWhere({id: status.currentClip.id})
+                        var index = self.indexOf(current);
+                        var elapsedTime = ftms(status.currentClip.currentFrame,
+                                               status.currentClip.fps);
+                        var now = moment();
+                        current.set({
+                            start: now - elapsedTime,
+                            end: (now - elapsedTime) + ftms(status.currentClip.totalFrames,
+                                                            status.currentClip.fps),
+                        });
+                        for(int i = index - 1 ; i >= 0 ; i--) {
+                            var clip = self.at(i);
+                            var next = self.at(i+1);
+                            clip.set({
+                                end: next.get('start'),
+                                start: next.get('start') - ftms(clip.get('length'), clip.get('fps')),
+                            });
+                        }
+                        for(int i = index + 1 ; i < self.length ; i++) {
+                            var clip = self.at(i);
+                            var prev = self.at(i-1);
+                            clip.set({
+                                start: prev.get('end'),
+                                end: prev.get('end') + ftms(clip.get('length'), clip.get('fps')),
+                            });
                         }
                     });
                 promise.fin(self.leave);
