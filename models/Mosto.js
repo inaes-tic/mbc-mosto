@@ -50,11 +50,7 @@ Mosto.MediaCollection = Backbone.Collection.extend({
 
 Mosto.MeltedCollection = Backbone.Collection.extend({
     model: Mosto.Media,
-    comparator: function(a, b) {
-        /* this sorts by playlist + playlist_order */
-        return (a.get('playlist').get('start') - b.get('playlist').get('start')) ||
-            (a.get('playlist_order') - b.get('playlist_order'));
-    },
+    comparator: 'start',
     initialize: function() {
         this.driver = new mvcp('melted');
         this.semaphore = semaphore(1);
