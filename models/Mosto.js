@@ -81,8 +81,10 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                          */
                         if( !self.length )
                             return;
-                        if( status.status == 'stopped' )
+                        if( status.status == 'stopped' ) {
+                            self.adjustTimes(0, 0);
                             return self.driver.play();
+                        }
                         var current = self.findWhere({id: status.currentClip.id})
                         var index = self.indexOf(current);
                         self.adjustTimes(index, status.currentClip.currentFrame);
