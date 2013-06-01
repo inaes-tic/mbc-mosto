@@ -203,9 +203,9 @@ function melted(host, port) {
         //Insert clip at specified index
         self.sendClip(clip, "INSERT UO {xmlFile} " + index, successCallback, errorCallback);
     };
-    melted.prototype.removeClip = function(index, successCallback, errorCallback) {
+    melted.prototype.removeClip = function(index) {
         //Removes clip at specified index
-        self.sendCommand("REMOVE U0 " + index, successCallback, errorCallback);
+        return self.sendCommand("REMOVE U0 " + index);
     };
     melted.prototype.cleanPlaylist = function(successCallback, errorCallback) {
         //Removes all clips but playing clip
