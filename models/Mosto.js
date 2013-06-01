@@ -58,6 +58,23 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         this.leave = this.semaphore.leave;
 
         this.fetch();
+
+        var self = this;
+        this.on('add', function(model, collection, options){
+            self.take(function() {
+                var index = collection.indexOf(model);
+                var promise = self.driver.insertClip(model, index).fin(self.leave);
+            });
+        })
+        this.on('remove', function(model, collection, options) {
+            self.take(function() {
+                var index = options.index;
+                self.driver.removeClip(index).fail(function(err) {
+                    console.error("ERROR: [Mosto.MeltedCollection] could not remove clip from melted", err);
+                    throw err;
+                }).fin(self.leave);
+            });
+        });
     },
     sync: function(method, model, options) {
         /*
