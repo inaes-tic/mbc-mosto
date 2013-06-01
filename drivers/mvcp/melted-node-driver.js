@@ -13,9 +13,9 @@ function melted(host, port) {
     this.mlt = new melted_node(host, port);
     console.log("mbc-mosto: [INFO] Server instance created [" + this.mlt.host + ":" + this.mlt.port + "]");
 
-    melted.prototype.sendCommand = function(command, successCallback, errorCallback) {
+    melted.prototype.sendCommand = function(command) {
         console.log("mbc-mosto: [INFO] Sending command: " + command);
-        self.mlt.sendCommand(command, "200 OK", successCallback, errorCallback);
+        return self.mlt.sendPromisedCommand(command, "200 OK");
     };
 
     melted.prototype.getServerPlaylist = function() {
