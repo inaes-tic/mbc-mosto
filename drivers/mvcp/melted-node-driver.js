@@ -133,7 +133,7 @@ function melted(host, port) {
         return deferred.promise;
     };
 
-    melted.prototype.sendClip = function(clip, command, successCallback, errorCallback) {
+    melted.prototype.sendClip = function(clip, command) {
         var xml = new melted_xml();
 
         var type     = clip.type;
@@ -180,15 +180,18 @@ function melted(host, port) {
         //        var fileName = file.substring(file.lastIndexOf("/") + 1);
         var xmlFile = config.playlists_xml_dir + "/" + filename;
 
+        var deferred = Q.defer();
+
         console.log("mbc-mosto: [INFO] Writing file " + xmlFile);
         fs.writeFile(xmlFile, xml.toString({pretty:true}), function(err){
             if (err) {
-                errorCallback(err);
+                deferred.reject(err);
             } else {
                 console.log("mbc-mosto: [INFO] File ready: " + xmlFile);
-                self.sendCommand(command.replace("{xmlFile}", xmlFile), successCallback, errorCallback);
+                deferred.resolve(self.sendCommand(command.replace("{xmlFile}", xmlFile)));
             }
         });
+        return deferred.promise;
     };
 
     melted.prototype.loadClip = function(clip, successCallback, errorCallback) {
@@ -199,9 +202,9 @@ function melted(host, port) {
         //Appends clip to the end of the playlist
         self.sendClip(clip, "APND UO {xmlFile}", successCallback, errorCallback);
     };
-    melted.prototype.insertClip = function(clip, index, successCallback, errorCallback) {
+    melted.prototype.insertClip = function(clip, index) {
         //Insert clip at specified index
-        self.sendClip(clip, "INSERT UO {xmlFile} " + index, successCallback, errorCallback);
+        return self.sendClip(clip, "INSERT UO {xmlFile} " + index);
     };
     melted.prototype.removeClip = function(index) {
         //Removes clip at specified index
