@@ -86,6 +86,16 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
             self.take(function() {
                 self.driver.getServerPlaylist().then(function(clips) {
                     var ids = collection.pluck('id');
+
+                    var add = [];
+                    var diff = _.difference(ids, _.pluck(clips, 'id'))
+                    if(diff.length) {
+                        console.error("ERROR [Mosto.MeltedCollection]: There shouldn't be clips in the collection that aren't loaded in melted");
+                        diff.forEach(function(id) {
+                            add.push({ item: collection.get(id), index: ids.indexOf(id) });
+                        });
+                    }
+
                     var move = [];
                     var remove = [];
                     clips.forEach(function(clip, i) {
