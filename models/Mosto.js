@@ -96,12 +96,21 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                         });
                     }
 
+                    var ret = Q.resolve();
+                    add.forEach(function(toAdd) {
+                        ret = ret.then(function() {
+                            return self.driver.insertClip(toAdd.item, toAdd.index);
+                        });
+                        clips.splice(toAdd.index, 0, toAdd.item);
+                    });
+
                     var move = [];
                     var remove = [];
                     clips.forEach(function(clip, i) {
                         var j = ids.indexOf(clip.id);
                         i -= remove.length;
                         if( j < 0 ) {
+                            console.error("ERROR [Mosto.MeltedCollection]: There shouldn't be clips in melted that aren't in the collection");
                             remove.push(i);
                             return;
                         }
@@ -109,7 +118,6 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                             move.push({ from: i, to: j});
                         }
                     });
-                    var ret = Q.resolve();
                     remove.forEach(function(i) {
                         ret = ret.then(function() { return self.driver.removeClip(i) });
                     });
