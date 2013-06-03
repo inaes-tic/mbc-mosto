@@ -100,6 +100,9 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                         }
                     });
                     var ret = Q.resolve();
+                    remove.forEach(function(i) {
+                        ret = ret.then(function() { self.driver.removeClip(i) });
+                    });
                     return ret;
                 }).fin(self.leave)
             });
