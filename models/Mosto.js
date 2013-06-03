@@ -99,6 +99,8 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                             move.push({ from: i, to: j});
                         }
                     });
+                    var ret = Q.resolve();
+                    return ret;
                 }).fin(self.leave)
             });
         });
