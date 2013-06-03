@@ -237,9 +237,15 @@ mongo_driver.prototype.createPlaylist = function(sched, callback) {
             // TODO: don't know what goes in type
             var type = "default";
             var file = block.file;
-            var length = block.durationraw;
+            var length = moment(block.durationraw, "HH:mm:ss.SSS");
             var fps = block.fps;
-            medias.push(new Media(block_id, orig_order, actual_order, playlist_id, clip_name, type, file, length, parseFloat(fps)));
+            medias.push(new Media(block_id, orig_order, actual_order, playlist_id, clip_name, type, file,
+                                  moment.duration({
+                                      hours: length.hours(),
+                                      minutes: length.minutes(),
+                                      seconds: length.seconds(),
+                                      milliseconds: length.milliseconds(),
+                                  }), parseFloat(fps)));
         });
 
         var playlist = new Playlist(playlist_id, name, startDate, medias, endDate, "snap");
