@@ -95,14 +95,19 @@ heartbeats.prototype.executeGc = function() {
 heartbeats.prototype.sendStatus = function() {
     var self = this;
     console.log("[HEARTBEAT-FS] Started Status");
-    var media = getExpectedMedia();
-    if (!self.current_media)
-        self.current_media = media;
-    if (media.get("id").toString() !== self.current_media.get("id").toString()) {
-        self.emit("clipStatus", media);
-        self.current_media = media;
+    try {
+        var expected = getExpectedMedia();
+        if (!self.current_media)
+            self.current_media = expected.media;
+        if (expected.media.get("id").toString() !== self.current_media.get("id").toString()) {
+            self.emit("clipStatus", {old_media: self.current_media, new_media: expected.media, frame: expected.frame});
+            self.current_media = expected.media;
+        } else {
+            self.emit("frameStatus", {media: expected.media, frame: expected.frame});
+        }
+    } catch(error) {
+        self.handleError(error);
     }
-    self.emit("frameStatus", media.current_frame);
     console.log("[HEARTBEAT-FS] Finished Status");
 };
 
