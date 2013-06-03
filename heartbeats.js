@@ -166,7 +166,7 @@ heartbeats.prototype.syncMelted = function() {
                     self.sendStatus();
                 }
             } catch(err) {
-                self.handleError(error);
+                self.handleError(err);
             }            
         }
     }, self.handleError);
