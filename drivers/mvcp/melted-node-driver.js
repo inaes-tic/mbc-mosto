@@ -97,7 +97,7 @@ function melted(host, port) {
             }
             var err = new Error("mbc-mosto: [ERROR] Error getting server status in response object: " + response)
             throw (err);
-        }, function(error) {
+        }).fail(function() {
             var err = new Error("mbc-mosto: [ERROR] Error getting server status: " + error);
             console.error(err);
             throw err;
