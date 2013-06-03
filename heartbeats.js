@@ -4,8 +4,7 @@ var config           = require('mbc-common').config.Mosto.HeartBeats,
     Mosto            = require('./models/Mosto'), 
     moment           = require('moment'),
     mvcp_server      = require('./drivers/mvcp/mvcp-driver'), 
-    utils            = require('./utils'), 
-    Q                = require('q');
+    utils            = require('./utils');
 
 function heartbeats(customConfig) {
     //THIS MODULE ASSUMES MELTED ALWAYS HAS THE SAME CLIPS AS MELTED_MEDIAS 
