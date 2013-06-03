@@ -177,7 +177,7 @@ heartbeats.prototype.syncMelted = function() {
 heartbeats.prototype.fixMelted = function(expected) {
     console.error("[HEARTBEAT-SY] Melted is out of sync!");
     self.emit("OutOfSync", expected);
-    self.server.goto(expected.media.actual_order, expected.frame, self.sendStatus, self.handleError);
+    return self.server.goto(expected.media.actual_order, expected.frame).then(self.sendStatus).fail(self.handleError);
 };
 
 heartbeats.prototype.handleError =  function(error) {
