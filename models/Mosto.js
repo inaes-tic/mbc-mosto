@@ -87,8 +87,14 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                 self.driver.getServerPlaylist().then(function(clips) {
                     var ids = collection.pluck('id');
                     var move = [];
+                    var remove = [];
                     clips.forEach(function(clip, i) {
                         var j = ids.indexOf(clip.id);
+                        i -= remove.length;
+                        if( j < 0 ) {
+                            remove.push(i);
+                            return;
+                        }
                         if( i != j ) {
                             move.push({ from: i, to: j});
                         }
