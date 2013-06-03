@@ -131,7 +131,7 @@ heartbeats.prototype.getExpectedMedia = function() {
 heartbeats.prototype.syncMelted = function() {
     console.log("[HEARTBEAT-SY] Start Sync");
     var self = this;
-    self.server.getServerStatus(function(meltedStatus) {
+    self.server.getServerStatus().then(function(meltedStatus) {
         if (meltedStatus.status !== "playing") {
             self.handleError(new Error("[HEARTBEAT-SY] Melted is not playing!"));
         } else {
