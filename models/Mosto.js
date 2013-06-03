@@ -82,6 +82,12 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                 }).fin(self.leave);
             });
         });
+        this.on('sort', function(collection, options) {
+            self.take(function() {
+                self.driver.getServerPlaylist().then(function(clips) {
+                }).fin(self.leave)
+            });
+        });
     },
     sync: function(method, model, options) {
         /*
