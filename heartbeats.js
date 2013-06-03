@@ -169,14 +169,7 @@ heartbeats.prototype.syncMelted = function() {
                     } else {
                         var mediaBelow = self.melted_medias.at(index + 1);
                         if (mediaBelow.get("id").toString() === meltedClip.id.toString()) {
-                            var length = undefined;
-                            if (!isNaN(parseFloat(expected.media.length)) && isFinite(expected.media.length)) {
-                                //length is numeric (frames)
-                                length = expected.media.length;
-                            } else {
-                                length = utils.convertTimeToFrames(expected.media.length, exptected.media.fps);
-                            }
-                            frames = meltedClip.currentFrame + (length - expected.frame);
+                            frames = meltedClip.currentFrame + (expected.media.length - expected.frame);
                         }
                     }
                     if (frames > expected.media.fps) {
