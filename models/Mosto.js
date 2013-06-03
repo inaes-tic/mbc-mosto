@@ -34,6 +34,15 @@ Mosto.Media = Backbone.Model.extend({
         start: undefined,
         end: undefined,
     },
+
+    initialize: function(attributes, options) {
+        if( !attributes.fps ){
+            this.set('fps', config.fps);
+        }
+        if( moment.isDuration(attributes.length) ) {
+            this.set('duration', parseInt(attributes.length.asSeconds() * this.get('fps')));
+        }
+    },
 });
 
 Mosto.BlankClip = new Mosto.Media({
