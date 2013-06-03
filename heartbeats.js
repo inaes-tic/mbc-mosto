@@ -4,7 +4,8 @@ var config           = require('mbc-common').config.Mosto.HeartBeats,
     Mosto            = require('./models/Mosto'), 
     moment           = require('moment'),
     mvcp_server      = require('./drivers/mvcp/mvcp-driver'), 
-    utils            = require('./utils');
+    utils            = require('./utils'), 
+    Q                = require('q');
 
 function heartbeats(customConfig) {
     //THIS MODULE ASSUMES MELTED ALWAYS HAS THE SAME CLIPS AS MELTED_MEDIAS 
@@ -132,8 +133,10 @@ heartbeats.prototype.syncMelted = function() {
     console.log("[HEARTBEAT-SY] Start Sync");
     var self = this;
     self.server.getServerStatus().then(function(meltedStatus) {
+        var deferred = Q.defer();
         if (meltedStatus.status !== "playing") {
-            self.handleError(new Error("[HEARTBEAT-SY] Melted is not playing!"));
+//            self.handleError(new Error("[HEARTBEAT-SY] Melted is not playing!"));
+            deferred.reject(new Error("[HEARTBEAT-SY] Melted is not playing!"));
         } else {
             try {
                 var expected = self.getExpectedMedia();
@@ -157,20 +160,29 @@ heartbeats.prototype.syncMelted = function() {
                             frames = meltedClip.currentFrame + (length - expected.frame);
                         }
                     }
-                    if (frames > expected.media.fps)
-                        self.fixMelted(expected);
+                    if (frames > expected.media.fps) {
+//                        self.fixMelted(expected);
+                        deferred.resolve(self.fixMelted(expected));
+                    } else {
+                        deferred.resolve(self.sendStatus());
+                    }
                 } else if (Math.abs(meltedClip.currentFrame - expected.frame) > expected.media.fps) {
-                    self.fixMelted(expected);
+//                    self.fixMelted(expected);
+                    deferred.resolve(self.fixMelted(expected));
                 } else {
-                    self.sendStatus();
+//                    self.sendStatus();
+                    deferred.resolve(self.sendStatus());
                 }
             } catch(err) {
-                self.handleError(err);
+//                self.handleError(err);
+                deferred.reject(err);
             }            
         }
-    }, self.handleError);
-    self.scheduleSync();
-    self.melted_medias.leave();
+        return deferred.promise;
+    }).fail(self.handleError).fin(function() {
+        self.scheduleSync();
+        self.melted_medias.leave();
+    });
     console.log("[HEARTBEAT-SY] Finish Sync");
 };
 
