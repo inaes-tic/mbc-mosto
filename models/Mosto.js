@@ -66,8 +66,6 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         this.take = this.semaphore.take;
         this.leave = this.semaphore.leave;
 
-        this.fetch();
-
         var self = this;
         this.on('add', function(model, collection, options){
             self.take(function() {
