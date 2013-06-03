@@ -222,9 +222,9 @@ function melted(host, port) {
         //Removes all clips, including playing clip
         self.sendCommand("CLEAR U0", successCallback, errorCallback);
     };
-    melted.prototype.moveClip = function(oldIndex, newIndex, successCallback, errorCallback) {
+    melted.prototype.moveClip = function(oldIndex, newIndex) {
         //Moves the clip at oldIndex to newIndex (use it with getServerPlaylist)
-        self.sendCommand("MOVE U0 " + oldIndex + " " + newIndex, successCallback, errorCallback);
+        return self.sendCommand("MOVE U0 " + oldIndex + " " + newIndex);
     };
     melted.prototype.play = function(successCallback, errorCallback) {
         //Play
