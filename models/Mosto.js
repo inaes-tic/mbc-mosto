@@ -5,6 +5,9 @@ var Backbone   = require('backbone')
 ,   uuid       = require('node-uuid')
 ,   _          = require('underscore')
 ,   moment     = require('moment')
+,   mvcp       = require('../drivers/mvcp/mvcp-driver')
+,   semaphore  = require('semaphore')
+,   utils      = require('../utils')
 ;
 
 var Mosto = {};
@@ -47,10 +50,104 @@ Mosto.MediaCollection = Backbone.Collection.extend({
 
 Mosto.MeltedCollection = Backbone.Collection.extend({
     model: Mosto.Media,
-    comparator: function(a, b) {
-        /* this sorts by playlist + playlist_order */
-        return (a.get('playlist').get('start') - b.get('playlist').get('start')) ||
-            (a.get('playlist_order') - b.get('playlist_order'));
+    comparator: 'start',
+    initialize: function() {
+        this.driver = new mvcp('melted');
+        this.semaphore = semaphore(1);
+        this.take = this.semaphore.take;
+        this.leave = this.semaphore.leave;
+
+        this.fetch();
+
+        var self = this;
+        this.on('add', function(model, collection, options){
+            self.take(function() {
+                var index = collection.indexOf(model);
+                var promise = self.driver.insertClip(model, index).fin(self.leave);
+            });
+        })
+        this.on('remove', function(model, collection, options) {
+            self.take(function() {
+                var index = options.index;
+                self.driver.removeClip(index).fail(function(err) {
+                    console.error("ERROR: [Mosto.MeltedCollection] could not remove clip from melted", err);
+                    throw err;
+                }).fin(self.leave);
+            });
+        });
+    },
+    sync: function(method, model, options) {
+        /*
+         * override this collection's sync method so it reads and writes from / to
+         * melted
+         */
+        var self = this;
+        self.take(function() {
+            if( method == 'read' ) {
+                var promise = self.driver.getServerPlaylist().then(self.loadFromMelted.bind(self));
+                promise = promise.then(function() { return self.driver.getServerStatus() }).then(
+                    function(status) {
+                        /*
+                         * Now I represent the playlist on the melted driver exactly. But I don't
+                         * know the start and end times for each of the clips (because they weren't
+                         * loaded from the database), so I need to build it.
+                         *
+                         * if I'm empty, I shouldn't do anything. If I'm not empty and the player is
+                         * stopped, I should start it on the first clip. If I'm not empty and the
+                         * player is running, I should sync the start / end for each of my Medias
+                         */
+                        if( !self.length )
+                            return;
+                        if( status.status == 'stopped' ) {
+                            self.adjustTimes(0, 0);
+                            return self.driver.play();
+                        }
+                        var current = self.findWhere({id: status.currentClip.id})
+                        var index = self.indexOf(current);
+                        self.adjustTimes(index, status.currentClip.currentFrame);
+                    });
+                promise.fin(self.leave);
+            }
+        });
+    },
+
+    adjustTimes: function(index, currentFrame) {
+        var ftms = function(f, fps) {
+            return utils.convertFramesToSeconds(f, fps) * 1000;
+        };
+
+        var current = this.at(index);
+
+        var elapsedTime = ftms(currentFrame, currentClip.fps);
+        var now = moment();
+        current.set({
+            start: now - elapsedTime,
+            end: (now - elapsedTime) + ftms(currentClip.totalFrames, currentClip.fps),
+        });
+        for(var i = index - 1 ; i >= 0 ; i--) {
+            var clip = this.at(i);
+            var next = this.at(i+1);
+            clip.set({
+                end: next.get('start'),
+                start: next.get('start') - ftms(clip.get('length'), clip.get('fps')),
+            });
+        }
+        for(var i = index + 1 ; i < this.length ; i++) {
+            var clip = this.at(i);
+            var prev = this.at(i-1);
+            clip.set({
+                start: prev.get('end'),
+                end: prev.get('end') + ftms(clip.get('length'), clip.get('fps')),
+            });
+        }
+    },
+
+    loadFromMelted: function(clips) {
+        var toAdd = [];
+        clips.forEach((function(clip) {
+            toAdd.push(Mosto.Media(clip));
+        }).bind(this));
+        this.add(toAdd, { merge: true });
     },
 });
 

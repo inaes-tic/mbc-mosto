@@ -1,10 +1,10 @@
-function Status(status, actualClip, currentPos) {
+function Status(status, currentClip, currentPos) {
     this.status           = status;
-    this.actualClip       = actualClip;
+    this.currentClip      = currentClip;
     this.currentPos       = currentPos;
 }
 
-exports = module.exports = function(status, actualClip, currentPos) {
-    var st = new Status(status, actualClip, currentPos);
+exports = module.exports = function(status, currentClip, currentPos) {
+    var st = new Status(status, currentClip, currentPos);
     return st;
 };

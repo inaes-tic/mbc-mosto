@@ -13,13 +13,13 @@ function melted(host, port) {
     this.mlt = new melted_node(host, port);
     console.log("mbc-mosto: [INFO] Server instance created [" + this.mlt.host + ":" + this.mlt.port + "]");
 
-    melted.prototype.sendCommand = function(command, successCallback, errorCallback) {
+    melted.prototype.sendCommand = function(command) {
         console.log("mbc-mosto: [INFO] Sending command: " + command);
-        self.mlt.sendCommand(command, "200 OK", successCallback, errorCallback);
+        return self.mlt.sendPromisedCommand(command, "200 OK");
     };
 
-    melted.prototype.getServerPlaylist = function(successCallback, errorCallback) {
-        self.mlt.sendCommand("list u0", "201 OK", function(response) {
+    melted.prototype.getServerPlaylist = function() {
+        return self.mlt.sendPromisedCommand("list u0", "201 OK").then(function(response) {
             // HACK: Converting the promise object to a string :)
             var data = "." + response;
 
@@ -50,16 +50,16 @@ function melted(host, port) {
                     clips.push(clip);
                 }
             }
-            successCallback(clips);
-        }, function(error) {
+            return clips;
+        }).fail(function(error) {
             var err = new Error("mbc-mosto: [ERROR] Error getting server playlist: " + error);
             console.error(err);
-            errorCallback(err);
+            throw err;
         });
     };
 
-    melted.prototype.getServerStatus = function(successCallback, errorCallback) {
-        self.mlt.sendCommand("usta u0", "202 OK", function(response) {
+    melted.prototype.getServerStatus = function() {
+        return self.mlt.sendPromisedCommand("usta u0", "202 OK").then(function(response) {
             // HACK: Converting the promise object to a string :)
             var data = "." + response;
 
@@ -92,15 +92,15 @@ function melted(host, port) {
                     } else {
                         st = new Status(status, undefined, 0);
                     }
-                    return successCallback(st);
+                    return st;
                 }
             }
             var err = new Error("mbc-mosto: [ERROR] Error getting server status in response object: " + response)
-            errorCallback(err);
+            throw (err);
         }, function(error) {
             var err = new Error("mbc-mosto: [ERROR] Error getting server status: " + error);
             console.error(err);
-            errorCallback(err);
+            throw err;
         });
     };
 
@@ -133,7 +133,7 @@ function melted(host, port) {
         return deferred.promise;
     };
 
-    melted.prototype.sendClip = function(clip, command, successCallback, errorCallback) {
+    melted.prototype.sendClip = function(clip, command) {
         var xml = new melted_xml();
 
         var type     = clip.type;
@@ -180,15 +180,18 @@ function melted(host, port) {
         //        var fileName = file.substring(file.lastIndexOf("/") + 1);
         var xmlFile = config.playlists_xml_dir + "/" + filename;
 
+        var deferred = Q.defer();
+
         console.log("mbc-mosto: [INFO] Writing file " + xmlFile);
         fs.writeFile(xmlFile, xml.toString({pretty:true}), function(err){
             if (err) {
-                errorCallback(err);
+                deferred.reject(err);
             } else {
                 console.log("mbc-mosto: [INFO] File ready: " + xmlFile);
-                self.sendCommand(command.replace("{xmlFile}", xmlFile), successCallback, errorCallback);
+                deferred.resolve(self.sendCommand(command.replace("{xmlFile}", xmlFile)));
             }
         });
+        return deferred.promise;
     };
 
     melted.prototype.loadClip = function(clip, successCallback, errorCallback) {
@@ -199,13 +202,13 @@ function melted(host, port) {
         //Appends clip to the end of the playlist
         self.sendClip(clip, "APND UO {xmlFile}", successCallback, errorCallback);
     };
-    melted.prototype.insertClip = function(clip, index, successCallback, errorCallback) {
+    melted.prototype.insertClip = function(clip, index) {
         //Insert clip at specified index
-        self.sendClip(clip, "INSERT UO {xmlFile} " + index, successCallback, errorCallback);
+        return self.sendClip(clip, "INSERT UO {xmlFile} " + index);
     };
-    melted.prototype.removeClip = function(index, successCallback, errorCallback) {
+    melted.prototype.removeClip = function(index) {
         //Removes clip at specified index
-        self.sendCommand("REMOVE U0 " + index, successCallback, errorCallback);
+        return self.sendCommand("REMOVE U0 " + index);
     };
     melted.prototype.cleanPlaylist = function(successCallback, errorCallback) {
         //Removes all clips but playing clip
