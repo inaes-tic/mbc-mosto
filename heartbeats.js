@@ -176,11 +176,13 @@ heartbeats.prototype.syncMelted = function() {
 
 heartbeats.prototype.fixMelted = function(expected) {
     console.error("[HEARTBEAT-SY] Melted is out of sync!");
+    self.emit("OutOfSync", expected);
     self.server.goto(expected.media.actual_order, expected.frame, self.sendStatus, self.handleError);
 };
 
 heartbeats.prototype.handleError =  function(error) {
     console.error(error);
+    self.emit("Error", error);
     //FORCING LIST TO SYNC, SHOULD CHECK MELTED PLAYLIST, FIX IT AND START PLAYING
     self.melted_medias.save();
 };
