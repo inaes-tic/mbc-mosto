@@ -103,6 +103,9 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                     remove.forEach(function(i) {
                         ret = ret.then(function() { self.driver.removeClip(i) });
                     });
+                    move.forEach(function(move) {
+                        ret = ret.then(function() { self.driver.moveClip(move.from, move.to) });
+                    });
                     return ret;
                 }).fin(self.leave)
             });
