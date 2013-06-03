@@ -21,10 +21,7 @@ function heartbeats(customConfig) {
     // TODO: Listen to Mosto.Media#change:playing
     this.current_media = false;
     
-    this.timers = {
-        gc: undefined,
-        sy: undefined
-    };
+    this.stop_timers = false;
     
     this.server = new mvcp_server(this.config.mvcp_server);
 }
@@ -52,17 +49,30 @@ heartbeats.prototype.init = function() {
 
 heartbeats.prototype.initTimers = function() {
     var self = this;
-    this.timers.gc = setInterval(function() {
-        self.executeGc();
-    }, self.config.gc_interval);
-    this.timers.sy = setInterval(function() {
-        self.syncMelted();
-    }, self.config.sync_interval);
+    self.scheduleGc();
+    self.scheduleSync();
 };
 
-heartbeats.prototype.clear = function() {
-    clearInterval(this.timers.gc);
-    clearInterval(this.timers.sy);
+heartbeats.prototype.scheduleGc = function() {
+    var self = this;
+    if (!self.stop_timers) {
+        setTimeout(function() {
+            self.executeGc();
+        }, self.config.gc_interval);
+    }
+};
+
+heartbeats.prototype.scheduleSync = function() {
+    var self = this;
+    if (!self.stop_timers) {
+        setTimeout(function() {
+            self.melted_medias.take(self.syncMelted.bind(self));
+        }, self.config.sync_interval);
+    }
+};
+
+heartbeats.prototype.stop = function() {
+    this.stop_timers = true;
 };
 
 heartbeats.prototype.executeGc = function() {
@@ -78,6 +88,7 @@ heartbeats.prototype.executeGc = function() {
         });
         self.melted_medias.save();
     }
+    self.scheduleGc();
     console.log("[HEARTBEAT-GC] Finished Garbage Collector: " + oldMedias.length + " removed.");
 };
 
@@ -154,6 +165,8 @@ heartbeats.prototype.syncMelted = function() {
             }            
         }
     }, self.handleError);
+    self.scheduleSync();
+    self.melted_medias.leave();
     console.log("[HEARTBEAT-SY] Finish Sync");
 };
 
