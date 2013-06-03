@@ -11,7 +11,7 @@ function heartbeats(customConfig) {
     //AND THAT THEY ARE IN THE SAME ORDER
     defaults = {
         gc_interval: 1000 * 60 * 60,
-        sync_interval: 250,
+        sync_interval: 50,
         mvcp_server: "melted"
     };
     this.config = customConfig || config || defaults;
