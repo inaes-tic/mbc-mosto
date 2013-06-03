@@ -12,6 +12,7 @@ function heartbeats(customConfig) {
     defaults = {
         gc_interval: 1000 * 60 * 60,
         sync_interval: 50,
+        min_scheduled: 1000 * 60 * 60 * 4,
         mvcp_server: "melted"
     };
     this.config = customConfig || config || defaults;
@@ -50,6 +51,7 @@ heartbeats.prototype.initTimers = function() {
     var self = this;
     self.scheduleGc();
     self.scheduleSync();
+    self.scheduleCheckout();
 };
 
 heartbeats.prototype.scheduleGc = function() {
@@ -70,8 +72,25 @@ heartbeats.prototype.scheduleSync = function() {
     }
 };
 
+heartbeats.prototype.scheduleCheckout = function() {
+    var self = this;
+    if (!self.stop_timers) {
+        setTimeout(function() {
+            self.checkSchedules();
+        }, self.config.min_scheduled / 4);
+    }
+};
+
 heartbeats.prototype.stop = function() {
     this.stop_timers = true;
+};
+
+heartbeats.prototype.checkSchedules =  function() {
+    var self = this;
+    var last = self.melted_medias.at(self.melted_medias.length - 1);
+    var scheduled =  last.get('end') - moment();
+    if (scheduled < self.config.min_scheduled)
+        self.emit("forceCheckout", scheduled);
 };
 
 heartbeats.prototype.executeGc = function() {
