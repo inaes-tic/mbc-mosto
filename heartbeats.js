@@ -18,7 +18,6 @@ function heartbeats(customConfig) {
     
     this.melted_medias = Mosto.Playlists.get('melted_medias');
     
-    // TODO: Listen to Mosto.Media#change:playing
     this.current_media = false;
     
     this.stop_timers = false;
