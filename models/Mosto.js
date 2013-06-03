@@ -118,11 +118,11 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
 
         var current = this.at(index);
 
-        var elapsedTime = ftms(currentFrame, currentClip.fps);
+        var elapsedTime = ftms(currentFrame, current.fps);
         var now = moment();
         current.set({
             start: now - elapsedTime,
-            end: (now - elapsedTime) + ftms(currentClip.totalFrames, currentClip.fps),
+            end: (now - elapsedTime) + ftms(current.totalFrames, current.fps),
         });
         for(var i = index - 1 ; i >= 0 ; i--) {
             var clip = this.at(i);
