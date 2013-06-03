@@ -183,7 +183,7 @@ heartbeats.prototype.syncMelted = function() {
                 } else if (Math.abs(meltedClip.currentFrame - expected.frame) > expected.media.fps) {
 //                    self.fixMelted(expected);
 //                    deferred.resolve(self.fixMelted(expected));
-                    return self.fixMelted(expected)
+                    return self.fixMelted(expected);
                 } else {
 //                    self.sendStatus();
 //                    deferred.resolve(self.sendStatus());
