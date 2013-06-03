@@ -87,7 +87,7 @@ mongo_driver.prototype.pubsub_handler = {
         }).bind(this));
     },
     'schedbackend.delete': function(msg) {
-        this.emit ("delete", msg.model._id);
+        this.emit('delete', msg.model._id);
     },
 }
 
