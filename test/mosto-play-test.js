@@ -28,10 +28,10 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
 
     before(function(done) {
         melted.take(function() {
-		    melted.stop(function(){
-    	        done();
-    	    });
-	    });
+            melted.stop(function(){
+                done();
+            });
+        });
     });
 
     describe('#[PLAY] Start Melted', function() {
@@ -56,7 +56,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
     });
 
     describe('#[PLAY] start mosto', function() {
-	    before(function(done) {
+        before(function(done) {
 
             mosto_server = silence(function(){ return new mosto(); });
 
@@ -74,13 +74,13 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
             mosto_server.synchronizer.init();
             mosto_server.player.init();
             done();
-	    });
-	    it('-- mvcp server connected should return false', function() {
+        });
+        it('-- mvcp server connected should return false', function() {
             assert.notEqual( mosto_server, undefined);
-	          assert.notEqual( mosto_server.server, undefined);
+            assert.notEqual( mosto_server.server, undefined);
             assert.notEqual( mosto_server.driver, undefined);
-	          assert.equal( mosto_server.server_started, false);
-	    });
+            assert.equal( mosto_server.server_started, false);
+        });
     });
 
     describe("#[PLAY] Initializing mosto video server", function() {
@@ -88,7 +88,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
             mosto_server.startMvcpServer( function() {
                 done();
             });
-	    });
+        });
         it("--should server has started", function() {
             assert.equal( mosto_server.server.isConnected(), true );
         });
@@ -100,7 +100,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
             mosto_server.initDriver();
             mosto_server.player.play( mosto_server.player );
             done();
-	    });
+        });
         it("--should timer have been created", function(done) {
             mosto_server.player.once('playing', function(mess) {
                 assert.notEqual( mosto_server.player.timer, undefined );
@@ -183,7 +183,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
     });
 
     describe("#[PLAY] Remove playlist", function() {
-        before(function(done){            
+        before(function(done){
             done();
         });
         it("--should return only the blank black_id", function(done) {
@@ -192,7 +192,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
                     assert.equal( status.clip.current.id, 'black_id' );
                     done();
                 });
-            });            
+            });
             fetcher.removePlaylist( "test_playlist_1_id" );
         });
     });
@@ -214,13 +214,13 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
         it("--should play the same playlist", function(done) {
             player.once('dataupdated', function() {
                 player.once('play_endstream', function() {
-                   server.getServerPlaylist( function( server_playlist ) {
+                    server.getServerPlaylist( function( server_playlist ) {
                         server.getServerStatus( function( server_status ) {
                             if (server_status.actualClip.id == driver_playlists[0].medias[0].id/* && server_status.status=="playing"*/ )
                                 done();
                             else done(new Error( server_status.actualClip.id+"!=" + driver_playlists[0].medias[0].id + " status:"+server_status.status ));
                         },function(error) { done(new Error(error)); });
-                   },function(error) { done(new Error(error)); });
+                    },function(error) { done(new Error(error)); });
                 });
             });
             mosto_server.fetcher.checkoutPlaylists();
@@ -229,19 +229,19 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
 
     describe('#[PLAY] Stop mosto and leave', function() {
         before(function(done) {
-		    //mosto_server.finish(function() {
+            //mosto_server.finish(function() {
             mosto_server.stopDriver();
             mosto_server.player.stop();
             melted.stop( function(pid) {
                 mosto_server = null;
-			          melted.leave();
+                melted.leave();
                 done();
             });
         });
-	    it('-- leave mosto and melted', function(done) {
+        it('-- leave mosto and melted', function(done) {
             //assert.equal( mosto_server.player.timer, undefined );
             done();
-	    });
+        });
     });
 
     describe('#last [PLAY] check ', function() {
