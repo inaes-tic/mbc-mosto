@@ -121,7 +121,7 @@ heartbeats.prototype.sendStatus = function() {
         if (!self.current_media)
             self.current_media = expected.media;
         if (expected.media.get("id").toString() !== self.current_media.get("id").toString()) {
-            self.emit("clipStatus", {old_media: self.current_media, new_media: expected.media, frame: expected.frame});
+            self.emit("clipStatus", expected.media);
             self.current_media = expected.media;
         } else {
             self.emit("frameStatus", {media: expected.media, frame: expected.frame});
