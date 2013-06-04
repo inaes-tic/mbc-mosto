@@ -30,6 +30,11 @@ function mosto(customConfig) {
     this.playlists = undefined;
 }
 
+mosto.prototype.inTimeWindow = function(obj) {
+    // expects obj.start and obj.end to exist and be moment()s
+    return (obj.end > this.timeWindow.start && obj.start < this.timeWindow.end);
+}
+
 mosto.prototype.initDriver = function() {
 
     console.log("mbc-mosto: [INFO] Initializing playlists driver");
