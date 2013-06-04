@@ -39,6 +39,10 @@ Mosto.Media = Backbone.Model.extend({
         if( !attributes.fps ){
             this.set('fps', config.fps);
         }
+        if( typeof attributes.length == 'string' ) {
+            var m = moment(attributes.length, 'HH:mm:ss.SSS');
+            attributes.length = moment.duration({ hours: m.hour(), minutes: m.minute(), seconds: m.second(), milliseconds: m.millisecond() });
+        }
         if( moment.isDuration(attributes.length) ) {
             this.set('length', parseInt(attributes.length.asSeconds() * this.get('fps')));
         }
