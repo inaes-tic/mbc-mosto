@@ -238,7 +238,7 @@ Mosto.PlaylistCollection = Backbone.Collection.extend({
     comparator: 'start',
     initialize: function() {
         Backbone.Collection.prototype.initialize.apply(this, arguments);
-        this.on('sorted', this.addBlanks.bind(this));
+        this.on('sort', this.addBlanks.bind(this));
     },
     sort: function(options) {
         this.removeBlanks({ silent: true });
@@ -271,8 +271,8 @@ Mosto.PlaylistCollection = Backbone.Collection.extend({
             start: from,
             end: to,
         });
-        blank.set({'id': uuid.v4()});
-        playlist.medias.add(blank);
+        blank.set({ 'id': uuid.v4(), duration: duration * blank.get('fps') });
+        playlist.get('medias').add(blank);
         this.add(playlist, options);
     },
     getMedias: function() {
