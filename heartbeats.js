@@ -24,6 +24,7 @@ function heartbeats(customConfig) {
     this.stop_timers = false;
     
     this.server = new mvcp_server(this.config.mvcp_server);
+    console.log("[HEARTBEAT-MVCP] MVCP server instantiated: " + this.server.uuid);
     
     events.EventEmitter.call(this);
 }

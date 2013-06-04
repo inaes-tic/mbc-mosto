@@ -221,6 +221,7 @@ mosto.prototype.init = function( melted, callback) {
      */
     function startall() {
         self.server        = new mvcp_server(self.config.mvcp_server);
+        console.log("mbc-mosto: [INFO] MVCP Server instantiated: " + self.server.uuid);
         self.pl_driver     = new playlists_driver(self.config.playlist_server);
         self.status_driver = new status_driver();
         self.playlists     = models.Playlists;
