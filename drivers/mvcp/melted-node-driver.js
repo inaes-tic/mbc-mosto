@@ -194,13 +194,13 @@ function melted(host, port) {
         return deferred.promise;
     };
 
-    melted.prototype.loadClip = function(clip, successCallback, errorCallback) {
+    melted.prototype.loadClip = function(clip) {
         //Load clip removing the whole playlist and starting playback
-        self.sendClip(clip, "LOAD U0 {xmlFile}", successCallback, errorCallback);
+        return self.sendClip(clip, "LOAD U0 {xmlFile}");
     };
-    melted.prototype.appendClip = function(clip, successCallback, errorCallback) {
+    melted.prototype.appendClip = function(clip) {
         //Appends clip to the end of the playlist
-        self.sendClip(clip, "APND UO {xmlFile}", successCallback, errorCallback);
+        return self.sendClip(clip, "APND UO {xmlFile}");
     };
     melted.prototype.insertClip = function(clip, index) {
         //Insert clip at specified index
@@ -210,33 +210,33 @@ function melted(host, port) {
         //Removes clip at specified index
         return self.sendCommand("REMOVE U0 " + index);
     };
-    melted.prototype.cleanPlaylist = function(successCallback, errorCallback) {
+    melted.prototype.cleanPlaylist = function() {
         //Removes all clips but playing clip
-        self.sendCommand("CLEAN U0", successCallback, errorCallback);
+        return self.sendCommand("CLEAN U0");
     };
     //    melted.prototype.wipePlaylist = function(successCallback, errorCallback) {
     //        //Removes all clips before playing clip
     //        self.sendCommand("WIPE U0", successCallback, errorCallback);
     //    };
-    melted.prototype.clearPlaylist = function(successCallback, errorCallback) {
+    melted.prototype.clearPlaylist = function() {
         //Removes all clips, including playing clip
-        self.sendCommand("CLEAR U0", successCallback, errorCallback);
+        return self.sendCommand("CLEAR U0");
     };
-    melted.prototype.moveClip = function(oldIndex, newIndex, successCallback, errorCallback) {
+    melted.prototype.moveClip = function(oldIndex, newIndex) {
         //Moves the clip at oldIndex to newIndex (use it with getServerPlaylist)
-        self.sendCommand("MOVE U0 " + oldIndex + " " + newIndex, successCallback, errorCallback);
+        return self.sendCommand("MOVE U0 " + oldIndex + " " + newIndex);
     };
-    melted.prototype.play = function(successCallback, errorCallback) {
+    melted.prototype.play = function() {
         //Play
-        self.sendCommand("PLAY U0", successCallback, errorCallback);
+        return self.sendCommand("PLAY U0");
     };
-    melted.prototype.stop = function(successCallback, errorCallback) {
+    melted.prototype.stop = function() {
         //Stop
-        self.sendCommand("STOP U0", successCallback, errorCallback);
+        return self.sendCommand("STOP U0");
     };
-    melted.prototype.pause = function(successCallback, errorCallback) {
+    melted.prototype.pause = function() {
         //Pause
-        self.sendCommand("PAUSE U0", successCallback, errorCallback);
+        return self.sendCommand("PAUSE U0");
     };
     melted.prototype.goto = function(index, frame) {
         //Starts playing clip at specified index and frame (use with getServerPlaylist and getServerStatus)
