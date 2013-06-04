@@ -27,6 +27,7 @@ function mosto(customConfig) {
 
     /* MODULES */
     this.heartbeats = undefined;
+    this.playlists = undefined;
 }
 
 mosto.prototype.initDriver = function() {
@@ -91,7 +92,10 @@ mosto.prototype.init = function( melted, callback) {
         self.server        = new mvcp_server(self.config.mvcp_server);
         self.pl_driver     = new playlists_driver(self.config.playlist_server);
         self.status_driver = new status_driver();
-        self.playlists = models.Playlists;
+        self.playlists     = models.Playlists;
+
+        // melted is started, get playlist
+        self.playlists.get('melted_medias').fetch();
 
         self.heartbeats.on('frameStatus', function(current_frame) {
             var now = moment();
