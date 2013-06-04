@@ -29,6 +29,7 @@ function heartbeats(customConfig) {
 }
 
 util.inherits(heartbeats, events.EventEmitter);
+
 heartbeats.prototype.startMvcpServer = function(callback) {
     var self = this;
     var result = self.server.initServer();
@@ -215,7 +216,7 @@ heartbeats.prototype.handleError =  function(error) {
     console.error(error);
     self.emit("Error", error);
     //FORCING LIST TO SYNC, SHOULD CHECK MELTED PLAYLIST, FIX IT AND START PLAYING
-    self.melted_medias.save();
+    self.melted_medias.sync();
 };
 
 exports = module.exports = function(customConfig) {
