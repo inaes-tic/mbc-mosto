@@ -70,6 +70,7 @@ mosto.prototype.stopDriver = function() {
 };
 
 mosto.prototype.startMvcpServer = function(callback) {
+    var self = this;
     var result = self.server.initServer();
     result.then(function() {
         console.log("mbc-mosto: [INFO] MVCP server started");
