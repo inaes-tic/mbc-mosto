@@ -132,6 +132,15 @@ describe.only('models.Mosto', function() {
                             }).then(done, done).fin(self.mlt_media.leave);
                         });
                     });
+                    it('removing the Playlist and saving should remove them from melted as well', function(done){
+                        var pl = self.pls.at(0);
+                        self.playlists.removePlaylist(pl);
+                        self.playlists.save();
+                        self.mlt_media.take(function() {
+                            mvcp.getServerPlaylist().then(function(clips) {
+                                clips.length.should.eql(0);
+                            }).then(done, done).fin(self.mlt_media.leave);
+                        });
                     });
                 });
             });
