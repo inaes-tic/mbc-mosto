@@ -93,7 +93,7 @@ heartbeats.prototype.checkSchedules =  function() {
     var last = self.melted_medias.at(self.melted_medias.length - 1);
     var scheduled =  last.get('end') - moment();
     if (scheduled < self.config.min_scheduled)
-        self.emit("forceCheckout", scheduled);
+        self.emit("forceCheckout", {from: last.get('end'), to: last.get('end') + scheduled});
 };
 
 heartbeats.prototype.executeGc = function() {
