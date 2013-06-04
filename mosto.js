@@ -35,20 +35,25 @@ util.inherits(mosto, events.EventEmitter);
 
 mosto.prototype.initDriver = function() {
 
+    var self = this;
     console.log("mbc-mosto: [INFO] Initializing playlists driver");
 
-    self.driver.on ("create", function(playlist) {
+    self.pl_driver.on ("create", function(playlist) {
+        var mostoPlaylist = self.getModelPlaylistFromApiPlaylist(playlist);
+        self.playlists.get("playlists").add(mostoPlaylist, {merge: true});
+        self.playlists.get("melted_medias").sync();
+    } );
+    self.pl_driver.on ("update", function(playlist) {
+        var mostoPlaylist = self.getModelPlaylistFromApiPlaylist(playlist);
+        self.playlists.get("playlists").add(mostoPlaylist, {merge: true});
+        self.playlists.get("melted_medias").sync();
+    } );
+    self.pl_driver.on ("delete", function(playlist) {
+        self.playlists.get("playlists").remove(playlist.id);
+        self.playlists.get("melted_medias").sync();
+    } );
 
-        self.fetcher.addPlaylist( playlist, self.fetcher );
-    } );
-    self.driver.on ("update", function(playlist) {
-        self.fetcher.updatePlaylist( playlist, self.fetcher);
-    } );
-    self.driver.on ("delete", function(playlist) {
-        self.fetcher.removePlaylist( playlist, self.fetcher);
-    } );
-
-    self.driver.start();
+    self.pl_driver.start();
 };
 
 mosto.prototype.stopDriver = function() {
