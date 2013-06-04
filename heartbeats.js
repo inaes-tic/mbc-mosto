@@ -24,8 +24,11 @@ function heartbeats(customConfig) {
     this.stop_timers = false;
     
     this.server = new mvcp_server(this.config.mvcp_server);
+    
+    events.EventEmitter.call(this);
 }
 
+util.inherits(heartbeats, events.EventEmitter);
 heartbeats.prototype.startMvcpServer = function(callback) {
     var self = this;
     var result = self.server.initServer();
@@ -216,7 +219,6 @@ heartbeats.prototype.handleError =  function(error) {
 };
 
 exports = module.exports = function(customConfig) {
-    util.inherits(heartbeats, events.EventEmitter);
     var hb = new heartbeats(customConfig);
     return hb;
 };
