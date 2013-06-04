@@ -48,9 +48,12 @@ mosto.prototype.initDriver = function() {
         this.playlists.addPlaylist(playlist);
     });
 
-    self.driver.on ("update", function(playlist) {
-        self.fetcher.updatePlaylist( playlist, self.fetcher);
-    } );
+    this.pl_driver.on('update', function(playlist) {
+        if(!this.inTimeWindow(playlist))
+            return this.playlists.removePlaylist(playlist);
+        return this.playlists.addPlaylist(playlist);
+    });
+
     self.driver.on ("delete", function(playlist) {
         self.fetcher.removePlaylist( playlist, self.fetcher);
     } );
@@ -159,7 +162,6 @@ mosto.prototype.init = function( melted, callback) {
             self.status_driver.setStatus(status);
         });
 
-        self.pl_driver.on('update');
         self.pl_driver.on('delete');
 
         self.initDriver();
