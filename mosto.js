@@ -80,6 +80,16 @@ mosto.prototype.startMvcpServer = function(callback) {
 };
 
 console.log("mbc-mosto: [INFO] Starting mbc-mosto... ") ;
+mosto.prototype.fetchPlaylists = function(window) {
+    self.driver.getPlaylists(window, function(playlists) {
+        playlists.forEach(function(playlist) {
+            var mostoPlaylist = self.getModelPlaylistFromApiPlaylist(playlist);
+            self.playlists.get("playlists").add(mostoPlaylist, {merge: true});
+        });
+        self.playlists.get("melted_medias").sync();
+    });
+};
+
 mosto.prototype.getModelPlaylistFromApiPlaylist = function(playlist) {
     //TODO: Remove this function and change driver to send Caspa Models
     var playlistJson   = {};
