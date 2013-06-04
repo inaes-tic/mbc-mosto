@@ -7,6 +7,7 @@ var Backbone   = require('backbone')
 ,   mvcp       = require('../drivers/mvcp/mvcp-driver')
 ,   semaphore  = require('semaphore')
 ,   utils      = require('../utils')
+,   Q          = require('q')
 ;
 
 var Mosto = {};
