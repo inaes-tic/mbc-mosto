@@ -212,18 +212,14 @@ mosto.prototype.init = function( melted, callback) {
         self.server        = new mvcp_server(self.config.mvcp_server);
         self.pl_driver     = new playlists_driver(self.config.playlist_server);
         self.status_driver = new status_driver();
-        self.playlists = models.Playlists;
-
-
-        self.pl_driver.on('create');
-        self.pl_driver.on('update');
-        self.pl_driver.on('delete');
+        self.playlists     = models.Playlists;
+        self.heartbeats    = new heartbeats();
 
         self.initDriver();
-        self.heartbeats.init();
-
+        self.initHeartbeats();
+        
         self.startMvcpServer( function() {
-            self.player.play( self.player );
+            self.fetchPlaylists({from: now, to: now + (4 * 60 * 60 * 1000)});
             if (callback) callback();
         } );
     }
@@ -249,7 +245,7 @@ mosto.prototype.init = function( melted, callback) {
     else
         Melted.take( check_and_start );
 
-}
+};
 
 mosto.prototype.finish = function(callback) {
     console.log("mbc-mosto: [INFO] Finish mbc-mosto... ") ;
