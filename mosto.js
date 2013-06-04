@@ -12,7 +12,7 @@ var fs               = require('fs')
 ,   utils            = require('./utils')
 ,   config           = require('mbc-common').config.Mosto.General
 ,   _                = require('underscore')
-,   hearbeats        = require('./heartbeats')
+,   heartbeats        = require('./heartbeats')
 ,   models           = require('./models/Mosto')
 ;
 
