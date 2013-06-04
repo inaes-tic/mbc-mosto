@@ -132,6 +132,10 @@ mosto.prototype.initHeartbeats = function() {
             status.show.next = playlists.at(index+1).toJSON();
         self.status_driver.setStatus(status);
     });
+    
+    self.heartbeats.on("forceCheckout", function(window) {
+        self.fetchPlaylists(window);
+    });
     self.heartbeats.init();
 };
 mosto.prototype.fetchPlaylists = function(window) {
