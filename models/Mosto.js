@@ -151,6 +151,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                          */
                         if( !self.length )
                             return;
+                        // statuses: offline|not_loaded|playing|stopped|paused|disconnected|unknown
                         if( status.status == 'stopped' ) {
                             self.adjustTimes(0, 0);
                             return self.driver.play();
@@ -227,6 +228,14 @@ Mosto.Playlist = Backbone.Model.extend({
         if (!attributes.medias)
             this.set('medias', new Mosto.MediaCollection());
         this.get('medias').on('all', bubbleEvents(this, 'medias'));
+        /*
+          this is important: 'add' events are triggered AFTER every model has been
+          added to the collection, and the collection's been SORTED. So we can trust
+          this to be right.
+
+          Also important: a second 'set' on a model MAKES IT FORGET THE PREVIOUS MODIFICATION.
+          i.e.: model.changedAttributes() does not compare with the server.
+        */
     },
     getMedias: function() {
         return this.get('medias').toArray();
@@ -298,6 +307,7 @@ Mosto.LoadedPlaylists = Backbone.Model.extend({
     },
 
     save: function() {
+        // set fires add, remove, change and sort
         this.get('melted_medias').set(this.get('playlists').getMedias());
     },
 
