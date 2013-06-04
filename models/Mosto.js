@@ -83,7 +83,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         this.on('add', function(model, collection, options){
             self.take(function() {
                 var index = collection.indexOf(model);
-                var promise = self.driver.insertClip(model, index).fin(self.leave);
+                var promise = self.driver.insertClip(model.toJSON(), index).fin(self.leave);
             });
         })
         this.on('remove', function(model, collection, options) {
@@ -138,7 +138,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                         ret = ret.then(function() { return self.driver.moveClip(move.from, move.to) });
                     });
                     return ret;
-                }).fin(self.leave)
+                }).fin(self.leave);
             });
         });
     },
@@ -185,11 +185,11 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
 
         var current = this.at(index);
 
-        var elapsedTime = ftms(currentFrame, current.fps);
+        var elapsedTime = ftms(currentFrame, current.get('fps'));
         var now = moment();
         current.set({
             start: now - elapsedTime,
-            end: (now - elapsedTime) + ftms(current.totalFrames, current.fps),
+            end: (now - elapsedTime) + ftms(current.get('totalFrames'), current.get('fps')),
         });
         for(var i = index - 1 ; i >= 0 ; i--) {
             var clip = this.at(i);
@@ -211,9 +211,9 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
 
     loadFromMelted: function(clips) {
         var toAdd = [];
-        clips.forEach((function(clip) {
-            toAdd.push(Mosto.Media(clip));
-        }).bind(this));
+        clips.forEach(function(clip) {
+            toAdd.push(new Mosto.Media(clip));
+        });
         this.add(toAdd, { merge: true, silent: true });
     },
 });
@@ -260,10 +260,11 @@ Mosto.Playlist = Backbone.Model.extend({
         return this.get('medias').toArray();
     },
     adjustMediaTimes: function(fromIndex) {
+        var collection = this.get('medias');
         var timewalk = moment(fromIndex > 0 ?
-                              collection.at(index-1).get('start') :
+                              collection.at(fromIndex-1).get('start') :
                               this.get('start'));
-        for(var i = index ; i < collection.length ; i++) {
+        for(var i = fromIndex ; i < collection.length ; i++) {
             var media = collection.at(i);
             media.set('start', moment(timewalk));
             timewalk.add((media.get('length') / media.get('fps')) * 1000);
