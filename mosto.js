@@ -34,7 +34,6 @@ function mosto(customConfig) {
 util.inherits(mosto, events.EventEmitter);
 
 mosto.prototype.initDriver = function() {
-
     var self = this;
     console.log("mbc-mosto: [INFO] Initializing playlists driver");
 
@@ -57,7 +56,6 @@ mosto.prototype.initDriver = function() {
 };
 
 mosto.prototype.stopDriver = function() {
-
     var self = this;
     
     console.log("mbc-mosto: [INFO] Stopping playlists driver");
@@ -87,7 +85,6 @@ mosto.prototype.startMvcpServer = function(callback) {
     });
 };
 
-console.log("mbc-mosto: [INFO] Starting mbc-mosto... ") ;
 mosto.prototype.initHeartbeats = function() {
     var self = this;
     
