@@ -29,7 +29,8 @@
         "mubsub"      : "git://github.com/inaes-tic/mubsub.git",
         "mbc-common"  : "git://github.com/inaes-tic/mbc-common.git",
         "node-mlt"    : "git://github.com/inaes-tic/node-mlt.git#0.0.1",
-        "semaphore"   : "1.0.x"
+        "semaphore"   : "1.0.x",
+        "backbone"    : "1.x.x"
     },
     "devDependencies": {
         "mocha"    :  "1.7.x",
