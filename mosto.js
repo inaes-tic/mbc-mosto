@@ -187,6 +187,16 @@ mosto.prototype.getModelPlaylistFromApiPlaylist = function(playlist) {
     return new Mosto.Playlist(playlistJson);
 };
 
+mosto.prototype.stopHeartbeats = function() {
+    var self = this;
+    
+    console.log("mbc-mosto: [INFO] Stopping heartbeats");
+
+    self.heartbeats.stop();
+
+    self.heartbeats.removeAllListeners("frameStatus");
+    self.heartbeats.removeAllListeners("clipStatus");
+};
 
 mosto.prototype.init = function( melted, callback) {
     console.log("mbc-mosto: [INFO] Init mbc-mosto... ") ;
