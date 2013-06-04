@@ -62,7 +62,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
 
             server = mosto_server.server = silence(function(){ return mvcp_server("melted"); });
             mosto_server.status_driver = new status_driver();
-            mosto_server.driver = new test_driver();
+            mosto_server.pl_driver = new test_driver();
 
             fetcher = mosto_server.fetcher        = new mosto_fetcher( { mosto: mosto_server } );
             mosto_server.scheduler      = new mosto_scheduler( { mosto: mosto_server });
@@ -78,7 +78,7 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
         it('-- mvcp server connected should return false', function() {
             assert.notEqual( mosto_server, undefined);
             assert.notEqual( mosto_server.server, undefined);
-            assert.notEqual( mosto_server.driver, undefined);
+            assert.notEqual( mosto_server.pl_driver, undefined);
             assert.equal( mosto_server.server_started, false);
         });
     });
