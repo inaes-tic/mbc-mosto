@@ -58,13 +58,15 @@ mosto.prototype.initDriver = function() {
 
 mosto.prototype.stopDriver = function() {
 
+    var self = this;
+    
     console.log("mbc-mosto: [INFO] Stopping playlists driver");
 
-    self.driver.stop();
+    self.pl_driver.stop();
 
-    self.driver.removeAllListeners("create");
-    self.driver.removeAllListeners("update");
-    self.driver.removeAllListeners("delete");
+    self.pl_driver.removeAllListeners("create");
+    self.pl_driver.removeAllListeners("update");
+    self.pl_driver.removeAllListeners("delete");
 };
 
 mosto.prototype.startMvcpServer = function(callback) {
