@@ -80,6 +80,60 @@ mosto.prototype.startMvcpServer = function(callback) {
 };
 
 console.log("mbc-mosto: [INFO] Starting mbc-mosto... ") ;
+mosto.prototype.initHeartbeats = function() {
+    var self = this;
+    
+    console.log("mbc-mosto: [INFO] Initializing heartbeats");
+    
+    self.heartbeats.on('frameStatus', function(status) {
+        self.status_driver.setStatusClip(StatusClip(
+            status.media.id,
+            status.media.get('playlist_order'),
+            status.media.playlist.id,
+            status.media.get('fps'),
+            status.frame,
+            status.media.get('length')
+        ));
+    });
+    self.heartbeats.on('clipStatus', function(media) {
+        var melted_medias = self.playlists.get('melted_medias');
+        var playlists = self.playlists.get('playlists');
+        var status = {
+            clip:{
+                previous: undefined,
+                current: undefined,
+                next: undefined
+            },
+            show: {
+                previous: undefined,
+                current: undefined,
+                next: undefined
+            },
+            position: 0,
+            clips: melted_medias.toJSON(),
+            status: none
+        };
+        /* clips */
+        var index = melted_medias.indexOf(media);
+        status.clip.current = media.toJSON();
+        if( index > 0 )
+            status.clip.previous = melted_medias.at(index-1).toJSON();
+        if( index < melted_medias.length )
+            status.clip.next = melted_medias.at(index+1).toJSON();
+        /* shows */
+        var playlist = playlists.find(function(pl) {
+            return pl.indexOf(media) >= 0;
+        });
+        index = playlists.indexOf(playlist);
+        status.show.current = playlist.toJSON();
+        if( index > 0 )
+            status.show.previous = playlists.at(index-1).toJSON();
+        if( index < playlists.length )
+            status.show.next = playlists.at(index+1).toJSON();
+        self.status_driver.setStatus(status);
+    });
+    self.heartbeats.init();
+};
 mosto.prototype.fetchPlaylists = function(window) {
     self.driver.getPlaylists(window, function(playlists) {
         playlists.forEach(function(playlist) {
@@ -141,57 +195,6 @@ mosto.prototype.init = function( melted, callback) {
         self.status_driver = new status_driver();
         self.playlists = models.Playlists;
 
-        self.heartbeats.on('frameStatus', function(current_frame) {
-            var now = moment();
-            var current = self.playlists.get('melted_medias').find(function(media) {
-                return media.get('start') <= now && media.get('end') >= now;
-            });
-            self.status_driver.setStatusClip(StatusClip(
-                current.id,
-                current.get('playlist_order'),
-                current.playlist.id,
-                current.get('fps'),
-                current_frame,
-                current.get('total_frames'),
-            ));
-        });
-        self.heartbeats.on('clipStatus', function(media) {
-            var melted_medias = self.playlists.get('melted_medias');
-            var playlists = self.playlists.get('playlists');
-            var status = {
-                clip:{
-                    previous: undefined,
-                    current: undefined,
-                    next: undefined,
-                },
-                show: {
-                    previous: undefined,
-                    current: undefined,
-                    next: undefined,
-                },
-                position: 0,
-                clips: melted_medias.toJSON(),
-                status: none,
-            };
-            /* clips */
-            var index = melted_medias.indexOf(media);
-            status.clip.current = media.toJSON();
-            if( index > 0 )
-                status.clip.previous = melted_medias.at(index-1).toJSON();
-            if( index < melted_medias.length )
-                status.clip.next = melted_medias.at(index+1).toJSON();
-            /* shows */
-            var playlist = playlists.find(function(pl) {
-                return pl.indexOf(media) >= 0;
-            });
-            index = playlists.indexOf(playlist);
-            status.show.current = playlist.toJSON();
-            if( index > 0 )
-                status.show.previous = playlists.at(index-1).toJSON();
-            if( index < playlists.length )
-                status.show.next = playlists.at(index+1).toJSON();
-            self.status_driver.setStatus(status);
-        });
 
         self.pl_driver.on('create');
         self.pl_driver.on('update');
