@@ -39,10 +39,15 @@ mosto.prototype.initDriver = function() {
 
     console.log("mbc-mosto: [INFO] Initializing playlists driver");
 
-    self.driver.on ("create", function(playlist) {
+    this.pl_driver.on('create', function(playlist) {
+        var now = moment();
 
-        self.fetcher.addPlaylist( playlist, self.fetcher );
-    } );
+        if(!this.inTimeWindow(playlist))
+            return;
+
+        this.playlists.addPlaylist(playlist);
+    });
+
     self.driver.on ("update", function(playlist) {
         self.fetcher.updatePlaylist( playlist, self.fetcher);
     } );
@@ -50,7 +55,7 @@ mosto.prototype.initDriver = function() {
         self.fetcher.removePlaylist( playlist, self.fetcher);
     } );
 
-    self.driver.start();
+    self.pl_driver.start();
 };
 
 mosto.prototype.stopDriver = function() {
@@ -154,7 +159,6 @@ mosto.prototype.init = function( melted, callback) {
             self.status_driver.setStatus(status);
         });
 
-        self.pl_driver.on('create');
         self.pl_driver.on('update');
         self.pl_driver.on('delete');
 
