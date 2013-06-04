@@ -300,8 +300,14 @@ Mosto.LoadedPlaylists = Backbone.Model.extend({
     save: function() {
         this.get('melted_medias').set(this.get('playlists').getMedias());
     },
-});
 
+    addPlaylist: function(playlist) {
+        this.get('playlists').add(playlist, { merge: true });
+    },
+    removePlaylist: function(playlist) {
+        this.get('playlists').remove(playlist);
+    },
+});
 
 Mosto.Playlists = new Mosto.LoadedPlaylists();
 
