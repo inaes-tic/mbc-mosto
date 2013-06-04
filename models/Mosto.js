@@ -1,5 +1,4 @@
 var Backbone   = require('backbone')
-,   relational = require('backbone-relational')
 ,   config     = require('mbc-common').config.Mosto.General
 ,   path       = require('path')
 ,   uuid       = require('node-uuid')
