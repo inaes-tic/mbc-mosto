@@ -52,6 +52,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
     comparator: 'start',
     initialize: function() {
         this.driver = new mvcp('melted');
+        console.log("MeltedCollection: [INFO] MVCP Server instantiated: " + this.driver.uuid);
         this.semaphore = semaphore(1);
         this.take = this.semaphore.take;
         this.leave = this.semaphore.leave;
