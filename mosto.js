@@ -27,7 +27,11 @@ function mosto(customConfig) {
 
     /* MODULES */
     this.heartbeats = undefined;
+    
+    events.EventEmitter.call(this);
 }
+
+util.inherits(mosto, events.EventEmitter);
 
 mosto.prototype.initDriver = function() {
 
@@ -196,7 +200,6 @@ mosto.prototype.finish = function(callback) {
 }
 
 exports = module.exports = function(customConfig) {
-    util.inherits(mosto, events.EventEmitter);
     var mosto_server = new mosto(customConfig);
     return mosto_server;
 };
