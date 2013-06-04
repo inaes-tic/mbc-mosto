@@ -9,7 +9,7 @@ var config           = require('mbc-common').config.Mosto.HeartBeats,
 function heartbeats(customConfig) {
     //THIS MODULE ASSUMES MELTED ALWAYS HAS THE SAME CLIPS AS MELTED_MEDIAS 
     //AND THAT THEY ARE IN THE SAME ORDER
-    defaults = {
+    var defaults = {
         gc_interval: 1000 * 60 * 60,
         sync_interval: 50,
         min_scheduled: 1000 * 60 * 60 * 4,
@@ -49,7 +49,7 @@ heartbeats.prototype.startMvcpServer = function(callback) {
 };
 
 heartbeats.prototype.init = function() {
-    this.startMvcpServer(this.initTimers);    
+    this.startMvcpServer(this.initTimers.bind(this));    
 };
 
 heartbeats.prototype.initTimers = function() {
