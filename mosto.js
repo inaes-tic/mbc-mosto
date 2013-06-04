@@ -27,44 +27,53 @@ function mosto(customConfig) {
 
     /* MODULES */
     this.heartbeats = undefined;
+    this.playlists = undefined;
     
     events.EventEmitter.call(this);
 }
 
 util.inherits(mosto, events.EventEmitter);
 
+mosto.prototype.inTimeWindow = function(obj) {
+    // expects obj.start and obj.end to exist and be moment()s
+    return (obj.end > this.timeWindow.start && obj.start < this.timeWindow.end);
+}
+
 mosto.prototype.initDriver = function() {
     var self = this;
     console.log("mbc-mosto: [INFO] Initializing playlists driver");
 
-    self.pl_driver.on ("create", function(playlist) {
-        var mostoPlaylist = self.getModelPlaylistFromApiPlaylist(playlist);
-        self.playlists.get("playlists").add(mostoPlaylist, {merge: true});
-        self.playlists.get("melted_medias").sync();
-    } );
-    self.pl_driver.on ("update", function(playlist) {
-        var mostoPlaylist = self.getModelPlaylistFromApiPlaylist(playlist);
-        self.playlists.get("playlists").add(mostoPlaylist, {merge: true});
-        self.playlists.get("melted_medias").sync();
-    } );
-    self.pl_driver.on ("delete", function(playlist) {
-        self.playlists.get("playlists").remove(playlist.id);
-        self.playlists.get("melted_medias").sync();
-    } );
+    this.pl_driver.on('create', function(playlist) {
+        var now = moment();
+
+        if(!this.inTimeWindow(playlist))
+            return;
+
+        self.playlists.addPlaylist(playlist);
+    });
+
+    this.pl_driver.on('update', function(playlist) {
+        if(!this.inTimeWindow(playlist))
+            return self.playlists.removePlaylist(playlist);
+        return self.playlists.addPlaylist(playlist);
+    });
+
+    this.pl_driver.on('delete', function(playlist) {
+        return self.playlists.removePlaylist(playlist);
+    });
 
     self.pl_driver.start();
 };
 
 mosto.prototype.stopDriver = function() {
-    var self = this;
-    
+
     console.log("mbc-mosto: [INFO] Stopping playlists driver");
 
-    self.pl_driver.stop();
+    this.pl_driver.stop();
 
-    self.pl_driver.removeAllListeners("create");
-    self.pl_driver.removeAllListeners("update");
-    self.pl_driver.removeAllListeners("delete");
+    this.pl_driver.removeAllListeners("create");
+    this.pl_driver.removeAllListeners("update");
+    this.pl_driver.removeAllListeners("delete");
 };
 
 mosto.prototype.startMvcpServer = function(callback) {
@@ -250,12 +259,10 @@ mosto.prototype.init = function( melted, callback) {
 };
 
 mosto.prototype.finish = function(callback) {
-    var self = this;
-    
     console.log("mbc-mosto: [INFO] Finish mbc-mosto... ") ;
-    self.stopDriver();
-    self.stopHeartbeats();
-    self.player.stop();
+    this.stopDriver();
+    this.stopHeartbeats();
+    this.player.stop();
     Melted.stop(function(pid) {
         setTimeout( function() {
             Melted.leave();
