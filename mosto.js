@@ -80,6 +80,40 @@ mosto.prototype.startMvcpServer = function(callback) {
 };
 
 console.log("mbc-mosto: [INFO] Starting mbc-mosto... ") ;
+mosto.prototype.getModelPlaylistFromApiPlaylist = function(playlist) {
+    //TODO: Remove this function and change driver to send Caspa Models
+    var playlistJson   = {};
+    playlistJson.name  = playlist.name;
+    playlistJson.start = moment(playlist.startDate);
+    playlistJson.end   = moment(playlist.endDate);
+    playlistJson.id    = playlist.id;
+    
+    var start = playlistJson.start;
+    var medias = new Mosto.MediaCollection();
+    playlist.medias.forEach(function(media) {
+        var mediaJson = {};
+        mediaJson.playlist_order = media.orig_order;
+        mediaJson.name           = media.name;
+        mediaJson.type           = media.type;
+        mediaJson.file           = media.file;
+        //TODO: ASSUMING LENGTH COMES IN SOME KIND OF DATE FORMAT THAT CAN BE USED BY MOMENT
+        mediaJson.length         = (moment(media.length) / 1000) * media.fps;
+        mediaJson.fps            = media.fps;
+        mediaJson.start          = start;
+        mediaJson.end            = start + moment(media.length);
+        mediaJson.id             = media.id;
+        
+        var mostoMedia = new Mosto.Media(mediaJson);
+        medias.add(mostoMedia);
+        
+        start = start + moment(media.length);
+    });
+    
+    playlistJson.medias = medias;
+    
+    return new Mosto.Playlist(playlistJson);
+};
+
 
 mosto.prototype.init = function( melted, callback) {
     console.log("mbc-mosto: [INFO] Init mbc-mosto... ") ;
