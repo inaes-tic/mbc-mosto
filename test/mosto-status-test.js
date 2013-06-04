@@ -24,7 +24,7 @@ describe('Mosto status', function() {
             melted.stop( function(pid) {
                 mosto_server = new mosto();
                 mosto_server.init( melted, function() {
-                    mosto_server.player.once('statusclip', function(stclip) {
+                    mosto_server.heartbeats.once('clipStatus', function(stclip) {
                         rec++;
                         done();
                     });

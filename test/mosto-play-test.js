@@ -64,15 +64,6 @@ describe('Mosto [PLAY/Timer event] tests', function(done) {
             mosto_server.status_driver = new status_driver();
             mosto_server.pl_driver = new test_driver();
 
-            fetcher = mosto_server.fetcher        = new mosto_fetcher( { mosto: mosto_server } );
-            mosto_server.scheduler      = new mosto_scheduler( { mosto: mosto_server });
-            synchronizer = mosto_server.synchronizer   = new mosto_synchronizer( { mosto: mosto_server });
-            player = mosto_server.player         = new mosto_player( { mosto: mosto_server } );
-
-            mosto_server.fetcher.init();
-            mosto_server.scheduler.init();
-            mosto_server.synchronizer.init();
-            mosto_server.player.init();
             done();
         });
         it('-- mvcp server connected should return false', function() {
