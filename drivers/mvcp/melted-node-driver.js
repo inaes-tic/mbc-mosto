@@ -97,7 +97,7 @@ function melted(host, port) {
             }
             var err = new Error("mbc-mosto: [ERROR] Error getting server status in response object: " + response)
             throw (err);
-        }, function(error) {
+        }).fail(function() {
             var err = new Error("mbc-mosto: [ERROR] Error getting server status: " + error);
             console.error(err);
             throw err;
@@ -238,9 +238,9 @@ function melted(host, port) {
         //Pause
         self.sendCommand("PAUSE U0", successCallback, errorCallback);
     };
-    melted.prototype.goto = function(index, frame, successCallback, errorCallback) {
+    melted.prototype.goto = function(index, frame) {
         //Starts playing clip at specified index and frame (use with getServerPlaylist and getServerStatus)
-        self.sendCommand("GOTO U0 " + frame + " " + index, successCallback, errorCallback);
+        return self.sendCommand("GOTO U0 " + frame + " " + index);
     };
 }
 

@@ -11,20 +11,17 @@ function heartbeats(customConfig) {
     //AND THAT THEY ARE IN THE SAME ORDER
     defaults = {
         gc_interval: 1000 * 60 * 60,
-        sync_interval: 250,
+        sync_interval: 50,
+        min_scheduled: 1000 * 60 * 60 * 4,
         mvcp_server: "melted"
     };
     this.config = customConfig || config || defaults;
     
     this.melted_medias = Mosto.Playlists.get('melted_medias');
     
-    // TODO: Listen to Mosto.Media#change:playing
     this.current_media = false;
     
-    this.timers = {
-        gc: undefined,
-        sy: undefined
-    };
+    this.stop_timers = false;
     
     this.server = new mvcp_server(this.config.mvcp_server);
 }
@@ -52,17 +49,48 @@ heartbeats.prototype.init = function() {
 
 heartbeats.prototype.initTimers = function() {
     var self = this;
-    this.timers.gc = setInterval(function() {
-        self.executeGc();
-    }, self.config.gc_interval);
-    this.timers.sy = setInterval(function() {
-        self.syncMelted();
-    }, self.config.sync_interval);
+    self.scheduleGc();
+    self.scheduleSync();
+    self.scheduleCheckout();
 };
 
-heartbeats.prototype.clear = function() {
-    clearInterval(this.timers.gc);
-    clearInterval(this.timers.sy);
+heartbeats.prototype.scheduleGc = function() {
+    var self = this;
+    if (!self.stop_timers) {
+        setTimeout(function() {
+            self.executeGc();
+        }, self.config.gc_interval);
+    }
+};
+
+heartbeats.prototype.scheduleSync = function() {
+    var self = this;
+    if (!self.stop_timers) {
+        setTimeout(function() {
+            self.melted_medias.take(self.syncMelted.bind(self));
+        }, self.config.sync_interval);
+    }
+};
+
+heartbeats.prototype.scheduleCheckout = function() {
+    var self = this;
+    if (!self.stop_timers) {
+        setTimeout(function() {
+            self.checkSchedules();
+        }, self.config.min_scheduled / 4);
+    }
+};
+
+heartbeats.prototype.stop = function() {
+    this.stop_timers = true;
+};
+
+heartbeats.prototype.checkSchedules =  function() {
+    var self = this;
+    var last = self.melted_medias.at(self.melted_medias.length - 1);
+    var scheduled =  last.get('end') - moment();
+    if (scheduled < self.config.min_scheduled)
+        self.emit("forceCheckout", scheduled);
 };
 
 heartbeats.prototype.executeGc = function() {
@@ -78,20 +106,26 @@ heartbeats.prototype.executeGc = function() {
         });
         self.melted_medias.save();
     }
+    self.scheduleGc();
     console.log("[HEARTBEAT-GC] Finished Garbage Collector: " + oldMedias.length + " removed.");
 };
 
 heartbeats.prototype.sendStatus = function() {
     var self = this;
     console.log("[HEARTBEAT-FS] Started Status");
-    var media = getExpectedMedia();
-    if (!self.current_media)
-        self.current_media = media;
-    if (media.get("id").toString() !== self.current_media.get("id").toString()) {
-        self.emit("clipStatus", media);
-        self.current_media = media;
-    }
-    self.emit("frameStatus", media.current_frame);
+//    try {
+        var expected = getExpectedMedia();
+        if (!self.current_media)
+            self.current_media = expected.media;
+        if (expected.media.get("id").toString() !== self.current_media.get("id").toString()) {
+            self.emit("clipStatus", {old_media: self.current_media, new_media: expected.media, frame: expected.frame});
+            self.current_media = expected.media;
+        } else {
+            self.emit("frameStatus", {media: expected.media, frame: expected.frame});
+        }
+//    } catch(error) {
+//        self.handleError(error);
+//    }
     console.log("[HEARTBEAT-FS] Finished Status");
 };
 
@@ -116,11 +150,14 @@ heartbeats.prototype.getExpectedMedia = function() {
 heartbeats.prototype.syncMelted = function() {
     console.log("[HEARTBEAT-SY] Start Sync");
     var self = this;
-    self.server.getServerStatus(function(meltedStatus) {
+    self.server.getServerStatus().then(function(meltedStatus) {
+//        var deferred = Q.defer();
         if (meltedStatus.status !== "playing") {
-            self.handleError(new Error("[HEARTBEAT-SY] Melted is not playing!"));
+//            self.handleError(new Error("[HEARTBEAT-SY] Melted is not playing!"));
+//            deferred.reject(new Error("[HEARTBEAT-SY] Melted is not playing!"));
+            throw new Error("[HEARTBEAT-SY] Melted is not playing!");
         } else {
-            try {
+//            try {
                 var expected = self.getExpectedMedia();
                 var meltedClip = meltedStatus.clip;
                 if (expected.media.get("id").toString() !== meltedClip.id.toString()) {
@@ -132,38 +169,48 @@ heartbeats.prototype.syncMelted = function() {
                     } else {
                         var mediaBelow = self.melted_medias.at(index + 1);
                         if (mediaBelow.get("id").toString() === meltedClip.id.toString()) {
-                            var length = undefined;
-                            if (!isNaN(parseFloat(expected.media.length)) && isFinite(expected.media.length)) {
-                                //length is numeric (frames)
-                                length = expected.media.length;
-                            } else {
-                                length = utils.convertTimeToFrames(expected.media.length, exptected.media.fps);
-                            }
-                            frames = meltedClip.currentFrame + (length - expected.frame);
+                            frames = meltedClip.currentFrame + (expected.media.length - expected.frame);
                         }
                     }
-                    if (frames > expected.media.fps)
-                        self.fixMelted(expected);
+                    if (frames > expected.media.fps) {
+//                        self.fixMelted(expected);
+//                        deferred.resolve(self.fixMelted(expected));
+                        return self.fixMelted(expected);
+                    } else {
+//                        deferred.resolve(self.sendStatus());
+                        self.sendStatus();
+                    }
                 } else if (Math.abs(meltedClip.currentFrame - expected.frame) > expected.media.fps) {
-                    self.fixMelted(expected);
+//                    self.fixMelted(expected);
+//                    deferred.resolve(self.fixMelted(expected));
+                    return self.fixMelted(expected);
                 } else {
+//                    self.sendStatus();
+//                    deferred.resolve(self.sendStatus());
                     self.sendStatus();
                 }
-            } catch(err) {
-                self.handleError(error);
-            }            
+//            } catch(err) {
+////                self.handleError(err);
+//                deferred.reject(err);
+//            }            
         }
-    }, self.handleError);
+//        return deferred.promise;
+    }).fail(self.handleError).fin(function() {
+        self.scheduleSync();
+        self.melted_medias.leave();
+    });
     console.log("[HEARTBEAT-SY] Finish Sync");
 };
 
 heartbeats.prototype.fixMelted = function(expected) {
     console.error("[HEARTBEAT-SY] Melted is out of sync!");
-    self.server.goto(expected.media.actual_order, expected.frame, self.sendStatus, self.handleError);
+    self.emit("OutOfSync", expected);
+    return self.server.goto(expected.media.actual_order, expected.frame).then(self.sendStatus).fail(self.handleError);
 };
 
 heartbeats.prototype.handleError =  function(error) {
     console.error(error);
+    self.emit("Error", error);
     //FORCING LIST TO SYNC, SHOULD CHECK MELTED PLAYLIST, FIX IT AND START PLAYING
     self.melted_medias.save();
 };
