@@ -141,8 +141,10 @@ mosto.prototype.initHeartbeats = function() {
     self.heartbeats.on("forceCheckout", function(window) {
         self.fetchPlaylists(window);
     });
+
     self.heartbeats.init();
 };
+
 mosto.prototype.fetchPlaylists = function(window) {
     self.driver.getPlaylists(window, function(playlists) {
         playlists.forEach(function(playlist) {
@@ -248,8 +250,11 @@ mosto.prototype.init = function( melted, callback) {
 };
 
 mosto.prototype.finish = function(callback) {
+    var self = this;
+    
     console.log("mbc-mosto: [INFO] Finish mbc-mosto... ") ;
     self.stopDriver();
+    self.stopHeartbeats();
     self.player.stop();
     Melted.stop(function(pid) {
         setTimeout( function() {
@@ -257,9 +262,7 @@ mosto.prototype.finish = function(callback) {
             if (callback) callback();
         }, 1000 );
     });
-}
-
-}
+};
 
 exports = module.exports = function(customConfig) {
     var mosto_server = new mosto(customConfig);
