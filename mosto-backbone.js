@@ -54,9 +54,9 @@ mosto.prototype.initDriver = function() {
         return this.playlists.addPlaylist(playlist);
     });
 
-    self.driver.on ("delete", function(playlist) {
-        self.fetcher.removePlaylist( playlist, self.fetcher);
-    } );
+    this.pl_driver.on('delete', function(playlist) {
+        return this.playlists.removePlaylist(playlist);
+    });
 
     self.pl_driver.start();
 };
@@ -161,8 +161,6 @@ mosto.prototype.init = function( melted, callback) {
                 status.show.next = playlists.at(index+1).toJSON();
             self.status_driver.setStatus(status);
         });
-
-        self.pl_driver.on('delete');
 
         self.initDriver();
         self.heartbeats.init();
