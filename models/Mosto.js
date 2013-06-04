@@ -216,6 +216,7 @@ Mosto.Playlist = Backbone.Model.extend({
     },
     initialize: function (attributes, options) {
         console.log ('creating new Mosto.Playlist', attributes, options);
+        var self = this;
         this.set('name', this.get('name') || this.get('_id'));
 
         if( !attributes.start )
@@ -236,9 +237,25 @@ Mosto.Playlist = Backbone.Model.extend({
           Also important: a second 'set' on a model MAKES IT FORGET THE PREVIOUS MODIFICATION.
           i.e.: model.changedAttributes() does not compare with the server.
         */
+        this.get('medias').on('add', function(model, collection, options) {
+            model.playlist = self;
+            var index = collection.indexOf(model);
+            self.adjustMediaTimes(index);
+        });
     },
     getMedias: function() {
         return this.get('medias').toArray();
+    },
+    adjustMediaTimes: function(fromIndex) {
+        var timewalk = moment(fromIndex > 0 ?
+                              collection.at(index-1).get('start') :
+                              this.get('start'));
+        for(var i = index ; i < collection.length ; i++) {
+            var media = collection.at(i);
+            media.set('start', moment(timewalk));
+            timewalk.add((media.get('length') / media.get('fps')) * 1000);
+            media.set('end', moment(timewalk));
+        }
     },
 });
 
