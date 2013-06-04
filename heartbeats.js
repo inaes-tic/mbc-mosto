@@ -24,7 +24,11 @@ function heartbeats(customConfig) {
     this.stop_timers = false;
     
     this.server = new mvcp_server(this.config.mvcp_server);
+    
+    events.EventEmitter.call(this);
 }
+
+util.inherits(heartbeats, events.EventEmitter);
 
 heartbeats.prototype.startMvcpServer = function(callback) {
     var self = this;
@@ -90,7 +94,7 @@ heartbeats.prototype.checkSchedules =  function() {
     var last = self.melted_medias.at(self.melted_medias.length - 1);
     var scheduled =  last.get('end') - moment();
     if (scheduled < self.config.min_scheduled)
-        self.emit("forceCheckout", scheduled);
+        self.emit("forceCheckout", {from: last.get('end'), to: last.get('end') + scheduled});
 };
 
 heartbeats.prototype.executeGc = function() {
@@ -118,7 +122,7 @@ heartbeats.prototype.sendStatus = function() {
         if (!self.current_media)
             self.current_media = expected.media;
         if (expected.media.get("id").toString() !== self.current_media.get("id").toString()) {
-            self.emit("clipStatus", {old_media: self.current_media, new_media: expected.media, frame: expected.frame});
+            self.emit("clipStatus", expected.media);
             self.current_media = expected.media;
         } else {
             self.emit("frameStatus", {media: expected.media, frame: expected.frame});
@@ -212,11 +216,10 @@ heartbeats.prototype.handleError =  function(error) {
     console.error(error);
     self.emit("Error", error);
     //FORCING LIST TO SYNC, SHOULD CHECK MELTED PLAYLIST, FIX IT AND START PLAYING
-    self.melted_medias.save();
+    self.melted_medias.sync();
 };
 
 exports = module.exports = function(customConfig) {
-    util.inherits(heartbeats, events.EventEmitter);
     var hb = new heartbeats(customConfig);
     return hb;
 };

@@ -12,42 +12,41 @@ describe('start mvcp-driver test', function(done) {
 
     before(function(done) {
         melted.take(function() {
-		    melted.stop(function(){
+            melted.stop(function(){
     	        done();
     	    });
-	    });
+        });
     });
         
     describe('#start melted', function() {
 	    before(function(done) {
-            melted.start(function(pid){                    
-		        done();
-            });
+                melted.start(function(pid){                    
+                    done();
+                });
 	    });
         it('-- mvcp server created', function(done) {
-	        server = silence(function(){ return mvcp_server("melted"); });
-	        assert.notEqual(server, undefined);
+            server = silence(function(){ return mvcp_server("melted"); });
+            assert.notEqual(server, undefined);
             done();
-	    });    
+        });    
     });
 
 
     describe('#setup melted and connect', function() {
         describe('#mvcp server connected', function(){
-	        it('--should return true', function(done) {
+            it('--should return true', function(done) {
                 var result = server.initServer();
-	            melted.start(function(pid){
-		            melted.setup(undefined, undefined, function(has_err) {                        
-			            // time to next server_started update.
-			            setTimeout(function(){
-				            assert.equal(server.isConnected(), true);
-				            done();
-			            }, 1000);
-		            });
-
-	            });
-	        });
-	    });
+                melted.start(function(pid){
+                    melted.setup(undefined, undefined, function(has_err) {                        
+                        // time to next server_started update.
+                        setTimeout(function(){
+                            assert.equal(server.isConnected(), true);
+                            done();
+                        }, 1000);
+                    });
+                });
+            });
+        });
     });
 
     describe('commands', function() {
@@ -58,30 +57,30 @@ describe('start mvcp-driver test', function(done) {
         var pl = undefined;
         var st = undefined;
         before(function(done) {
-            server.stop(function() {
-                server.clearPlaylist(function() {
+            server.stop().then(function() {
+                server.clearPlaylist().then(function() {
                     var clip = new Media(1, 0, undefined, 1, file1.substring(file1.lastIndexOf("/") + 1), "default", file1, "00:05:10", 25);
-                    server.loadClip(clip, function() {
-                        server.getServerPlaylist(function(playlist) {
+                    server.loadClip(clip).then(function() {
+                        server.getServerPlaylist().then(function(playlist) {
                             pl = playlist;
-                            server.getServerStatus(function(status) {
+                            server.getServerStatus().then(function(status) {
                                 st = status;
                                 done();
-                            }, function(err) {
+                            }).fail(function(err) {
                                 done();
                                 console.error(err);
                             });
-                        }, function(err) {
+                        }).fail(function(err) {
                             done();
                             console.error(err);
                         });
-                    }, function(err) {
+                    }).fail(function(err) {
                         console.error(err);
-                    }) ;
-                }, function(err) {
+                    });
+                }).fail(function(err) {
                     console.error(err);
                 });
-            }, function(err) {
+            }).fail(function(err) {
                 console.error(err);
             });
         });
@@ -98,13 +97,13 @@ describe('start mvcp-driver test', function(done) {
             assert.equal(pl[0].id, 1);
         });
         it('--Status: Clip order: should return 0', function() {
-            assert.equal(st.actualClip.order, 0);
+            assert.equal(st.currentClip.order, 0);
         });
         it('--Status: Clip playlist id: should return 1', function() {
-            assert.equal(st.actualClip.playlistId, 1);
+            assert.equal(st.currentClip.playlistId, 1);
         });
         it('--Status: Clip id: should return 1', function() {
-            assert.equal(st.actualClip.id, 1);
+            assert.equal(st.currentClip.id, 1);
         });
         it('--Status: Unit status: should return stopped', function() {
             assert.equal(st.status, "stopped");
@@ -114,23 +113,23 @@ describe('start mvcp-driver test', function(done) {
         var pl = undefined;
         var st = undefined;
         before(function(done) {
-            server.play(function() {
-                server.getServerPlaylist(function(playlist) {
+            server.play().then(function() {
+                server.getServerPlaylist().then(function(playlist) {
                     pl = playlist;
-                    server.getServerStatus(function(status) {
+                    server.getServerStatus().then(function(status) {
                         st = status;
                         done();
-                    }, function(err) {
+                    }).fail(function(err) {
                         done();
                         console.error(err);
                     });
-                }, function(err) {
+                }).fail(function(err) {
                     done();
                     console.error(err);
                 });
-            }, function(err) {
+            }).fail(function(err) {
                 console.error(err);
-            }) ;
+            });
         });
         it('--List: Clips loaded: should return 1', function() {
             assert.equal(pl.length, 1);
@@ -145,13 +144,13 @@ describe('start mvcp-driver test', function(done) {
             assert.equal(pl[0].id, 1);
         });
         it('--Status: Clip order: should return 0', function() {
-            assert.equal(st.actualClip.order, 0);
+            assert.equal(st.currentClip.order, 0);
         });
         it('--Status: Clip playlist id: should return 1', function() {
-            assert.equal(st.actualClip.playlistId, 1);
+            assert.equal(st.currentClip.playlistId, 1);
         });
         it('--Status: Clip id: should return 1', function() {
-            assert.equal(st.actualClip.id, 1);
+            assert.equal(st.currentClip.id, 1);
         });
         it('--Status: Unit status: should return playing', function() {
             assert.equal(st.status, "playing");
@@ -162,23 +161,23 @@ describe('start mvcp-driver test', function(done) {
         var st = undefined;
         before(function(done) {
             var clip = new Media(2, 1, undefined, 1, file2.substring(file1.lastIndexOf("/") + 1), "default", file2, "00:05:10", 25);
-            server.appendClip(clip, function() {
-                server.getServerPlaylist(function(playlist) {
+            server.appendClip(clip).then(function() {
+                server.getServerPlaylist().then(function(playlist) {
                     pl = playlist;
-                    server.getServerStatus(function(status) {
+                    server.getServerStatus().then(function(status) {
                         st = status;
                         done();
-                    }, function(err) {
+                    }).fail(function(err) {
                         done();
                         console.error(err);
                     });
-                }, function(err) {
+                }).fail(function(err) {
                     done();
                     console.error(err);
                 });
-            }, function(err) {
+            }).fail(function(err) {
                 console.error(err);
-            }) ;
+            });
         });
         it('--List: Clips loaded: should return 2', function() {
             assert.equal(pl.length, 2);
@@ -199,13 +198,13 @@ describe('start mvcp-driver test', function(done) {
             assert.equal(pl[1].id, 2);
         });
         it('--Status: Clip order: should return 0', function() {
-            assert.equal(st.actualClip.order, 0);
+            assert.equal(st.currentClip.order, 0);
         });
         it('--Status: Clip playlist id: should return 1', function() {
-            assert.equal(st.actualClip.playlistId, 1);
+            assert.equal(st.currentClip.playlistId, 1);
         });
         it('--Status: Clip id: should return 1', function() {
-            assert.equal(st.actualClip.id, 1);
+            assert.equal(st.currentClip.id, 1);
         });
         it('--Status: Unit status: should return playing', function() {
             assert.equal(st.status, "playing");
@@ -216,23 +215,23 @@ describe('start mvcp-driver test', function(done) {
         var st = undefined;
         before(function(done) {
             var clip = new Media(3, 2, undefined, 1, file3.substring(file1.lastIndexOf("/") + 1), "default", file3, "00:05:10", 25);
-            server.insertClip(clip, 1, function() {
-                server.getServerPlaylist(function(playlist) {
+            server.insertClip(clip, 1).then(function() {
+                server.getServerPlaylist().then(function(playlist) {
                     pl = playlist;
-                    server.getServerStatus(function(status) {
+                    server.getServerStatus().then(function(status) {
                         st = status;
                         done();
-                    }, function(err) {
+                    }).fail(function(err) {
                         done();
                         console.error(err);
                     });
-                }, function(err) {
+                }).fail(function(err) {
                     done();
                     console.error(err);
                 });
-            }, function(err) {
+            }).fail(function(err) {
                 console.error(err);
-            }) ;
+            });
         });
         it('--List: Clips loaded: should return 3', function() {
             assert.equal(pl.length, 3);
@@ -259,13 +258,13 @@ describe('start mvcp-driver test', function(done) {
             assert.equal(pl[2].id, 2);
         });
         it('--Status: Clip order: should return 0', function() {
-            assert.equal(st.actualClip.order, 0);
+            assert.equal(st.currentClip.order, 0);
         });
         it('--Status: Clip playlist id: should return 1', function() {
-            assert.equal(st.actualClip.playlistId, 1);
+            assert.equal(st.currentClip.playlistId, 1);
         });
         it('--Status: Clip id: should return 1', function() {
-            assert.equal(st.actualClip.id, 1);
+            assert.equal(st.currentClip.id, 1);
         });
         it('--Status: Unit status: should return playing', function() {
             assert.equal(st.status, "playing");
@@ -275,23 +274,23 @@ describe('start mvcp-driver test', function(done) {
         var pl = undefined;
         var st = undefined;
         before(function(done) {
-            server.moveClip(1, 2, function() {
-                server.getServerPlaylist(function(playlist) {
+            server.moveClip(1, 2).then(function() {
+                server.getServerPlaylist().then(function(playlist) {
                     pl = playlist;
-                    server.getServerStatus(function(status) {
+                    server.getServerStatus().then(function(status) {
                         st = status;
                         done();
-                    }, function(err) {
+                    }).fail(function(err) {
                         done();
                         console.error(err);
                     });
-                }, function(err) {
+                }).fail(function(err) {
                     done();
                     console.error(err);
                 });
-            }, function(err) {
+            }).fail(function(err) {
                 console.error(err);
-            }) ;
+            });
         });
         it('--List: Clips loaded: should return 3', function() {
             assert.equal(pl.length, 3);
@@ -318,13 +317,13 @@ describe('start mvcp-driver test', function(done) {
             assert.equal(pl[2].id, 3);
         });
         it('--Status: Clip order: should return 0', function() {
-            assert.equal(st.actualClip.order, 0);
+            assert.equal(st.currentClip.order, 0);
         });
         it('--Status: Clip playlist id: should return 1', function() {
-            assert.equal(st.actualClip.playlistId, 1);
+            assert.equal(st.currentClip.playlistId, 1);
         });
         it('--Status: Clip id: should return 1', function() {
-            assert.equal(st.actualClip.id, 1);
+            assert.equal(st.currentClip.id, 1);
         });
         it('--Status: Unit status: should return playing', function() {
             assert.equal(st.status, "playing");
@@ -334,23 +333,23 @@ describe('start mvcp-driver test', function(done) {
         var pl = undefined;
         var st = undefined;
         before(function(done) {
-            server.removeClip(1, function() {
-                server.getServerPlaylist(function(playlist) {
+            server.removeClip(1).then(function() {
+                server.getServerPlaylist().then(function(playlist) {
                     pl = playlist;
-                    server.getServerStatus(function(status) {
+                    server.getServerStatus().then(function(status) {
                         st = status;
                         done();
-                    }, function(err) {
+                    }).fail(function(err) {
                         done();
                         console.error(err);
                     });
-                }, function(err) {
+                }).fail(function(err) {
                     done();
                     console.error(err);
                 });
-            }, function(err) {
+            }).fail(function(err) {
                 console.error(err);
-            }) ;
+            });
         });
         it('--List: Clips loaded: should return 2', function() {
             assert.equal(pl.length, 2);
@@ -371,13 +370,13 @@ describe('start mvcp-driver test', function(done) {
             assert.equal(pl[1].id, 3);
         });
         it('--Status: Clip order: should return 0', function() {
-            assert.equal(st.actualClip.order, 0);
+            assert.equal(st.currentClip.order, 0);
         });
         it('--Status: Clip playlist id: should return 1', function() {
-            assert.equal(st.actualClip.playlistId, 1);
+            assert.equal(st.currentClip.playlistId, 1);
         });
         it('--Status: Clip id: should return 1', function() {
-            assert.equal(st.actualClip.id, 1);
+            assert.equal(st.currentClip.id, 1);
         });
         it('--Status: Unit status: should return playing', function() {
             assert.equal(st.status, "playing");
@@ -388,23 +387,23 @@ describe('start mvcp-driver test', function(done) {
         var st = undefined;
         before(function(done) {
             var clip = new Media(4, 3, undefined, 1, file2.substring(file1.lastIndexOf("/") + 1), "default", file2, "00:05:10", 25);
-            server.appendClip(clip, function() {
-                server.getServerPlaylist(function(playlist) {
+            server.appendClip(clip).then(function() {
+                server.getServerPlaylist().then(function(playlist) {
                     pl = playlist;
-                    server.getServerStatus(function(status) {
+                    server.getServerStatus().then(function(status) {
                         st = status;
                         done();
-                    }, function(err) {
+                    }).fail(function(err) {
                         done();
                         console.error(err);
                     });
-                }, function(err) {
+                }).fail(function(err) {
                     done();
                     console.error(err);
                 });
-            }, function(err) {
+            }).fail(function(err) {
                 console.error(err);
-            }) ;
+            });
         });
         it('--List: Clips loaded: should return 3', function() {
             assert.equal(pl.length, 3);
@@ -431,13 +430,13 @@ describe('start mvcp-driver test', function(done) {
             assert.equal(pl[2].id, 4);
         });
         it('--Status: Clip order: should return 0', function() {
-            assert.equal(st.actualClip.order, 0);
+            assert.equal(st.currentClip.order, 0);
         });
         it('--Status: Clip playlist id: should return 1', function() {
-            assert.equal(st.actualClip.playlistId, 1);
+            assert.equal(st.currentClip.playlistId, 1);
         });
         it('--Status: Clip id: should return 1', function() {
-            assert.equal(st.actualClip.id, 1);
+            assert.equal(st.currentClip.id, 1);
         });
         it('--Status: Unit status: should return playing', function() {
             assert.equal(st.status, "playing");
@@ -447,21 +446,21 @@ describe('start mvcp-driver test', function(done) {
         var pl = undefined;
         var st = undefined;
         before(function(done) {
-            server.goto(1, 0, function() {
-                server.getServerPlaylist(function(playlist) {
+            server.goto(1, 0).then(function() {
+                server.getServerPlaylist().then(function(playlist) {
                     pl = playlist;
-                    server.getServerStatus(function(status) {
+                    server.getServerStatus().then(function(status) {
                         st = status;
                         done();
-                    }, function(err) {
+                    }).fail(function(err) {
                         done();
                         console.error(err);
                     });
-                }, function(err) {
+                }).fail(function(err) {
                     done();
                     console.error(err);
                 });
-            }, function(err) {
+            }).fail(function(err) {
                 console.error(err);
             }) ;
         });
@@ -490,13 +489,13 @@ describe('start mvcp-driver test', function(done) {
             assert.equal(pl[2].id, 4);
         });
         it('--Status: Clip order: should return 1', function() {
-            assert.equal(st.actualClip.order, 1);
+            assert.equal(st.currentClip.order, 1);
         });
         it('--Status: Clip playlist id: should return 1', function() {
-            assert.equal(st.actualClip.playlistId, 1);
+            assert.equal(st.currentClip.playlistId, 1);
         });
         it('--Status: Clip id: should return 3', function() {
-            assert.equal(st.actualClip.id, 3);
+            assert.equal(st.currentClip.id, 3);
         });
         it('--Status: Unit status: should return playing', function() {
             assert.equal(st.status, "playing");
@@ -506,23 +505,23 @@ describe('start mvcp-driver test', function(done) {
         var pl = undefined;
         var st = undefined;
         before(function(done) {
-            server.pause(function() {
-                server.getServerPlaylist(function(playlist) {
+            server.pause().then(function() {
+                server.getServerPlaylist().then(function(playlist) {
                     pl = playlist;
-                    server.getServerStatus(function(status) {
+                    server.getServerStatus().then(function(status) {
                         st = status;
                         done();
-                    }, function(err) {
+                    }).fail(function(err) {
                         done();
                         console.error(err);
                     });
-                }, function(err) {
+                }).fail(function(err) {
                     done();
                     console.error(err);
                 });
-            }, function(err) {
+            }).fail(function(err) {
                 console.error(err);
-            }) ;
+            });
         });
         it('--List: Clips loaded: should return 3', function() {
             assert.equal(pl.length, 3);
@@ -549,13 +548,13 @@ describe('start mvcp-driver test', function(done) {
             assert.equal(pl[2].id, 4);
         });
         it('--Status: Clip order: should return 1', function() {
-            assert.equal(st.actualClip.order, 1);
+            assert.equal(st.currentClip.order, 1);
         });
         it('--Status: Clip playlist id: should return 1', function() {
-            assert.equal(st.actualClip.playlistId, 1);
+            assert.equal(st.currentClip.playlistId, 1);
         });
         it('--Status: Clip id: should return 3', function() {
-            assert.equal(st.actualClip.id, 3);
+            assert.equal(st.currentClip.id, 3);
         });
         it('--Status: Unit status: should return playing', function() {
             assert.equal(st.status, "paused");
@@ -565,23 +564,23 @@ describe('start mvcp-driver test', function(done) {
         var pl = undefined;
         var st = undefined;
         before(function(done) {
-            server.play(function() {
-                server.getServerPlaylist(function(playlist) {
+            server.play().then(function() {
+                server.getServerPlaylist().then(function(playlist) {
                     pl = playlist;
-                    server.getServerStatus(function(status) {
+                    server.getServerStatus().then(function(status) {
                         st = status;
                         done();
-                    }, function(err) {
+                    }).fail(function(err) {
                         done();
                         console.error(err);
                     });
-                }, function(err) {
+                }).fail(function(err) {
                     done();
                     console.error(err);
                 });
-            }, function(err) {
+            }).fail(function(err) {
                 console.error(err);
-            }) ;
+            });
         });
         it('--List: Clips loaded: should return 3', function() {
             assert.equal(pl.length, 3);
@@ -608,13 +607,13 @@ describe('start mvcp-driver test', function(done) {
             assert.equal(pl[2].id, 4);
         });
         it('--Status: Clip order: should return 1', function() {
-            assert.equal(st.actualClip.order, 1);
+            assert.equal(st.currentClip.order, 1);
         });
         it('--Status: Clip playlist id: should return 1', function() {
-            assert.equal(st.actualClip.playlistId, 1);
+            assert.equal(st.currentClip.playlistId, 1);
         });
         it('--Status: Clip id: should return 3', function() {
-            assert.equal(st.actualClip.id, 3);
+            assert.equal(st.currentClip.id, 3);
         });
         it('--Status: Unit status: should return playing', function() {
             assert.equal(st.status, "playing");
@@ -624,23 +623,23 @@ describe('start mvcp-driver test', function(done) {
         var pl = undefined;
         var st = undefined;
         before(function(done) {
-            server.cleanPlaylist(function() {
-                server.getServerPlaylist(function(playlist) {
+            server.cleanPlaylist().then(function() {
+                server.getServerPlaylist().then(function(playlist) {
                     pl = playlist;
-                    server.getServerStatus(function(status) {
+                    server.getServerStatus().then(function(status) {
                         st = status;
                         done();
-                    }, function(err) {
+                    }).fail(function(err) {
                         done();
                         console.error(err);
                     });
-                }, function(err) {
+                }).fail(function(err) {
                     done();
                     console.error(err);
                 });
-            }, function(err) {
+            }).fail(function(err) {
                 console.error(err);
-            }) ;
+            });
         });
         it('--List: Clips loaded: should return 1', function() {
             assert.equal(pl.length, 1);
@@ -655,13 +654,13 @@ describe('start mvcp-driver test', function(done) {
             assert.equal(pl[0].id, 3);
         });
         it('--Status: Clip order: should return 0', function() {
-            assert.equal(st.actualClip.order, 0);
+            assert.equal(st.currentClip.order, 0);
         });
         it('--Status: Clip playlist id: should return 1', function() {
-            assert.equal(st.actualClip.playlistId, 1);
+            assert.equal(st.currentClip.playlistId, 1);
         });
         it('--Status: Clip id: should return 3', function() {
-            assert.equal(st.actualClip.id, 3);
+            assert.equal(st.currentClip.id, 3);
         });
         it('--Status: Unit status: should return playing', function() {
             assert.equal(st.status, "playing");
@@ -671,23 +670,23 @@ describe('start mvcp-driver test', function(done) {
         var pl = undefined;
         var st = undefined;
         before(function(done) {
-            server.stop(function() {
-                server.getServerPlaylist(function(playlist) {
+            server.stop().then(function() {
+                server.getServerPlaylist().then(function(playlist) {
                     pl = playlist;
-                    server.getServerStatus(function(status) {
+                    server.getServerStatus().then(function(status) {
                         st = status;
                         done();
-                    }, function(err) {
+                    }).fail(function(err) {
                         done();
                         console.error(err);
                     });
-                }, function(err) {
+                }).fail(function(err) {
                     done();
                     console.error(err);
                 });
-            }, function(err) {
+            }).fail(function(err) {
                 console.error(err);
-            }) ;
+            });
         });
         it('--List: Clips loaded: should return 1', function() {
             assert.equal(pl.length, 1);
@@ -702,13 +701,13 @@ describe('start mvcp-driver test', function(done) {
             assert.equal(pl[0].id, 3);
         });
         it('--Status: Clip order: should return 0', function() {
-            assert.equal(st.actualClip.order, 0);
+            assert.equal(st.currentClip.order, 0);
         });
         it('--Status: Clip playlist id: should return 1', function() {
-            assert.equal(st.actualClip.playlistId, 1);
+            assert.equal(st.currentClip.playlistId, 1);
         });
         it('--Status: Clip id: should return 3', function() {
-            assert.equal(st.actualClip.id, 3);
+            assert.equal(st.currentClip.id, 3);
         });
         it('--Status: Unit status: should return stopped', function() {
             assert.equal(st.status, "stopped");
@@ -718,21 +717,21 @@ describe('start mvcp-driver test', function(done) {
         var pl = undefined;
         var st = undefined;
         before(function(done) {
-            server.clearPlaylist(function() {
-                server.getServerPlaylist(function(playlist) {
+            server.clearPlaylist().then(function() {
+                server.getServerPlaylist().then(function(playlist) {
                     pl = playlist;
-                    server.getServerStatus(function(status) {
+                    server.getServerStatus().then(function(status) {
                         st = status;
                         done();
-                    }, function(err) {
+                    }).fail(function(err) {
                         done();
                         console.error(err);
                     });
-                }, function(err) {
+                }).fail(function(err) {
                     done();
                     console.error(err);
                 });
-            }, function(err) {
+            }).fail(function(err) {
                 console.error(err);
             }) ;
         });
@@ -757,7 +756,7 @@ describe('start mvcp-driver test', function(done) {
         });
         it('--Status: Clip index: should throw error', function() {
             assert.throws(function() {
-                var i = st.actualClip.order;
+                var i = st.currentClip.order;
             }, function(err) {
                 console.error(err);
                 return err !== undefined;
@@ -765,7 +764,7 @@ describe('start mvcp-driver test', function(done) {
         });
         it('--Status: Clip id: should throw error', function() {
             assert.throws(function() {
-                var i = st.actualClip.id;
+                var i = st.currentClip.id;
             }, function(err) {
                 console.error(err);
                 return err !== undefined;
@@ -779,12 +778,12 @@ describe('start mvcp-driver test', function(done) {
 
 
     describe('#leave melted', function() {
-	    it('-- leave melted', function(done) {
-		    melted.stop(function(pid) {
-			    melted.leave();
-			    done();
-		    });
-	    });
+        it('-- leave melted', function(done) {
+            melted.stop(function(pid) {
+                melted.leave();
+                done();
+            });
+        });
     });
 
 });
