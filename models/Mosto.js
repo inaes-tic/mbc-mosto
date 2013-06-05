@@ -37,6 +37,9 @@ Mosto.Media = Backbone.Model.extend({
         out: undefined,
     },
 
+    constructor: function(attributes, options) {
+        attributes.id = attributes.playlist_id + '-' + attributes.id;
+        Backbone.Model.apply(this, arguments);
     },
 
     initialize: function(attributes, options) {
