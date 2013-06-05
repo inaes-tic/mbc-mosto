@@ -251,9 +251,7 @@ Mosto.Playlist = Backbone.Model.extend({
 
         if ( !(attributes.medias instanceof Mosto.MediaCollection) )
             this.set('medias', new Mosto.MediaCollection());
-        if ( attributes.medias instanceof Array )
-            this.get('medias').set(attributes.medias);
-        this.get('medias').on('all', bubbleEvents(this, 'medias'));
+
         /*
           this is important: 'add' events are triggered AFTER every model has been
           added to the collection, and the collection's been SORTED. So we can trust
@@ -268,8 +266,13 @@ Mosto.Playlist = Backbone.Model.extend({
             self.adjustMediaTimes(index);
         });
         this.on('change:start', function(model, value, options) {
-            model.adjustMediaTimes(0);
+            self.adjustMediaTimes(0);
         });
+
+
+        if ( attributes.medias instanceof Array )
+            this.get('medias').set(attributes.medias);
+        this.get('medias').on('all', bubbleEvents(this, 'medias'));
     },
     getMedias: function() {
         return this.get('medias').toArray();
@@ -277,7 +280,7 @@ Mosto.Playlist = Backbone.Model.extend({
     adjustMediaTimes: function(fromIndex) {
         var collection = this.get('medias');
         var timewalk = moment(fromIndex > 0 ?
-                              collection.at(fromIndex-1).get('start') :
+                              collection.at(fromIndex-1).get('end') :
                               this.get('start'));
         for(var i = fromIndex ; i < collection.length ; i++) {
             var media = collection.at(i);
@@ -318,10 +321,10 @@ Mosto.PlaylistCollection = Backbone.Collection.extend({
         }
     },
     addBlankPlaylist: function(from, to, at) {
-        var options = at && { at: at } || {};
+        var options = { at: at };
         var blank = Mosto.BlankClip.clone();
         var duration = to - from;
-        var playlist = new Playlist({
+        var playlist = new Mosto.Playlist({
             name: blank.get('name'),
             start: from,
             end: to,
@@ -354,7 +357,12 @@ Mosto.LoadedPlaylists = Backbone.Model.extend({
 
     save: function() {
         // set fires add, remove, change and sort
-        this.get('melted_medias').set(this.get('playlists').getMedias());
+        var mm = this.get('melted_medias');
+        var pl = this.get('playlists');
+        mm.take(function() {
+            mm.set(pl.getMedias());
+            mm.leave()
+        });
     },
 
     addPlaylist: function(playlist) {

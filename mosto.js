@@ -6,6 +6,7 @@ var fs               = require('fs')
 ,   Melted           = require('./api/Melted')
 ,   Media            = require('./api/Media')
 ,   ScheduledMedia   = require('./api/ScheduledMedia')
+,   StatusClip       = require('./api/StatusClip')
 ,   mvcp_server      = require('./drivers/mvcp/mvcp-driver')
 ,   playlists_driver = require('./drivers/playlists/playlists-driver')
 ,   status_driver    = require('./drivers/status/pubsub')
@@ -125,7 +126,7 @@ mosto.prototype.initHeartbeats = function() {
             },
             position: 0,
             clips: melted_medias.toJSON(),
-            status: none
+            status: null,
         };
         /* clips */
         var index = melted_medias.indexOf(media);
@@ -157,7 +158,7 @@ mosto.prototype.initHeartbeats = function() {
 
 mosto.prototype.fetchPlaylists = function(window) {
     var self = this;
-    self.driver.getPlaylists(window, function(playlists) {
+    self.pl_driver.getPlaylists(window, function(playlists) {
         playlists.forEach(function(playlist) {
             self.playlists.get("playlists").add(playlist, {merge: true});
         });
@@ -235,7 +236,7 @@ mosto.prototype.init = function( melted, callback) {
 
         self.startMvcpServer( function() {
             //TODO: See why this brakes everything :(
-//            self.fetchPlaylists({from: now, to: now + (4 * 60 * 60 * 1000)});
+            self.fetchPlaylists({from: moment(), to: moment().add(4, 'hours')});
             if (callback) callback();
         } );
     }

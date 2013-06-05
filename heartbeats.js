@@ -118,7 +118,7 @@ heartbeats.prototype.executeGc = function() {
 heartbeats.prototype.sendStatus = function() {
     var self = this;
     console.log("[HEARTBEAT-FS] Started Status");
-    var expected = getExpectedMedia();
+    var expected = self.getExpectedMedia();
     if (!self.current_media)
         self.current_media = expected.media;
     if (expected.media.get("id").toString() !== self.current_media.get("id").toString()) {
@@ -138,8 +138,8 @@ heartbeats.prototype.getExpectedMedia = function() {
         return moment(media.get('end')) >= now;
     });
     if (media) {
-        var elapsed = now - moment(media.get('start'));
-        var frame = elapsed / media.fps;
+        var elapsed = (now - moment(media.get('start'))) / 1000;
+        var frame = parseInt(elapsed * media.get('fps'));
         expected.media = media;
         expected.frame = frame;
         return expected;
@@ -156,9 +156,9 @@ heartbeats.prototype.syncMelted = function() {
             throw new Error("[HEARTBEAT-SY] Melted is not playing!");
         } else {
             var expected = self.getExpectedMedia();
-            var meltedClip = meltedStatus.clip;
+            var meltedClip = meltedStatus.currentClip;
             if (expected.media.get("id").toString() !== meltedClip.id.toString()) {
-                var index = self.melted_medias.indexOf(expected.media);
+                var index = expected.media.get('actual_order');
                 var frames = 9999;
                 var mediaAbove = self.melted_medias.at(index - 1);
                 if (mediaAbove.get("id").toString() === meltedClip.id.toString()) {
@@ -169,12 +169,13 @@ heartbeats.prototype.syncMelted = function() {
                         frames = meltedClip.currentFrame + (expected.media.length - expected.frame);
                     }
                 }
-                if (frames > expected.media.fps) {
+
+                if (frames > expected.media.get('fps')) {
                     return self.fixMelted(expected);
                 } else {
                     self.sendStatus();
                 }
-            } else if (Math.abs(meltedClip.currentFrame - expected.frame) > expected.media.fps) {
+            } else if (Math.abs(meltedClip.currentFrame - expected.frame) > expected.media.get('fps')) {
                 return self.fixMelted(expected);
             } else {
                 self.sendStatus();
@@ -191,7 +192,7 @@ heartbeats.prototype.fixMelted = function(expected) {
     var self = this;
     console.error("[HEARTBEAT-SY] Melted is out of sync!");
     self.emit("outOfSync", expected);
-    return self.server.goto(expected.media.actual_order, expected.frame).then(self.sendStatus).fail(self.handleError);
+    return self.server.goto(expected.media.get('actual_order'), expected.frame).then(self.sendStatus.bind(self)).fail(self.handleError.bind(self));
 };
 
 heartbeats.prototype.handleError = function(error) {
