@@ -118,19 +118,15 @@ heartbeats.prototype.executeGc = function() {
 heartbeats.prototype.sendStatus = function() {
     var self = this;
     console.log("[HEARTBEAT-FS] Started Status");
-//    try {
-        var expected = getExpectedMedia();
-        if (!self.current_media)
-            self.current_media = expected.media;
-        if (expected.media.get("id").toString() !== self.current_media.get("id").toString()) {
-            self.emit("clipStatus", expected.media);
-            self.current_media = expected.media;
-        } else {
-            self.emit("frameStatus", {media: expected.media, frame: expected.frame});
-        }
-//    } catch(error) {
-//        self.handleError(error);
-//    }
+    var expected = getExpectedMedia();
+    if (!self.current_media)
+        self.current_media = expected.media;
+    if (expected.media.get("id").toString() !== self.current_media.get("id").toString()) {
+        self.emit("clipStatus", expected.media);
+        self.current_media = expected.media;
+    } else {
+        self.emit("frameStatus", {media: expected.media, frame: expected.frame});
+    }
     console.log("[HEARTBEAT-FS] Finished Status");
 };
 
@@ -156,50 +152,34 @@ heartbeats.prototype.syncMelted = function() {
     console.log("[HEARTBEAT-SY] Start Sync");
     var self = this;
     self.server.getServerStatus().then(function(meltedStatus) {
-//        var deferred = Q.defer();
         if (meltedStatus.status !== "playing") {
-//            self.handleError(new Error("[HEARTBEAT-SY] Melted is not playing!"));
-//            deferred.reject(new Error("[HEARTBEAT-SY] Melted is not playing!"));
             throw new Error("[HEARTBEAT-SY] Melted is not playing!");
         } else {
-//            try {
-                var expected = self.getExpectedMedia();
-                var meltedClip = meltedStatus.clip;
-                if (expected.media.get("id").toString() !== meltedClip.id.toString()) {
-                    var index = self.melted_medias.indexOf(expected.media);
-                    var frames = 9999;
-                    var mediaAbove = self.melted_medias.at(index - 1);
-                    if (mediaAbove.get("id").toString() === meltedClip.id.toString()) {
-                        frames = meltedClip.length - meltedClip.currentFrame + expected.frame;
-                    } else {
-                        var mediaBelow = self.melted_medias.at(index + 1);
-                        if (mediaBelow.get("id").toString() === meltedClip.id.toString()) {
-                            frames = meltedClip.currentFrame + (expected.media.length - expected.frame);
-                        }
+            var expected = self.getExpectedMedia();
+            var meltedClip = meltedStatus.clip;
+            if (expected.media.get("id").toString() !== meltedClip.id.toString()) {
+                var index = self.melted_medias.indexOf(expected.media);
+                var frames = 9999;
+                var mediaAbove = self.melted_medias.at(index - 1);
+                if (mediaAbove.get("id").toString() === meltedClip.id.toString()) {
+                    frames = meltedClip.length - meltedClip.currentFrame + expected.frame;
+                } else {
+                    var mediaBelow = self.melted_medias.at(index + 1);
+                    if (mediaBelow.get("id").toString() === meltedClip.id.toString()) {
+                        frames = meltedClip.currentFrame + (expected.media.length - expected.frame);
                     }
-                    if (frames > expected.media.fps) {
-//                        self.fixMelted(expected);
-//                        deferred.resolve(self.fixMelted(expected));
-                        return self.fixMelted(expected);
-                    } else {
-//                        deferred.resolve(self.sendStatus());
-                        self.sendStatus();
-                    }
-                } else if (Math.abs(meltedClip.currentFrame - expected.frame) > expected.media.fps) {
-//                    self.fixMelted(expected);
-//                    deferred.resolve(self.fixMelted(expected));
+                }
+                if (frames > expected.media.fps) {
                     return self.fixMelted(expected);
                 } else {
-//                    self.sendStatus();
-//                    deferred.resolve(self.sendStatus());
                     self.sendStatus();
                 }
-//            } catch(err) {
-////                self.handleError(err);
-//                deferred.reject(err);
-//            }            
+            } else if (Math.abs(meltedClip.currentFrame - expected.frame) > expected.media.fps) {
+                return self.fixMelted(expected);
+            } else {
+                self.sendStatus();
+            }
         }
-//        return deferred.promise;
     }).fail(self.handleError).fin(function() {
         self.scheduleSync();
         self.melted_medias.leave();
