@@ -156,6 +156,7 @@ mosto.prototype.initHeartbeats = function() {
 };
 
 mosto.prototype.fetchPlaylists = function(window) {
+    var self = this;
     self.driver.getPlaylists(window, function(playlists) {
         playlists.forEach(function(playlist) {
             self.playlists.get("playlists").add(playlist, {merge: true});
@@ -234,7 +235,8 @@ mosto.prototype.init = function( melted, callback) {
         self.initHeartbeats();
 
         self.startMvcpServer( function() {
-            self.fetchPlaylists({from: now, to: now + (4 * 60 * 60 * 1000)});
+            //TODO: See why this brakes everything :(
+//            self.fetchPlaylists({from: now, to: now + (4 * 60 * 60 * 1000)});
             if (callback) callback();
         } );
     }
@@ -266,7 +268,6 @@ mosto.prototype.finish = function(callback) {
     console.log("mbc-mosto: [INFO] Finish mbc-mosto... ") ;
     this.stopDriver();
     this.stopHeartbeats();
-    this.player.stop();
     Melted.stop(function(pid) {
         setTimeout( function() {
             Melted.leave();
