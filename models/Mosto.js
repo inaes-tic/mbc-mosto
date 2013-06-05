@@ -149,6 +149,8 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                 }).fin(self.leave);
             });
         });
+
+        this.fetch();
     },
     sync: function(method, model, options) {
         /*
