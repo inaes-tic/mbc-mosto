@@ -7,7 +7,7 @@ var config           = require('mbc-common').config.Mosto.HeartBeats,
     utils            = require('./utils');
 
 function heartbeats(customConfig) {
-    //THIS MODULE ASSUMES MELTED ALWAYS HAS THE SAME CLIPS AS MELTED_MEDIAS 
+    //THIS MODULE ASSUMES MELTED ALWAYS HAS THE SAME CLIPS AS MELTED_MEDIAS
     //AND THAT THEY ARE IN THE SAME ORDER
     var defaults = {
         gc_interval: 1000 * 60 * 60,
@@ -20,12 +20,12 @@ function heartbeats(customConfig) {
     this.melted_medias = Mosto.Playlists().get('melted_medias');
 
     this.current_media = false;
-    
+
     this.stop_timers = false;
-    
+
     this.server = new mvcp_server(this.config.mvcp_server);
     console.log("[HEARTBEAT-MVCP] MVCP server instantiated: " + this.server.uuid);
-    
+
     events.EventEmitter.call(this);
 }
 
@@ -49,7 +49,7 @@ heartbeats.prototype.startMvcpServer = function(callback) {
 };
 
 heartbeats.prototype.init = function() {
-    this.startMvcpServer(this.initTimers.bind(this));    
+    this.startMvcpServer(this.initTimers.bind(this));
 };
 
 heartbeats.prototype.initTimers = function() {
