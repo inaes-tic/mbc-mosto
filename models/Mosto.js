@@ -354,9 +354,11 @@ Mosto.LoadedPlaylists = Backbone.Model.extend({
 
     addPlaylist: function(playlist) {
         this.get('playlists').add(playlist, { merge: true });
+        this.save();
     },
     removePlaylist: function(playlist) {
         this.get('playlists').remove(playlist);
+        this.save();
     },
 });
 
