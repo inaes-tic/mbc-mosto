@@ -83,9 +83,17 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         this.on('add', function(model, collection, options){
             self.take(function() {
                 var index = collection.indexOf(model);
-                var promise = self.driver.insertClip(model.toJSON(), index).fin(self.leave);
+                self.driver.insertClip(model.toJSON(), index).then(self.driver.getServerStatus.bind(self.driver)).then(function(status) {
+                    // statuses: offline|not_loaded|playing|stopped|paused|disconnected|unknown
+                    if( status.status != 'playing' ) {
+                        return self.driver.play();
+                    }
+                }).fail(function(err) {
+                    throw err
+                }).fin(self.leave);
             });
-        })
+        });
+
         this.on('remove', function(model, collection, options) {
             self.take(function() {
                 var index = options.index;
@@ -151,7 +159,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         self.take(function() {
             if( method == 'read' ) {
                 var promise = self.driver.getServerPlaylist().then(self.loadFromMelted.bind(self));
-                promise = promise.then(function() { return self.driver.getServerStatus() }).then(
+                promise = promise.then(self.driver.getServerStatus.bind(self.driver)).then(
                     function(status) {
                         /*
                          * Now I represent the playlist on the melted driver exactly. But I don't
@@ -239,8 +247,10 @@ Mosto.Playlist = Backbone.Model.extend({
             throw new Error("Must provide an end date");
         this.set('end', moment(this.get('end')));
 
-        if (!attributes.medias)
+        if ( !(attributes.medias instanceof Mosto.MediaCollection) )
             this.set('medias', new Mosto.MediaCollection());
+        if ( attributes.medias instanceof Array )
+            this.get('medias').set(attributes.medias);
         this.get('medias').on('all', bubbleEvents(this, 'medias'));
         /*
           this is important: 'add' events are triggered AFTER every model has been
@@ -254,6 +264,9 @@ Mosto.Playlist = Backbone.Model.extend({
             model.playlist = self;
             var index = collection.indexOf(model);
             self.adjustMediaTimes(index);
+        });
+        this.on('change:start', function(model, value, options) {
+            model.adjustMediaTimes(0);
         });
     },
     getMedias: function() {
@@ -344,9 +357,11 @@ Mosto.LoadedPlaylists = Backbone.Model.extend({
 
     addPlaylist: function(playlist) {
         this.get('playlists').add(playlist, { merge: true });
+        this.save();
     },
     removePlaylist: function(playlist) {
         this.get('playlists').remove(playlist);
+        this.save();
     },
 });
 

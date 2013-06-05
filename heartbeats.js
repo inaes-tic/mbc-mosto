@@ -135,10 +135,10 @@ heartbeats.prototype.getExpectedMedia = function() {
     var now = moment();
     var expected = {};
     var media = self.melted_medias.find(function(media) {
-        return moment(media.end) >= now;
+        return moment(media.get('end')) >= now;
     });
     if (media) {
-        var elapsed = now - moment(media.start);
+        var elapsed = now - moment(media.get('start'));
         var frame = elapsed / media.fps;
         expected.media = media;
         expected.frame = frame;
