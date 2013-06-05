@@ -46,14 +46,14 @@ mosto.prototype.initDriver = function() {
     this.pl_driver.on('create', function(playlist) {
         var now = moment();
 
-        if(!this.inTimeWindow(playlist))
+        if(!self.inTimeWindow(playlist))
             return;
 
         self.playlists.addPlaylist(playlist);
     });
 
     this.pl_driver.on('update', function(playlist) {
-        if(!this.inTimeWindow(playlist))
+        if(!self.inTimeWindow(playlist))
             return self.playlists.removePlaylist(playlist);
         return self.playlists.addPlaylist(playlist);
     });
@@ -159,7 +159,7 @@ mosto.prototype.fetchPlaylists = function(window) {
         playlists.forEach(function(playlist) {
             self.playlists.get("playlists").add(playlist, {merge: true});
         });
-        self.playlists.get("melted_medias").sync();
+        self.playlists.save();
     });
 };
 
@@ -224,7 +224,10 @@ mosto.prototype.init = function( melted, callback) {
         self.pl_driver     = new playlists_driver(self.config.playlist_server);
         self.status_driver = new status_driver();
         self.playlists     = models.Playlists;
+        self.playlists.get('melted_medias').fetch();
         self.heartbeats    = new heartbeats();
+
+        self.timeWindow = { start: moment(), end: moment().add(4, 'hours') };
 
         self.initDriver();
         self.initHeartbeats();
