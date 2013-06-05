@@ -17,10 +17,10 @@ describe.only('models.Mosto', function() {
         var duration = _.reduce(medias, function(acc, m) { return acc + m.get('length') * m.get('fps') }, 0);
         start = start || moment();
         var pl = new Mosto.Playlist({
-            id: now.valueOf(),
+            id: start.valueOf(),
             name: 'test',
-            start: moment(now),
-            end: now.add(duration),
+            start: moment(start),
+            end: start.add(duration),
         });
         pl.get('medias').add(medias);
         return pl;
