@@ -1,9 +1,11 @@
+var moment = require('moment');
+
 function Playlist(id, name, startDate, medias, endDate, mode) {
     this.id        = id;
     this.name      = name;
-    this.startDate = startDate;
+    this.start     = moment(startDate);
     this.medias    = medias;
-    this.endDate   = endDate;
+    this.end       = moment(endDate);
     this.mode      = mode;
     this.loaded    = false;
 }

@@ -157,8 +157,7 @@ mosto.prototype.initHeartbeats = function() {
 mosto.prototype.fetchPlaylists = function(window) {
     self.driver.getPlaylists(window, function(playlists) {
         playlists.forEach(function(playlist) {
-            var mostoPlaylist = self.getModelPlaylistFromApiPlaylist(playlist);
-            self.playlists.get("playlists").add(mostoPlaylist, {merge: true});
+            self.playlists.get("playlists").add(playlist, {merge: true});
         });
         self.playlists.get("melted_medias").sync();
     });
