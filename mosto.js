@@ -62,7 +62,7 @@ mosto.prototype.initDriver = function() {
         return self.playlists.removePlaylist(playlist);
     });
 
-    self.pl_driver.start();
+    self.pl_driver.start(self.timeWindow);
 };
 
 mosto.prototype.stopDriver = function() {
@@ -148,6 +148,7 @@ mosto.prototype.initHeartbeats = function() {
     });
     
     self.heartbeats.on("forceCheckout", function(window) {
+        self.timeWindow = window;
         self.fetchPlaylists(window);
     });
 
