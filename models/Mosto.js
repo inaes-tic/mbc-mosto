@@ -247,8 +247,10 @@ Mosto.Playlist = Backbone.Model.extend({
             throw new Error("Must provide an end date");
         this.set('end', moment(this.get('end')));
 
-        if (!attributes.medias)
+        if ( !(attributes.medias instanceof Mosto.MediaCollection) )
             this.set('medias', new Mosto.MediaCollection());
+        if ( attributes.medias instanceof Array )
+            this.get('medias').set(attributes.medias);
         this.get('medias').on('all', bubbleEvents(this, 'medias'));
         /*
           this is important: 'add' events are triggered AFTER every model has been
