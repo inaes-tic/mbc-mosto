@@ -194,11 +194,13 @@ heartbeats.prototype.fixMelted = function(expected) {
     return self.server.goto(expected.media.actual_order, expected.frame).then(self.sendStatus).fail(self.handleError);
 };
 
-heartbeats.prototype.handleError =  function(error) {
+heartbeats.prototype.handleError = function(error) {
+    var self = this;
     console.error(error);
-    self.emit("Error", error);
+    //NEVER emit 'error' event, see https://github.com/LearnBoost/socket.io/issues/476
+    self.emit("hb_error", error);
     //FORCING LIST TO SYNC, SHOULD CHECK MELTED PLAYLIST, FIX IT AND START PLAYING
-    self.melted_medias.sync();
+//    self.melted_medias.sync();
 };
 
 exports = module.exports = function(customConfig) {
