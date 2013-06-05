@@ -365,6 +365,10 @@ Mosto.LoadedPlaylists = Backbone.Model.extend({
     },
 });
 
-Mosto.Playlists = new Mosto.LoadedPlaylists();
+Mosto._globals = {}
+
+Mosto.Playlists = function() {
+    return Mosto._globals.playlists || (Mosto._globals.playlists = new Mosto.LoadedPlaylists());
+}
 
 exports = module.exports = Mosto;

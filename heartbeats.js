@@ -16,9 +16,9 @@ function heartbeats(customConfig) {
         mvcp_server: "melted"
     };
     this.config = customConfig || config || defaults;
-    
-    this.melted_medias = Mosto.Playlists.get('melted_medias');
-    
+
+    this.melted_medias = Mosto.Playlists().get('melted_medias');
+
     this.current_media = false;
     
     this.stop_timers = false;

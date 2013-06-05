@@ -225,8 +225,7 @@ mosto.prototype.init = function( melted, callback) {
         console.log("mbc-mosto: [INFO] MVCP Server instantiated: " + self.server.uuid);
         self.pl_driver     = new playlists_driver(self.config.playlist_server);
         self.status_driver = new status_driver();
-        self.playlists     = models.Playlists;
-        self.playlists.get('melted_medias').fetch();
+        self.playlists     = models.Playlists();
         self.heartbeats    = new heartbeats();
 
         self.timeWindow = { start: moment(), end: moment().add(4, 'hours') };

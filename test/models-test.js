@@ -49,8 +49,8 @@ describe.only('models.Mosto', function() {
 
         describe("Media juggling", function() {
             before(function() {
-                self.mlt_media = self.playlists.get('melted_medias');
-                self.pls = self.playlists.get('playlists');
+                self.mlt_media = self.playlists().get('melted_medias');
+                self.pls = self.playlists().get('playlists');
                 self.mediamodels = _.map(self.medias, function(media, ix) { return new Mosto.Media(_.extend(media, { playlist_order: ix })) });
             });
             describe("starting without medias in melted", function(){
@@ -61,7 +61,7 @@ describe.only('models.Mosto', function() {
                 });
                 afterEach(function(done) {
                     self.pls.set([]);
-                    self.playlists.save();
+                    self.playlists().save();
                     self.mlt_media.take(function() {
                         done();
                         self.mlt_media.leave()
@@ -72,8 +72,8 @@ describe.only('models.Mosto', function() {
                     var playlists = self.pls;
                     var pl = self.createPlaylist(self.mediamodels);
 
-                    self.playlists.addPlaylist(pl);
-                    self.playlists.save();
+                    self.playlists().addPlaylist(pl);
+                    self.playlists().save();
                     mlt_media.take(function() {
                         mvcp.getServerPlaylist().then(function(clips) {
                             clips.length.should.eql(self.medias.length);
@@ -88,7 +88,7 @@ describe.only('models.Mosto', function() {
                 beforeEach(function(done) {
                     var pl = self.createPlaylist(self.mediamodels);
                     self.pls.set(pl);
-                    self.playlists.save();
+                    self.playlists().save();
                     self.mlt_media.take(function() {
                         done();
                         self.mlt_media.leave()
@@ -96,7 +96,7 @@ describe.only('models.Mosto', function() {
                 });
                 afterEach(function(done) {
                     self.pls.set([]);
-                    self.playlists.save();
+                    self.playlists().save();
                     self.mlt_media.take(function() {
                         done();
                         self.mlt_media.leave()
@@ -122,7 +122,7 @@ describe.only('models.Mosto', function() {
                         });
                     });
                     it('but when Playlists.save(), they should be restored', function(done){
-                        self.playlists.save();
+                        self.playlists().save();
                         self.mlt_media.take(function(){
                             mvcp.getServerPlaylist().then(function(clips) {
                                 clips.length.should.eql(self.medias.length);
@@ -134,8 +134,8 @@ describe.only('models.Mosto', function() {
                     });
                     it('removing the Playlist and saving should remove them from melted as well', function(done){
                         var pl = self.pls.at(0);
-                        self.playlists.removePlaylist(pl);
-                        self.playlists.save();
+                        self.playlists().removePlaylist(pl);
+                        self.playlists().save();
                         self.mlt_media.take(function() {
                             mvcp.getServerPlaylist().then(function(clips) {
                                 clips.length.should.eql(0);
