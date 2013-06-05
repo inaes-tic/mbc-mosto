@@ -180,7 +180,7 @@ heartbeats.prototype.syncMelted = function() {
                 self.sendStatus();
             }
         }
-    }).fail(self.handleError).fin(function() {
+    }).fail(self.handleError.bind(self)).fin(function() {
         self.scheduleSync();
         self.melted_medias.leave();
     });
