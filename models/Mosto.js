@@ -159,7 +159,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         self.take(function() {
             if( method == 'read' ) {
                 var promise = self.driver.getServerPlaylist().then(self.loadFromMelted.bind(self));
-                promise = promise.then(function() { return self.driver.getServerStatus() }).then(
+                promise = promise.then(self.driver.getServerStatus.bind(self.driver)).then(
                     function(status) {
                         /*
                          * Now I represent the playlist on the melted driver exactly. But I don't
