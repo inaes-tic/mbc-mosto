@@ -160,14 +160,14 @@ heartbeats.prototype.syncMelted = function() {
             if (expected.media.get("id").toString() !== meltedClip.id.toString()) {
                 var index = expected.media.get('actual_order');
                 var frames = 9999;
-                var mediaAbove = self.melted_medias.at(index - 1);
-                if (mediaAbove.get("id").toString() === meltedClip.id.toString()) {
-                    frames = meltedClip.length - meltedClip.currentFrame + expected.frame;
-                } else {
-                    var mediaBelow = self.melted_medias.at(index + 1);
-                    if (mediaBelow.get("id").toString() === meltedClip.id.toString()) {
-                        frames = meltedClip.currentFrame + (expected.media.length - expected.frame);
-                    }
+                var currentMedia = self.melted_medias.get(meltedClip.id);
+                var indexDiff = self.melted_medias.indexOf(currentMedia) - index;
+                if( indexDiff == -1 ) {
+                    // melted's right before the expected media
+                    frames = currentMedia.get('length') - meltedClip.currentFrame + expected.frame;
+                } else if ( indexDiff == 1 ) {
+                    // melted's right after the expected media
+                    frames = meltedClip.currentFrame + (expected.media.get('length') - expected.frame);
                 }
 
                 if (frames > expected.media.get('fps')) {
