@@ -265,6 +265,9 @@ Mosto.Playlist = Backbone.Model.extend({
             var index = collection.indexOf(model);
             self.adjustMediaTimes(index);
         });
+        this.on('change:start', function(model, value, options) {
+            model.adjustMediaTimes(0);
+        });
     },
     getMedias: function() {
         return this.get('medias').toArray();
