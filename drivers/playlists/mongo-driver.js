@@ -232,14 +232,13 @@ mongo_driver.prototype.createPlaylist = function(sched, callback) {
         list.models.forEach(function(block, order) {
             var block_id = (block._id.toHexString && block._id.toHexString()) || block._id;
             var orig_order = order;
-            var actual_order = undefined;
             var clip_name = block.name;
             // TODO: don't know what goes in type
             var type = "default";
             var file = block.file;
             var length = moment(block.durationraw, "HH:mm:ss.SSS");
             var fps = block.fps;
-            medias.push(new Media(block_id, orig_order, actual_order, playlist_id, clip_name, type, file,
+            medias.push(new Media(block_id, orig_order, playlist_id, clip_name, type, file,
                                   moment.duration({
                                       hours: length.hours(),
                                       minutes: length.minutes(),

@@ -24,15 +24,19 @@ function bubbleEvents(self, name) {
 
 Mosto.Media = Backbone.Model.extend({
     defaults: {
-        playlist_order: undefined,
-        actual_order: undefined,
+        // playlist_order: undefined,
+        // actual_order: undefined,
         name: '',
         type: 'default',
-        file: undefined,
-        length: undefined,
-        fps: undefined,
-        start: undefined,
-        end: undefined,
+        // file: undefined,
+        // length: undefined,
+        // fps: undefined,
+        // start: undefined,
+        // end: undefined,
+            in: undefined,
+        out: undefined,
+    },
+
     },
 
     initialize: function(attributes, options) {
@@ -83,6 +87,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         this.on('add', function(model, collection, options){
             self.take(function() {
                 var index = collection.indexOf(model);
+                model.set('actual_order', index);
                 self.driver.insertClip(model.toJSON(), index).then(self.driver.getServerStatus.bind(self.driver)).then(function(status) {
                     // statuses: offline|not_loaded|playing|stopped|paused|disconnected|unknown
                     if( status.status != 'playing' ) {
@@ -240,6 +245,7 @@ Mosto.Playlist = Backbone.Model.extend({
     initialize: function (attributes, options) {
         console.log ('creating new Mosto.Playlist', attributes, options);
         var self = this;
+
         this.set('name', this.get('name') || this.get('_id'));
 
         if( !attributes.start )
@@ -310,6 +316,11 @@ Mosto.PlaylistCollection = Backbone.Collection.extend({
                     options);
     },
     addBlanks: function(collection, options) {
+        var now = moment();
+        var first = this.at(0);
+        if( first && first.get('start') > now ) {
+            this.addBlankPlaylist(now, first.get('start'), 0);
+        }
         for(var i=1 ; i < this.length ; i++) {
             var prev = this.at(i-1);
             var curr = this.at(i);
