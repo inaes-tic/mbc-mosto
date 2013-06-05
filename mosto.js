@@ -28,7 +28,7 @@ function mosto(customConfig) {
     /* MODULES */
     this.heartbeats = undefined;
     this.playlists = undefined;
-    
+
     events.EventEmitter.call(this);
 }
 
@@ -96,9 +96,9 @@ mosto.prototype.startMvcpServer = function(callback) {
 
 mosto.prototype.initHeartbeats = function() {
     var self = this;
-    
+
     console.log("mbc-mosto: [INFO] Initializing heartbeats");
-    
+
     self.heartbeats.on('frameStatus', function(status) {
         self.status_driver.setStatusClip(StatusClip(
             status.media.id,
@@ -146,7 +146,7 @@ mosto.prototype.initHeartbeats = function() {
             status.show.next = playlists.at(index+1).toJSON();
         self.status_driver.setStatus(status);
     });
-    
+
     self.heartbeats.on("forceCheckout", function(window) {
         self.timeWindow = window;
         self.fetchPlaylists(window);
@@ -171,7 +171,7 @@ mosto.prototype.getModelPlaylistFromApiPlaylist = function(playlist) {
     playlistJson.start = moment(playlist.startDate);
     playlistJson.end   = moment(playlist.endDate);
     playlistJson.id    = playlist.id;
-    
+
     var start = playlistJson.start;
     var medias = new Mosto.MediaCollection();
     playlist.medias.forEach(function(media) {
@@ -186,21 +186,21 @@ mosto.prototype.getModelPlaylistFromApiPlaylist = function(playlist) {
         mediaJson.start          = start;
         mediaJson.end            = start + moment(media.length);
         mediaJson.id             = media.id;
-        
+
         var mostoMedia = new Mosto.Media(mediaJson);
         medias.add(mostoMedia);
-        
+
         start = start + moment(media.length);
     });
-    
+
     playlistJson.medias = medias;
-    
+
     return new Mosto.Playlist(playlistJson);
 };
 
 mosto.prototype.stopHeartbeats = function() {
     var self = this;
-    
+
     console.log("mbc-mosto: [INFO] Stopping heartbeats");
 
     self.heartbeats.stop();
@@ -232,7 +232,7 @@ mosto.prototype.init = function( melted, callback) {
 
         self.initDriver();
         self.initHeartbeats();
-        
+
         self.startMvcpServer( function() {
             self.fetchPlaylists({from: now, to: now + (4 * 60 * 60 * 1000)});
             if (callback) callback();
