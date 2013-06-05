@@ -83,9 +83,17 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         this.on('add', function(model, collection, options){
             self.take(function() {
                 var index = collection.indexOf(model);
-                var promise = self.driver.insertClip(model.toJSON(), index).fin(self.leave);
+                self.driver.insertClip(model.toJSON(), index).then(self.driver.getServerStatus.bind(self.driver)).then(function(status) {
+                    // statuses: offline|not_loaded|playing|stopped|paused|disconnected|unknown
+                    if( status.status != 'playing' ) {
+                        return self.driver.play();
+                    }
+                }).fail(function(err) {
+                    throw err
+                }).fin(self.leave);
             });
-        })
+        });
+
         this.on('remove', function(model, collection, options) {
             self.take(function() {
                 var index = options.index;
