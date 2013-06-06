@@ -134,6 +134,8 @@ heartbeats.prototype.getExpectedMedia = function() {
     var self = this;
     var now = moment();
     var expected = {};
+    expected.media = undefined;
+    exptected.frame = undefined;
     var media = self.melted_medias.find(function(media) {
         return moment(media.get('end')) >= now;
     });
@@ -142,30 +144,26 @@ heartbeats.prototype.getExpectedMedia = function() {
         var frame = parseInt(elapsed * media.get('fps'));
         expected.media = media;
         expected.frame = frame;
-        return expected;
-    } else {
-        throw new Error("[HEARTBEAT-SY] Could not find expected clip!");
     }
+    return expected;
 };
 
 heartbeats.prototype.syncMelted = function() {
     console.log("[HEARTBEAT-SY] Start Sync");
     var self = this;
     self.server.getServerStatus().then(function(meltedStatus) {
-        if (meltedStatus.status !== "playing") {
-            throw new Error("[HEARTBEAT-SY] Melted is not playing!");
-        } else {
-            var expected = self.getExpectedMedia();
+        var expected = self.getExpectedMedia();
+        if (expected.media) {
             var meltedClip = meltedStatus.currentClip;
             if (expected.media.get("id").toString() !== meltedClip.id.toString()) {
                 var index = expected.media.get('actual_order');
                 var frames = 9999;
                 var currentMedia = self.melted_medias.get(meltedClip.id);
                 var indexDiff = self.melted_medias.indexOf(currentMedia) - index;
-                if( indexDiff == -1 ) {
+                if (indexDiff === -1) {
                     // melted's right before the expected media
                     frames = currentMedia.get('length') - meltedClip.currentFrame + expected.frame;
-                } else if ( indexDiff == 1 ) {
+                } else if (indexDiff === 1) {
                     // melted's right after the expected media
                     frames = meltedClip.currentFrame + (expected.media.get('length') - expected.frame);
                 }
@@ -180,6 +178,13 @@ heartbeats.prototype.syncMelted = function() {
             } else {
                 self.sendStatus();
             }
+            if (meltedStatus.status !== "playing") {
+                self.emit("startPlaying", "Melted was not playing");
+                console.warn("[HEARTBEATS-SY] Melted was not playing");
+                return self.server.play();
+            }
+        } else {
+            self.emit("noClips", "Could not find expected media");
         }
     }).fail(self.handleError.bind(self)).fin(function() {
         self.scheduleSync();
