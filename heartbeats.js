@@ -6,6 +6,14 @@ var config           = require('mbc-common').config.Mosto.HeartBeats,
     mvcp_server      = require('./drivers/mvcp/mvcp-driver'), 
     utils            = require('./utils');
 
+/* Events emited
+ *  forceCheckout: When medias loaded are less than config time
+ *  clipStatus: When clip changes
+ *  frameStatus: Every 50 millis
+ *  startPlaying: When melted wasnt playing
+ *  outOfSync: When melted was 1 second or more defased
+ *  hbError: Other errors
+ */
 function heartbeats(customConfig) {
     //THIS MODULE ASSUMES MELTED ALWAYS HAS THE SAME CLIPS AS MELTED_MEDIAS
     //AND THAT THEY ARE IN THE SAME ORDER
@@ -96,9 +104,11 @@ heartbeats.prototype.checkSchedules =  function() {
     var scheduled =  last.get('end') - moment();
     if (scheduled < self.config.min_scheduled)
         self.emit("forceCheckout", {from: last.get('end'), to: last.get('end') + scheduled});
+    self.scheduleCheckout();
 };
 
 heartbeats.prototype.executeGc = function() {
+    //TODO: Eliminar los xml viejos
     var self = this;
     console.log("[HEARTBEAT-GC] Started Garbage Collector");
     var timeLimit = moment().subtract('hours', 1);
@@ -204,9 +214,7 @@ heartbeats.prototype.handleError = function(error) {
     var self = this;
     console.error(error);
     //NEVER emit 'error' event, see https://github.com/LearnBoost/socket.io/issues/476
-    self.emit("hb_error", error);
-    //FORCING LIST TO SYNC, SHOULD CHECK MELTED PLAYLIST, FIX IT AND START PLAYING
-//    self.melted_medias.sync();
+    self.emit("hbError", error);
 };
 
 exports = module.exports = function(customConfig) {
