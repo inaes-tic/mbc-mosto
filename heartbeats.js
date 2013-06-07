@@ -101,10 +101,14 @@ heartbeats.prototype.stop = function() {
 heartbeats.prototype.checkSchedules =  function() {
     var self = this;
     var last = self.melted_medias.at(self.melted_medias.length - 1);
-    var scheduled =  last.get('end') - moment();
-    if (scheduled < self.config.min_scheduled)
-        self.emit("forceCheckout", {from: last.get('end'), to: last.get('end') + scheduled});
-    self.scheduleCheckout();
+    if (last) {
+        var scheduled =  last.get('end') - moment();
+        if (scheduled < self.config.min_scheduled)
+            self.emit("forceCheckout", {from: last.get('end'), to: last.get('end') + scheduled});
+        self.scheduleCheckout();
+    } else {
+        self.handleNoMedias();
+    }
 };
 
 heartbeats.prototype.executeGc = function() {
@@ -194,13 +198,17 @@ heartbeats.prototype.syncMelted = function() {
                 return self.server.play();
             }
         } else {
-            self.emit("noClips", "Could not find expected media");
+            self.handleNoMedias();
         }
     }).fail(self.handleError.bind(self)).fin(function() {
         self.scheduleSync();
         self.melted_medias.leave();
     });
     console.log("[HEARTBEAT-SY] Finish Sync");
+heartbeats.prototype.handleNoMedias = function() {
+    var self = this;
+    //TODO: Should we force a checkout??
+    self.emit("noClips", "No medias loaded!");
 };
 
 heartbeats.prototype.fixMelted = function(expected) {
