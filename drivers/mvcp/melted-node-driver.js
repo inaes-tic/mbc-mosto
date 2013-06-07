@@ -157,7 +157,7 @@ melted.prototype.sendClip = function(clip, command) {
     console.log("melted-node-driver (" + self.uuid + "): [INFO] Generating file " + filename);
 
     console.log("melted-node-driver (" + self.uuid + "): [INFO] Adding media [" + file + "] to file " + filename);
-    var video = new melted_xml.Producer.Video({source: file});
+    var video = new melted_xml.Producer.Video({ source: file, startFrame: clip.in, length: clip.length });
     xml.push(video);
 
     console.log("melted-node-driver (" + self.uuid + "): [INFO] Creating playlist xml object for file " + filename);
