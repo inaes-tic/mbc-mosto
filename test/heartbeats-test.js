@@ -122,7 +122,8 @@ describe.only('Mosto Heartbeats Test', function(done) {
             var config = {
                 gc_interval: 5000,
                 sync_interval: 50,
-                min_scheduled: 1000,
+                min_scheduled: 1000 * 60 * 60 * 4,
+                checkout_interval: 1000,
                 mvcp_server: "melted"
             };
             self.hb = new heartbeats(config);
@@ -146,7 +147,7 @@ describe.only('Mosto Heartbeats Test', function(done) {
             self.noClips = 0;
             before(function(done) {
                 self.hb.on('forceCheckout', function() {
-                    self.ckeckouts++;
+                    self.checkouts++;
                 });
                 self.hb.on('clipStatus', function() {
                     self.clipStatus++;
@@ -171,8 +172,8 @@ describe.only('Mosto Heartbeats Test', function(done) {
                     done();
                 }, 2050);
             });
-            it('-- Should have received 0 forceCheckout events', function() {
-                assert.equal(self.checkouts, 0);
+            it('-- Should have received 2 forceCheckout events', function() {
+                assert.equal(self.checkouts, 2);
             });
             it('-- Should have received 1 clipStatus events', function() {
                 assert.equal(self.clipStatus, 1);
