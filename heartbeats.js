@@ -11,7 +11,7 @@ var config           = require('mbc-common').config.Mosto.HeartBeats,
  *  clipStatus: When clip changes
  *  frameStatus: Every 50 millis
  *  startPlaying: When melted wasnt playing
- *  outOfSync: When melted was 1 second or more defased
+ *  outOfSync: When melted was more than 1 second defased
  *  hbError: Other errors
  *  noClips: No clips loaded
  */
@@ -26,6 +26,7 @@ function heartbeats(customConfig) {
         mvcp_server: "melted"
     };
     this.config = customConfig || config || defaults;
+    
     if (this.config.checkout_interval === undefined)
         this.config.checkout_interval = this.config.min_scheduled / 4;
 
@@ -222,7 +223,6 @@ heartbeats.prototype.startPlaying = function() {
 
 heartbeats.prototype.handleNoMedias = function() {
     var self = this;
-    //TODO: Should we force a checkout??
     self.emit("noClips", "No medias loaded!");
 };
 
