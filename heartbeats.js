@@ -13,6 +13,7 @@ var config           = require('mbc-common').config.Mosto.HeartBeats,
  *  startPlaying: When melted wasnt playing
  *  outOfSync: When melted was 1 second or more defased
  *  hbError: Other errors
+ *  noClips: No clips loaded
  */
 function heartbeats(customConfig) {
     //THIS MODULE ASSUMES MELTED ALWAYS HAS THE SAME CLIPS AS MELTED_MEDIAS
@@ -101,10 +102,14 @@ heartbeats.prototype.stop = function() {
 heartbeats.prototype.checkSchedules =  function() {
     var self = this;
     var last = self.melted_medias.at(self.melted_medias.length - 1);
-    var scheduled =  last.get('end') - moment();
-    if (scheduled < self.config.min_scheduled)
-        self.emit("forceCheckout", {from: last.get('end'), to: last.get('end') + scheduled});
-    self.scheduleCheckout();
+    if (last) {
+        var scheduled =  last.get('end') - moment();
+        if (scheduled < self.config.min_scheduled)
+            self.emit("forceCheckout", {from: last.get('end'), to: last.get('end') + scheduled});
+        self.scheduleCheckout();
+    } else {
+        self.handleNoMedias();
+    }
 };
 
 heartbeats.prototype.executeGc = function() {
@@ -119,7 +124,8 @@ heartbeats.prototype.executeGc = function() {
         oldMedias.forEach(function(media) {
             self.melted_medias.remove(media);
         });
-        self.melted_medias.save();
+        //TODO: Will this remove the clips from melted?
+        Mosto.Playlists().save();
     }
     self.scheduleGc();
     console.log("[HEARTBEAT-GC] Finished Garbage Collector: " + oldMedias.length + " removed.");
@@ -129,13 +135,13 @@ heartbeats.prototype.sendStatus = function() {
     var self = this;
     console.log("[HEARTBEAT-FS] Started Status");
     var expected = self.getExpectedMedia();
-    if (!self.current_media)
-        self.current_media = expected.media;
-    if (expected.media.get("id").toString() !== self.current_media.get("id").toString()) {
+    if ((!self.current_media) || (expected.media.get("id").toString() !== self.current_media.get("id").toString())) {
         self.emit("clipStatus", expected.media);
+        console.log("[HEARTBEAT-FS] Sent clipStatus");
         self.current_media = expected.media;
     } else {
         self.emit("frameStatus", {media: expected.media, frame: expected.frame});
+        console.log("[HEARTBEAT-FS] Sent frameStatus");
     }
     console.log("[HEARTBEAT-FS] Finished Status");
 };
@@ -164,6 +170,7 @@ heartbeats.prototype.syncMelted = function() {
     self.server.getServerStatus().then(function(meltedStatus) {
         var expected = self.getExpectedMedia();
         if (expected.media) {
+            var result = undefined;
             var meltedClip = meltedStatus.currentClip;
             if (expected.media.get("id").toString() !== meltedClip.id.toString()) {
                 var index = expected.media.get('actual_order');
@@ -178,36 +185,49 @@ heartbeats.prototype.syncMelted = function() {
                     frames = meltedClip.currentFrame + (expected.media.get('length') - expected.frame);
                 }
 
-                if (frames > expected.media.get('fps')) {
-                    return self.fixMelted(expected);
-                } else {
-                    self.sendStatus();
-                }
-            } else if (Math.abs(meltedClip.currentFrame - expected.frame) > expected.media.get('fps')) {
-                return self.fixMelted(expected);
-            } else {
-                self.sendStatus();
-            }
+                if (frames > expected.media.get('fps')) 
+                    result = self.fixMelted(expected);
+            } else if (Math.abs(meltedClip.currentFrame - expected.frame) > expected.media.get('fps')) 
+                result = self.fixMelted(expected);
             if (meltedStatus.status !== "playing") {
-                self.emit("startPlaying", "Melted was not playing");
-                console.warn("[HEARTBEATS-SY] Melted was not playing");
-                return self.server.play();
+                if (result)
+                    result = result.then(self.startPlaying()).then(self.sendStatus());
+            } else {
+                if (result)
+                    result = result.then(self.sendStatus());
+                else
+                    self.sendStatus();
             }
+            if (result)
+                return result;
         } else {
-            self.emit("noClips", "Could not find expected media");
+            self.handleNoMedias();
         }
     }).fail(self.handleError.bind(self)).fin(function() {
         self.scheduleSync();
         self.melted_medias.leave();
+        console.log("[HEARTBEAT-SY] Finish Sync");
     });
-    console.log("[HEARTBEAT-SY] Finish Sync");
+};
+
+heartbeats.prototype.startPlaying = function() {
+    var self = this;
+    self.emit("startPlaying", "Melted was not playing");
+    console.warn("[HEARTBEATS-SY] Melted was not playing");
+    return self.server.play();
+};
+
+heartbeats.prototype.handleNoMedias = function() {
+    var self = this;
+    //TODO: Should we force a checkout??
+    self.emit("noClips", "No medias loaded!");
 };
 
 heartbeats.prototype.fixMelted = function(expected) {
     var self = this;
     console.error("[HEARTBEAT-SY] Melted is out of sync!");
     self.emit("outOfSync", expected);
-    return self.server.goto(expected.media.get('actual_order'), expected.frame).then(self.sendStatus.bind(self)).fail(self.handleError.bind(self));
+    return self.server.goto(expected.media.get('actual_order'), expected.frame);
 };
 
 heartbeats.prototype.handleError = function(error) {
