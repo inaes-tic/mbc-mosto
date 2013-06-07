@@ -36,6 +36,7 @@ Mosto.Media = Backbone.Model.extend({
     },
 
     constructor: function(attributes, options) {
+        attributes._id = attributes.id;
         attributes.id = attributes.playlist_id + '-' + attributes.id;
         Backbone.Model.apply(this, arguments);
     },
@@ -98,7 +99,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         this.leave = this.semaphore.leave;
 
         var self = this;
-        this.on('add', function(model, collection, options){
+        this.on('addx', function(model, collection, options){
             self.take(function() {
                 var index = collection.indexOf(model);
                 model.set('actual_order', index);
@@ -113,7 +114,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
             });
         });
 
-        this.on('remove', function(model, collection, options) {
+        this.on('removex', function(model, collection, options) {
             self.take(function() {
                 var index = options.index;
                 self.driver.removeClip(index).fail(function(err) {
@@ -122,7 +123,10 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                 }).fin(self.leave);
             });
         });
-        this.on('sort', function(collection, options) {
+        this.on('all', function(event) {
+            console.log(self, event, arguments);
+        });
+        this.on('sortx', function(collection, options) {
             self.take(function() {
                 self.driver.getServerPlaylist().then(function(clips) {
                     var ids = collection.pluck('id');
@@ -170,6 +174,57 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         });
 
         this.fetch();
+    },
+    set: function(models, options) {
+        var self = this
+        Backbone.Collection.prototype.set.call(this, models, _.extend(options || {}, { silent: true }));
+        self.take(function() {
+            self.driver.getServerPlaylist().then(function(clips) {
+                var ids = self.pluck('id');
+
+                var add = [];
+                var diff = _.difference(ids, _.pluck(clips, 'id'))
+                if(diff.length) {
+                    console.error("ERROR [Mosto.MeltedCollection]: There shouldn't be clips in the collection that aren't loaded in melted");
+                    diff.forEach(function(id) {
+                        add.push({ item: self.get(id), index: ids.indexOf(id) });
+                    });
+                }
+
+                var ret = Q.resolve();
+                add.forEach(function(toAdd) {
+                    ret = ret.then(function() {
+                        return self.driver.insertClip(toAdd.item, toAdd.index);
+                    });
+                    clips.splice(toAdd.index, 0, toAdd.item);
+                });
+
+                var move = [];
+                var remove = [];
+                clips.forEach(function(clip, i) {
+                    var j = ids.indexOf(clip.id);
+                    i -= remove.length;
+                    if( j < 0 ) {
+                        console.error("ERROR [Mosto.MeltedCollection]: There shouldn't be clips in melted that aren't in the collection");
+                        remove.push(i);
+                        return;
+                    }
+                    if( i != j ) {
+                        move.push({ from: i, to: j});
+                    }
+                });
+                remove.forEach(function(i) {
+                    ret = ret.then(function() { return self.driver.removeClip(i) });
+                });
+                move.forEach(function(move) {
+                    ret = ret.then(function() { return self.driver.moveClip(move.from, move.to) });
+                });
+                self.forEach(function(clip, ix) {
+                    clip.set({ actual_order: ix });
+                });
+                return ret;
+            }).fin(self.leave);
+        });
     },
     sync: function(method, model, options) {
         /*
