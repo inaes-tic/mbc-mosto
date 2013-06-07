@@ -22,9 +22,12 @@ function heartbeats(customConfig) {
         gc_interval: 1000 * 60 * 60,
         sync_interval: 50,
         min_scheduled: 1000 * 60 * 60 * 4,
+        checkout_interval: undefined,
         mvcp_server: "melted"
     };
     this.config = customConfig || config || defaults;
+    if (this.config.checkout_interval === undefined)
+        this.config.checkout_interval = this.config.min_scheduled / 4;
 
     this.melted_medias = Mosto.Playlists().get('melted_medias');
 
@@ -91,7 +94,7 @@ heartbeats.prototype.scheduleCheckout = function() {
     if (!self.stop_timers) {
         setTimeout(function() {
             self.checkSchedules();
-        }, self.config.min_scheduled / 4);
+        }, self.config.checkout_interval);
     }
 };
 
