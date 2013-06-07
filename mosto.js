@@ -16,7 +16,8 @@ var fs               = require('fs')
 ,   heartbeats        = require('./heartbeats')
 ,   models           = require('./models/Mosto')
 ;
-
+//TODO: Chequear window, se esta construyendo de formas distintas
+//INCLUSO EN EL DRIVER MISMO SE USA DE FORMAS DISTINTAS!!!
 function mosto(customConfig) {
 
     /** CONFIGURATION */
@@ -63,6 +64,7 @@ mosto.prototype.initDriver = function() {
         return self.playlists.removePlaylist(playlist);
     });
 
+    //TODO: Esto esta bien?????????????
     self.pl_driver.start(self.timeWindow);
 };
 
@@ -153,6 +155,13 @@ mosto.prototype.initHeartbeats = function() {
         self.fetchPlaylists(window);
     });
 
+    self.heartbeats.on("noClips", function() {
+        //TODO: Esto esta bien?????????????
+        var window = { start: moment(), end: moment().add(4, 'hours') };
+        self.timeWindow = window;
+        self.fetchPlaylists(window);
+    });
+
     self.heartbeats.init();
 };
 
@@ -229,6 +238,7 @@ mosto.prototype.init = function( melted, callback) {
         self.playlists     = models.Playlists();
         self.heartbeats    = new heartbeats();
 
+        //TODO: Esto esta bien?????????????
         self.timeWindow = { start: moment(), end: moment().add(4, 'hours') };
 
         self.initDriver();

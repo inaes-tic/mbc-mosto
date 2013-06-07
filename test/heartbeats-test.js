@@ -4,6 +4,7 @@ var assert      = require("assert"),
     Mosto       = require('../models/Mosto'),
     _           = require('underscore'),
     moment      = require('moment'),
+    exec        = require('child_process').exec,
     heartbeats  = require('../heartbeats');
 
 
@@ -20,7 +21,7 @@ describe.only('Mosto Heartbeats Test', function(done) {
         });
     });
     
-    describe('#Heartbeats: Init with custom config and without medias', function(done) {
+    describe('#Heartbeats: Init with custom config and without medias', function() {
         var self = this;
         self.hb = undefined;
         before(function(done) {
@@ -34,7 +35,7 @@ describe.only('Mosto Heartbeats Test', function(done) {
             done();
         });
         
-        describe('- Suscribe and wait 1.1 second', function(done) {
+        describe('- Suscribe and wait 1.1 second', function() {
             self.checkouts = 0;
             self.clipStatus = 0;
             self.frameStatus = 0;
@@ -98,7 +99,7 @@ describe.only('Mosto Heartbeats Test', function(done) {
         });
     });
 
-    describe('#Heartbeats: Init with custom config and with medias', function(done) {
+    describe('#Heartbeats: Init with custom config and with medias', function() {
         var self = this;
         self.hb = undefined;
 
@@ -118,14 +119,46 @@ describe.only('Mosto Heartbeats Test', function(done) {
             return pl;
         };
 
+        self.checkouts = 0;
+        self.clipStatus = 0;
+        self.frameStatus = 0;
+        self.startPlaying = 0;
+        self.outOfSync = 0;
+        self.hbErrors = 0;
+        self.noClips = 0;
+
         before(function(done) {
             var config = {
                 gc_interval: 5000,
                 sync_interval: 50,
-                min_scheduled: 1000,
+                min_scheduled: 1000 * 60 * 60 * 4,
+                checkout_interval: 900,
                 mvcp_server: "melted"
             };
             self.hb = new heartbeats(config);
+
+            self.hb.on('forceCheckout', function() {
+                self.checkouts++;
+            });
+            self.hb.on('clipStatus', function() {
+                self.clipStatus++;
+            });
+            self.hb.on('frameStatus', function() {
+                self.frameStatus++;
+            });
+            self.hb.on('startPlaying', function() {
+                self.startPlaying++;
+            });
+            self.hb.on('outOfSync', function() {
+                self.outOfSync++;
+            });
+            self.hb.on('hbErrors', function() {
+                self.hbErrors++;
+            });
+            self.hb.on('noClips', function() {
+                self.noClips++;
+            });
+            self.hb.init();
 
             var mediamodels = _.map(medias, function(media, ix) { return new Mosto.Media(_.extend(media, { playlist_order: ix })); });
 
@@ -133,64 +166,113 @@ describe.only('Mosto Heartbeats Test', function(done) {
             
             playlists().addPlaylist(pl);
             playlists().save();
+
             done();
         });
         
-        describe('- Suscribe and wait 2 seconds', function(done) {
-            self.checkouts = 0;
-            self.clipStatus = 0;
-            self.frameStatus = 0;
-            self.startPlaying = 0;
-            self.outOfSync = 0;
-            self.hbErrors = 0;
-            self.noClips = 0;
+        describe('-- Starting playback and wait 2 seconds', function() {
             before(function(done) {
-                self.hb.on('forceCheckout', function() {
-                    self.ckeckouts++;
-                });
-                self.hb.on('clipStatus', function() {
-                    self.clipStatus++;
-                });
-                self.hb.on('frameStatus', function() {
-                    self.frameStatus++;
-                });
-                self.hb.on('startPlaying', function() {
-                    self.startPlaying++;
-                });
-                self.hb.on('outOfSync', function() {
-                    self.outOfSync++;
-                });
-                self.hb.on('hbErrors', function() {
-                    self.hbErrors++;
-                });
-                self.hb.on('noClips', function() {
-                    self.noClips++;
-                });
-                self.hb.init();
                 setTimeout(function() {
                     done();
                 }, 2050);
             });
-            it('-- Should have received 0 forceCheckout events', function() {
-                assert.equal(self.checkouts, 0);
+            it('--- Should have received 2 forceCheckout events', function() {
+                assert.equal(self.checkouts, 2);
             });
-            it('-- Should have received 1 clipStatus events', function() {
+            it('--- Should have received 1 clipStatus events', function() {
                 assert.equal(self.clipStatus, 1);
             });
-            it('-- Should have received > 10 frameStatus events', function() {
+            it('--- Should have received > 10 frameStatus events', function() {
                 assert.ok(self.frameStatus > 10);
             });
-            it('-- Should have received 1 startPlaying events', function() {
+            it('--- Should have received 1 startPlaying events', function() {
                 assert.equal(self.startPlaying, 1);
             });
-            it('-- Should have received 1 outOfSync events', function() {
+            it('--- Should have received 1 outOfSync events', function() {
                 assert.equal(self.outOfSync, 1);
             });
-            it('-- Should have received 0 hbError events', function() {
+            it('--- Should have received 0 hbError events', function() {
                 assert.equal(self.hbErrors, 0);
             });
-            it('-- Should have received 0 noClips events', function() {
+            it('--- Should have received 0 noClips events', function(done) {
                 assert.equal(self.noClips, 0);
+                done();
+            });
+        });
+        describe('-- Make a goto in melted and wait 1 second', function() {
+            before(function(done) {
+                self.checkouts = 0;
+                self.clipStatus = 0;
+                self.frameStatus = 0;
+                self.startPlaying = 0;
+                self.outOfSync = 0;
+                self.hbErrors = 0;
+                self.noClips = 0;
+                exec("echo 'goto u0 500' | nc localhost 5250", function (error, stdout, stderr) {
+                    setTimeout(function() {
+                        done();
+                    }, 1000);
+                });
+            });
+            it('--- Should have received 1 forceCheckout events', function() {
+                assert.equal(self.checkouts, 1);
+            });
+            it('--- Should have received 0 clipStatus events', function() {
+                assert.equal(self.clipStatus, 0);
+            });
+            it('--- Should have received > 5 frameStatus events', function() {
+                assert.ok(self.frameStatus > 5);
+            });
+            it('--- Should have received 0 startPlaying events', function() {
+                assert.equal(self.startPlaying, 0);
+            });
+            it('--- Should have received 1 outOfSync events', function() {
+                assert.equal(self.outOfSync, 1);
+            });
+            it('--- Should have received 0 hbError events', function() {
+                assert.equal(self.hbErrors, 0);
+            });
+            it('--- Should have received 0 noClips events', function(done) {
+                assert.equal(self.noClips, 0);
+                done();
+            });
+        });
+        describe('-- Pause in melted and wait 1.7 second', function() {
+            before(function(done) {
+                self.checkouts = 0;
+                self.clipStatus = 0;
+                self.frameStatus = 0;
+                self.startPlaying = 0;
+                self.outOfSync = 0;
+                self.hbErrors = 0;
+                self.noClips = 0;
+                exec("echo 'pause u0' | nc localhost 5250", function (error, stdout, stderr) {
+                    setTimeout(function() {
+                        done();
+                    }, 1700);
+                });
+            });
+            it('--- Should have received 2 forceCheckout events', function() {
+                assert.equal(self.checkouts, 2);
+            });
+            it('--- Should have received 0 clipStatus events', function() {
+                assert.equal(self.clipStatus, 0);
+            });
+            it('--- Should have received > 5 frameStatus events', function() {
+                assert.ok(self.frameStatus > 5);
+            });
+            it('--- Should have received 1 startPlaying events', function() {
+                assert.equal(self.startPlaying, 1);
+            });
+            it('--- Should have received 1 outOfSync events', function() {
+                assert.equal(self.outOfSync, 1);
+            });
+            it('--- Should have received 0 hbError events', function() {
+                assert.equal(self.hbErrors, 0);
+            });
+            it('--- Should have received 0 noClips events', function(done) {
+                assert.equal(self.noClips, 0);
+                done();
             });
         });
         

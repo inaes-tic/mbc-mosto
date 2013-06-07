@@ -11,7 +11,7 @@ var config           = require('mbc-common').config.Mosto.HeartBeats,
  *  clipStatus: When clip changes
  *  frameStatus: Every 50 millis
  *  startPlaying: When melted wasnt playing
- *  outOfSync: When melted was 1 second or more defased
+ *  outOfSync: When melted was more than 1 second defased
  *  hbError: Other errors
  *  noClips: No clips loaded
  */
@@ -22,9 +22,13 @@ function heartbeats(customConfig) {
         gc_interval: 1000 * 60 * 60,
         sync_interval: 50,
         min_scheduled: 1000 * 60 * 60 * 4,
+        checkout_interval: undefined,
         mvcp_server: "melted"
     };
     this.config = customConfig || config || defaults;
+    
+    if (this.config.checkout_interval === undefined)
+        this.config.checkout_interval = this.config.min_scheduled / 4;
 
     this.melted_medias = Mosto.Playlists().get('melted_medias');
 
@@ -91,7 +95,7 @@ heartbeats.prototype.scheduleCheckout = function() {
     if (!self.stop_timers) {
         setTimeout(function() {
             self.checkSchedules();
-        }, self.config.min_scheduled / 4);
+        }, self.config.checkout_interval);
     }
 };
 
@@ -101,15 +105,20 @@ heartbeats.prototype.stop = function() {
 
 heartbeats.prototype.checkSchedules =  function() {
     var self = this;
+    console.log("[HEARTBEAT-CS] Started Check Schedules");
     var last = self.melted_medias.at(self.melted_medias.length - 1);
     if (last) {
         var scheduled =  last.get('end') - moment();
-        if (scheduled < self.config.min_scheduled)
+        if (scheduled < self.config.min_scheduled) {
+            //TODO: Esto esta bien?????????????
             self.emit("forceCheckout", {from: last.get('end'), to: last.get('end') + scheduled});
-        self.scheduleCheckout();
+            console.warn("[HEARTBEAT-CS] Sent forceCheckout event!");
+        }
     } else {
         self.handleNoMedias();
     }
+    self.scheduleCheckout();
+    console.log("[HEARTBEAT-CS] Finished Check Schedules");
 };
 
 heartbeats.prototype.executeGc = function() {
@@ -219,7 +228,6 @@ heartbeats.prototype.startPlaying = function() {
 
 heartbeats.prototype.handleNoMedias = function() {
     var self = this;
-    //TODO: Should we force a checkout??
     self.emit("noClips", "No medias loaded!");
 };
 
