@@ -407,7 +407,7 @@ Mosto.PlaylistCollection = Backbone.Collection.extend({
             start: from,
             end: to,
         });
-        blank.set({ 'id': uuid.v4(),
+        blank.set({ 'id': to.valueOf() + '-blank',
                     length: length,
                     in: 0,
                     out: length });
