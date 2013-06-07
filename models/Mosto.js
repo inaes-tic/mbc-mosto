@@ -73,9 +73,12 @@ Mosto.Media = Backbone.Model.extend({
 });
 
 Mosto.BlankClip = new Mosto.Media({
-    name: path.basename(config.black).replace(path.extname(config.black, '')),
-    file: config.black,
-    fps: config.fps,
+    //name: path.basename(config.black).replace(path.extname(config.black, '')),
+    name: "InfiniteBlankClip",
+    //file: config.black,
+    file: process.cwd() + '/test/videos/blank.xml',
+    //fps: config.fps,
+    fps: 25,
 });
 
 Mosto.MediaCollection = Backbone.Collection.extend({
@@ -345,13 +348,16 @@ Mosto.PlaylistCollection = Backbone.Collection.extend({
     addBlankPlaylist: function(from, to, at) {
         var options = { at: at };
         var blank = Mosto.BlankClip.clone();
-        var duration = to - from;
+        var length = parseInt(((to - from) / 1000) * blank.get('fps'));
         var playlist = new Mosto.Playlist({
             name: blank.get('name'),
             start: from,
             end: to,
         });
-        blank.set({ 'id': uuid.v4(), duration: duration * blank.get('fps') });
+        blank.set({ 'id': uuid.v4(),
+                    length: length,
+                    in: 0,
+                    out: length });
         playlist.get('medias').add(blank);
         this.add(playlist, options);
     },
