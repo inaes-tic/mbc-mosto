@@ -145,7 +145,7 @@ heartbeats.prototype.getExpectedMedia = function() {
     var now = moment();
     var expected = {};
     expected.media = undefined;
-    exptected.frame = undefined;
+    expected.frame = undefined;
     var media = self.melted_medias.find(function(media) {
         return moment(media.get('end')) >= now;
     });
