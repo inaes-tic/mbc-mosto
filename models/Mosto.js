@@ -163,6 +163,9 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                     move.forEach(function(move) {
                         ret = ret.then(function() { return self.driver.moveClip(move.from, move.to) });
                     });
+                    collection.forEach(function(clip, ix) {
+                        clip.set('actual_order', ix);
+                    });
                     return ret;
                 }).fin(self.leave);
             });
