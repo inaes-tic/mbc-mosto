@@ -120,111 +120,93 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                 }).fin(self.leave);
             });
         });
-        this.on('all', function(event) {
+        this.on('allx', function(event) {
             console.log(self, event, arguments);
         });
-        this.on('sortx', function(collection, options) {
+        this.on('sort', function(collection, options) {
             self.take(function() {
+                self.forEach(function(clip, ix) {
+                    clip.set({ actual_order: ix });
+                });
                 self.driver.getServerPlaylist().then(function(clips) {
-                    var ids = collection.pluck('id');
+                    return self.driver.getServerStatus().then(function(status) {
+                        var ids = self.pluck('id');
+                        if( ! status.currentClip )
+                            return self.replaceList(clips);
 
-                    var add = [];
-                    var diff = _.difference(ids, _.pluck(clips, 'id'))
-                    if(diff.length) {
-                        console.error("ERROR [Mosto.MeltedCollection]: There shouldn't be clips in the collection that aren't loaded in melted");
-                        diff.forEach(function(id) {
-                            add.push({ item: collection.get(id), index: ids.indexOf(id) });
-                        });
-                    }
+                        var cur_i = ids.indexOf(status.currentClip.id);
+                        if( cur_i < 0 )
+                            return self.replaceList(clips);
 
-                    var ret = Q.resolve();
-                    add.forEach(function(toAdd) {
-                        ret = ret.then(function() {
-                            return self.driver.insertClip(toAdd.item, toAdd.index);
-                        });
-                        clips.splice(toAdd.index, 0, toAdd.item);
-                    });
+                        var pivot = status.currentClip.order;
+                        var ml_ids = _(clips).pluck('id');
 
-                    var move = [];
-                    var remove = [];
-                    clips.forEach(function(clip, i) {
-                        var j = ids.indexOf(clip.id);
-                        i -= remove.length;
-                        if( j < 0 ) {
-                            console.error("ERROR [Mosto.MeltedCollection]: There shouldn't be clips in melted that aren't in the collection");
-                            remove.push(i);
-                            return;
+                        var ret = Q.resolve();
+                        for( var i = 0 ; i < status.currentClip.order ; i++) {
+                            ret = ret.then(function() {
+                                self.driver.removeClip(0)
+                            });
+                            pivot--;
                         }
-                        if( i != j ) {
-                            move.push({ from: i, to: j});
+
+                        for( var i = cur_i ; i >= 0 ; i-- ) {
+                            ret = ret.then(function() {
+                                self.driver.insertClip(self.at(i).toJSON(), 0)
+                            });
+                            pivot++;
                         }
+
+                        if( pivot != cur_i ) {
+                            console.error("WTF");
+                        }
+
+                        for( var i = status.currentClip.order + 1 ; i < clips.length ; i++ ) {
+                            ret = ret.then(function() {
+                                self.driver.removeClip(status.currentClip.order + 1);
+                            });
+                        }
+                        for( var i = cur_i + 1 ; i < self.length ; i++ ) {
+                            ret = ret.then(function() {
+                                self.driver.appendClip(self.at(i).toJSON());
+                            });
+                        }
+                        return ret;
                     });
-                    remove.forEach(function(i) {
-                        ret = ret.then(function() { return self.driver.removeClip(i) });
-                    });
-                    move.forEach(function(move) {
-                        ret = ret.then(function() { return self.driver.moveClip(move.from, move.to) });
-                    });
-                    collection.forEach(function(clip, ix) {
-                        clip.set('actual_order', ix);
-                    });
-                    return ret;
-                }).fin(self.leave);
+                }).fin(function(){
+                    self.leave()
+                });
             });
         });
 
         this.fetch();
     },
-    set: function(models, options) {
+
+    replaceList: function(meltedClips) {
+        var self = this;
+        var end = meltedClips.length;
+        var ret = Q.resolve();
+        this.forEach(function(clip) {
+            ret = ret.then(function() {
+                self.driver.appendClip(clip.toJSON());
+            });
+        });
+        var expected = self.getExpectedMedia();
+        if( expected ) {
+            ret = ret.then(function() {
+                self.driver.goto(self.pluck('id').indexOf(expected.media.id) + end, expected.frame);
+            });
+        };
+        for( var i = 0 ; i < end ; i++ ) {
+            ret = ret.then(function() {
+                self.driver.removeClip(0);
+            });
+        }
+        return ret;
+    },
+
+    setx: function(models, options) {
         var self = this
         Backbone.Collection.prototype.set.call(this, models, _.extend(options || {}, { silent: true }));
-        self.take(function() {
-            self.driver.getServerPlaylist().then(function(clips) {
-                var ids = self.pluck('id');
-
-                var add = [];
-                var diff = _.difference(ids, _.pluck(clips, 'id'))
-                if(diff.length) {
-                    console.error("ERROR [Mosto.MeltedCollection]: There shouldn't be clips in the collection that aren't loaded in melted");
-                    diff.forEach(function(id) {
-                        add.push({ item: self.get(id), index: ids.indexOf(id) });
-                    });
-                }
-
-                var ret = Q.resolve();
-                add.forEach(function(toAdd) {
-                    ret = ret.then(function() {
-                        return self.driver.insertClip(toAdd.item, toAdd.index);
-                    });
-                    clips.splice(toAdd.index, 0, toAdd.item);
-                });
-
-                var move = [];
-                var remove = [];
-                clips.forEach(function(clip, i) {
-                    var j = ids.indexOf(clip.id);
-                    i -= remove.length;
-                    if( j < 0 ) {
-                        console.error("ERROR [Mosto.MeltedCollection]: There shouldn't be clips in melted that aren't in the collection");
-                        remove.push(i);
-                        return;
-                    }
-                    if( i != j ) {
-                        move.push({ from: i, to: j});
-                    }
-                });
-                remove.forEach(function(i) {
-                    ret = ret.then(function() { return self.driver.removeClip(i) });
-                });
-                move.forEach(function(move) {
-                    ret = ret.then(function() { return self.driver.moveClip(move.from, move.to) });
-                });
-                self.forEach(function(clip, ix) {
-                    clip.set({ actual_order: ix });
-                });
-                return ret;
-            }).fin(self.leave);
-        });
     },
     sync: function(method, model, options) {
         /*
@@ -260,6 +242,24 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                 promise.fin(self.leave);
             }
         });
+    },
+
+    getExpectedMedia: function(time) {
+        time = time || moment();
+        var expected = {
+            media: undefined,
+            frame: undefined,
+        };
+        var media = this.find(function(media) {
+            return media.get('start') <= time && media.get('end') >= time;
+        });
+        if( media ) {
+            var elapsed = moment.duration(time - media.get('start')).asSeconds();
+            var frame = parseInt(elapsed * media.get('fps'));
+            expected.media = media;
+            expected.frame = frame;
+        }
+        return expected;
     },
 
     adjustTimes: function(index, currentFrame) {
