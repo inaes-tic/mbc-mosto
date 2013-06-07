@@ -13,6 +13,7 @@ var config           = require('mbc-common').config.Mosto.HeartBeats,
  *  startPlaying: When melted wasnt playing
  *  outOfSync: When melted was 1 second or more defased
  *  hbError: Other errors
+ *  noClips: No clips loaded
  */
 function heartbeats(customConfig) {
     //THIS MODULE ASSUMES MELTED ALWAYS HAS THE SAME CLIPS AS MELTED_MEDIAS
@@ -123,7 +124,8 @@ heartbeats.prototype.executeGc = function() {
         oldMedias.forEach(function(media) {
             self.melted_medias.remove(media);
         });
-        self.melted_medias.save();
+        //TODO: Will this remove the clips from melted?
+        Mosto.Playlists().save();
     }
     self.scheduleGc();
     console.log("[HEARTBEAT-GC] Finished Garbage Collector: " + oldMedias.length + " removed.");
@@ -133,13 +135,13 @@ heartbeats.prototype.sendStatus = function() {
     var self = this;
     console.log("[HEARTBEAT-FS] Started Status");
     var expected = self.getExpectedMedia();
-    if (!self.current_media)
-        self.current_media = expected.media;
-    if (expected.media.get("id").toString() !== self.current_media.get("id").toString()) {
+    if ((!self.current_media) || (expected.media.get("id").toString() !== self.current_media.get("id").toString())) {
         self.emit("clipStatus", expected.media);
+        console.log("[HEARTBEAT-FS] Sent clipStatus");
         self.current_media = expected.media;
     } else {
         self.emit("frameStatus", {media: expected.media, frame: expected.frame});
+        console.log("[HEARTBEAT-FS] Sent frameStatus");
     }
     console.log("[HEARTBEAT-FS] Finished Status");
 };
@@ -149,7 +151,7 @@ heartbeats.prototype.getExpectedMedia = function() {
     var now = moment();
     var expected = {};
     expected.media = undefined;
-    exptected.frame = undefined;
+    expected.frame = undefined;
     var media = self.melted_medias.find(function(media) {
         return moment(media.get('end')) >= now;
     });
@@ -203,8 +205,8 @@ heartbeats.prototype.syncMelted = function() {
     }).fail(self.handleError.bind(self)).fin(function() {
         self.scheduleSync();
         self.melted_medias.leave();
+        console.log("[HEARTBEAT-SY] Finish Sync");
     });
-    console.log("[HEARTBEAT-SY] Finish Sync");
 heartbeats.prototype.handleNoMedias = function() {
     var self = this;
     //TODO: Should we force a checkout??
