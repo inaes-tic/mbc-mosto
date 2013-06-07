@@ -26,7 +26,7 @@ function heartbeats(customConfig) {
         mvcp_server: "melted"
     };
     this.config = customConfig || config || defaults;
-    
+
     if (this.config.checkout_interval === undefined)
         this.config.checkout_interval = this.config.min_scheduled / 4;
 
@@ -170,15 +170,15 @@ heartbeats.prototype.syncMelted = function() {
                 var indexDiff = self.melted_medias.indexOf(currentMedia) - index;
                 if (indexDiff === -1) {
                     // melted's right before the expected media
-                    frames = currentMedia.get('length') - meltedClip.currentFrame + expected.frame;
+                    frames = currentMedia.get('out') - meltedClip.currentFrame + expected.frame;
                 } else if (indexDiff === 1) {
                     // melted's right after the expected media
-                    frames = meltedClip.currentFrame + (expected.media.get('length') - expected.frame);
+                    frames = meltedClip.currentFrame + (expected.media.get('out') - expected.frame);
                 }
 
-                if (frames > expected.media.get('fps')) 
+                if (frames > expected.media.get('fps'))
                     result = self.fixMelted(expected);
-            } else if (Math.abs(meltedClip.currentFrame - expected.frame) > expected.media.get('fps')) 
+            } else if (Math.abs(meltedClip.currentFrame - expected.frame) > expected.media.get('fps'))
                 result = self.fixMelted(expected);
             if (meltedStatus.status !== "playing") {
                 if (result)
