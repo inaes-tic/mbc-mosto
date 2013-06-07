@@ -93,9 +93,9 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                 model.set('actual_order', index);
                 self.driver.insertClip(model.toJSON(), index).then(self.driver.getServerStatus.bind(self.driver)).then(function(status) {
                     // statuses: offline|not_loaded|playing|stopped|paused|disconnected|unknown
-                    if( status.status != 'playing' ) {
-                        return self.driver.play();
-                    }
+//                    if( status.status != 'playing' ) {
+//                        return self.driver.play();
+//                    }
                 }).fail(function(err) {
                     throw err
                 }).fin(self.leave);
