@@ -105,15 +105,20 @@ heartbeats.prototype.stop = function() {
 
 heartbeats.prototype.checkSchedules =  function() {
     var self = this;
+    console.log("[HEARTBEAT-CS] Started Check Schedules");
     var last = self.melted_medias.at(self.melted_medias.length - 1);
     if (last) {
         var scheduled =  last.get('end') - moment();
-        if (scheduled < self.config.min_scheduled)
+        if (scheduled < self.config.min_scheduled) {
+            //TODO: Esto esta bien?????????????
             self.emit("forceCheckout", {from: last.get('end'), to: last.get('end') + scheduled});
-        self.scheduleCheckout();
+            console.warn("[HEARTBEAT-CS] Sent forceCheckout event!");
+        }
     } else {
         self.handleNoMedias();
     }
+    self.scheduleCheckout();
+    console.log("[HEARTBEAT-CS] Finished Check Schedules");
 };
 
 heartbeats.prototype.executeGc = function() {
