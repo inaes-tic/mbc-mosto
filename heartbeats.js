@@ -170,6 +170,7 @@ heartbeats.prototype.syncMelted = function() {
     self.server.getServerStatus().then(function(meltedStatus) {
         var expected = self.getExpectedMedia();
         if (expected.media) {
+            var result = undefined;
             var meltedClip = meltedStatus.currentClip;
             if (expected.media.get("id").toString() !== meltedClip.id.toString()) {
                 var index = expected.media.get('actual_order');
@@ -184,21 +185,21 @@ heartbeats.prototype.syncMelted = function() {
                     frames = meltedClip.currentFrame + (expected.media.get('length') - expected.frame);
                 }
 
-                if (frames > expected.media.get('fps')) {
-                    return self.fixMelted(expected);
-                } else {
-                    self.sendStatus();
-                }
-            } else if (Math.abs(meltedClip.currentFrame - expected.frame) > expected.media.get('fps')) {
-                return self.fixMelted(expected);
-            } else {
-                self.sendStatus();
-            }
+                if (frames > expected.media.get('fps')) 
+                    result = self.fixMelted(expected);
+            } else if (Math.abs(meltedClip.currentFrame - expected.frame) > expected.media.get('fps')) 
+                result = self.fixMelted(expected);
             if (meltedStatus.status !== "playing") {
-                self.emit("startPlaying", "Melted was not playing");
-                console.warn("[HEARTBEATS-SY] Melted was not playing");
-                return self.server.play();
+                if (result)
+                    result = result.then(self.startPlaying()).then(self.sendStatus());
+            } else {
+                if (result)
+                    result = result.then(self.sendStatus());
+                else
+                    self.sendStatus();
             }
+            if (result)
+                return result;
         } else {
             self.handleNoMedias();
         }
@@ -207,6 +208,15 @@ heartbeats.prototype.syncMelted = function() {
         self.melted_medias.leave();
         console.log("[HEARTBEAT-SY] Finish Sync");
     });
+};
+
+heartbeats.prototype.startPlaying = function() {
+    var self = this;
+    self.emit("startPlaying", "Melted was not playing");
+    console.warn("[HEARTBEATS-SY] Melted was not playing");
+    return self.server.play();
+};
+
 heartbeats.prototype.handleNoMedias = function() {
     var self = this;
     //TODO: Should we force a checkout??
@@ -217,7 +227,7 @@ heartbeats.prototype.fixMelted = function(expected) {
     var self = this;
     console.error("[HEARTBEAT-SY] Melted is out of sync!");
     self.emit("outOfSync", expected);
-    return self.server.goto(expected.media.get('actual_order'), expected.frame).then(self.sendStatus.bind(self)).fail(self.handleError.bind(self));
+    return self.server.goto(expected.media.get('actual_order'), expected.frame);
 };
 
 heartbeats.prototype.handleError = function(error) {
