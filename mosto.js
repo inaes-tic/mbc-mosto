@@ -153,6 +153,12 @@ mosto.prototype.initHeartbeats = function() {
         self.fetchPlaylists(window);
     });
 
+    self.heartbeats.on("noClips", function() {
+        var window = { start: moment(), end: moment().add(4, 'hours') };
+        self.timeWindow = window;
+        self.fetchPlaylists(window);
+    });
+
     self.heartbeats.init();
 };
 
