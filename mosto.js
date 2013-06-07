@@ -133,7 +133,7 @@ mosto.prototype.initHeartbeats = function() {
         status.clip.current = media.toJSON();
         if( index > 0 )
             status.clip.previous = melted_medias.at(index-1).toJSON();
-        if( index < melted_medias.length )
+        if( index < melted_medias.length - 1 )
             status.clip.next = melted_medias.at(index+1).toJSON();
         /* shows */
         var playlist = playlists.find(function(pl) {
@@ -143,7 +143,7 @@ mosto.prototype.initHeartbeats = function() {
         status.show.current = playlist.toJSON();
         if( index > 0 )
             status.show.previous = playlists.at(index-1).toJSON();
-        if( index < playlists.length )
+        if( index < playlists.length - 1 )
             status.show.next = playlists.at(index+1).toJSON();
         self.status_driver.setStatus(status);
     });
