@@ -138,38 +138,53 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                         if( cur_i < 0 )
                             return self.replaceList(clips);
 
-                        var pivot = status.currentClip.order;
-                        var ml_ids = _(clips).pluck('id');
-
                         var ret = Q.resolve();
+                        /* remove everything before current */
                         for( var i = 0 ; i < status.currentClip.order ; i++) {
                             ret = ret.then(function() {
                                 return self.driver.removeClip(0)
                             });
-                            pivot--;
                         }
 
-                        for( var i = cur_i ; i >= 0 ; i-- ) {
+                        /* and everything after */
+                        for( var i = status.currentClip.order + 1 ; i < clips.length ; i++ ) {
                             ret = ret.then(function() {
                                 return self.driver.removeClip(1);
                             });
-                            pivot++;
                         }
 
-                        if( pivot != cur_i ) {
-                            console.error("WTF");
+                        var expected = self.getExpectedMedia();
+                        if( expected.media.id.toString() == status.currentClip.id.toString() ) {
+                            /* sice I don't need to jump, and I can't insert clips before
+                               the current one without getting a jump, I'll strip myself of
+                               any clips before this */
+                            self.remove(ids.slice(0, cur_i));
+
+                            /* and then put everything after into melted */
+                            _.range(1, self.length).forEach(function(i) {
+                                ret = ret.then(function() {
+                                    return self.driver.appendClip(self.at(i).toJSON());
+                                });
+                            });
+                            self.forEach(function(c, i) {
+                                c.set('actual_order', i);
+                            });
+                        } else {
+                            /* since I've got to jump anyways, I'll add everything at the end
+                               of the list */
+                            self.forEach(function(c) {
+                                ret = ret.then(function() {
+                                    return self.driver.appendClip(c.toJSON());
+                                });
+                            });
+                            /* then I'll jump and remove the current clip */
+                            ret = ret.then(function() {
+                                return self.driver.goto(expected.media.get('actual_order') + 1, expected.frame);
+                            }).then(function() {
+                                return self.driver.removeClip(0);
+                            });
                         }
 
-                        for( var i = status.currentClip.order + 1 ; i < clips.length ; i++ ) {
-                            ret = ret.then(function() {
-                                self.driver.removeClip(status.currentClip.order + 1);
-                            });
-                        }
-                        for( var i = cur_i + 1 ; i < self.length ; i++ ) {
-                            ret = ret.then(function() {
-                                self.driver.appendClip(self.at(i).toJSON());
-                            });
-                        }
                         return ret;
                     });
                 }).fin(function(){
