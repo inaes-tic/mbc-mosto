@@ -105,7 +105,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
             self.take(function() {
                 var index = collection.indexOf(model);
                 model.set('actual_order', index);
-                self.driver.insertClip(model.toJSON(), index).fail(function(err) {
+                return self.driver.insertClip(model.toJSON(), index).fail(function(err) {
                     throw err
                 }).fin(self.leave);
             });
@@ -114,7 +114,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         this.on('removex', function(model, collection, options) {
             self.take(function() {
                 var index = options.index;
-                self.driver.removeClip(index).fail(function(err) {
+                return self.driver.removeClip(index).fail(function(err) {
                     console.error("ERROR: [Mosto.MeltedCollection] could not remove clip from melted", err);
                     throw err;
                 }).fin(self.leave);
@@ -128,7 +128,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                 self.forEach(function(clip, ix) {
                     clip.set({ actual_order: ix });
                 });
-                self.driver.getServerPlaylist().then(function(clips) {
+                return self.driver.getServerPlaylist().then(function(clips) {
                     return self.driver.getServerStatus().then(function(status) {
                         var ids = self.pluck('id');
                         if( ! status.currentClip )
@@ -144,14 +144,14 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                         var ret = Q.resolve();
                         for( var i = 0 ; i < status.currentClip.order ; i++) {
                             ret = ret.then(function() {
-                                self.driver.removeClip(0)
+                                return self.driver.removeClip(0)
                             });
                             pivot--;
                         }
 
                         for( var i = cur_i ; i >= 0 ; i-- ) {
                             ret = ret.then(function() {
-                                self.driver.insertClip(self.at(i).toJSON(), 0)
+                                return self.driver.removeClip(1);
                             });
                             pivot++;
                         }
@@ -187,18 +187,18 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         var ret = Q.resolve();
         this.forEach(function(clip) {
             ret = ret.then(function() {
-                self.driver.appendClip(clip.toJSON());
+                return self.driver.appendClip(clip.toJSON());
             });
         });
         var expected = self.getExpectedMedia();
         if( expected ) {
             ret = ret.then(function() {
-                self.driver.goto(self.pluck('id').indexOf(expected.media.id) + end, expected.frame);
+                return self.driver.goto(expected.media.get('actual_order') + end, expected.frame);
             });
         };
         for( var i = 0 ; i < end ; i++ ) {
             ret = ret.then(function() {
-                self.driver.removeClip(0);
+                return self.driver.removeClip(0);
             });
         }
         return ret;
