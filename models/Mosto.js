@@ -111,7 +111,10 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
     replaceList: function(meltedClips) {
         var self = this;
         var end = meltedClips.length;
-        var ret = Q.resolve();
+        /* clear everything but current */
+        var ret = Q.resolve().then(function() {
+            return self.driver.cleanPlaylist();
+        });
         this.forEach(function(clip) {
             ret = ret.then(function() {
                 return self.driver.appendClip(clip.toJSON());
@@ -123,12 +126,9 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                 return self.driver.goto(expected.media.get('actual_order') + end, expected.frame);
             });
         };
-        for( var i = 0 ; i < end ; i++ ) {
-            ret = ret.then(function() {
-                return self.driver.removeClip(0);
-            });
-        }
-        return ret;
+        return ret.then(function() {
+            return self.driver.removeClip(0);
+        });
     },
 
     set: function(models, options) {
@@ -148,20 +148,10 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                     if( cur_i < 0 )
                         return self.replaceList(clips);
 
-                    var ret = Q.resolve();
-                    /* remove everything before current */
-                    for( var i = 0 ; i < status.currentClip.order ; i++) {
-                        ret = ret.then(function() {
-                            return self.driver.removeClip(0)
-                        });
-                    }
-
-                    /* and everything after */
-                    for( var i = status.currentClip.order + 1 ; i < clips.length ; i++ ) {
-                        ret = ret.then(function() {
-                            return self.driver.removeClip(1);
-                        });
-                    }
+                    /* remove everything but the current clip */
+                    var ret = Q.resolve().then(function() {
+                        return self.driver.cleanPlaylist();
+                    });
 
                     var expected = self.getExpectedMedia();
                     if( expected.media )
