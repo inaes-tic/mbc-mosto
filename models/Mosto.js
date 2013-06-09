@@ -101,59 +101,70 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         this.leave = this.semaphore.leave;
 
         var self = this;
-        this.on('addx', function(model, collection, options){
-            self.take(function() {
-                var index = collection.indexOf(model);
-                model.set('actual_order', index);
-                return self.driver.insertClip(model.toJSON(), index).fail(function(err) {
-                    throw err
-                }).fin(self.leave);
-            });
-        });
-
-        this.on('removex', function(model, collection, options) {
-            self.take(function() {
-                var index = options.index;
-                return self.driver.removeClip(index).fail(function(err) {
-                    console.error("ERROR: [Mosto.MeltedCollection] could not remove clip from melted", err);
-                    throw err;
-                }).fin(self.leave);
-            });
-        });
         this.on('allx', function(event) {
             console.log(self, event, arguments);
         });
-        this.on('sort', function(collection, options) {
-            self.take(function() {
-                self.forEach(function(clip, ix) {
-                    clip.set({ actual_order: ix });
-                });
-                return self.driver.getServerPlaylist().then(function(clips) {
-                    return self.driver.getServerStatus().then(function(status) {
-                        var ids = self.pluck('id');
-                        if( ! status.currentClip )
-                            return self.replaceList(clips);
 
-                        var cur_i = ids.indexOf(status.currentClip.id);
-                        if( cur_i < 0 )
-                            return self.replaceList(clips);
+        this.fetch();
+    },
 
-                        var ret = Q.resolve();
-                        /* remove everything before current */
-                        for( var i = 0 ; i < status.currentClip.order ; i++) {
-                            ret = ret.then(function() {
-                                return self.driver.removeClip(0)
-                            });
-                        }
+    replaceList: function(meltedClips) {
+        var self = this;
+        var end = meltedClips.length;
+        var ret = Q.resolve();
+        this.forEach(function(clip) {
+            ret = ret.then(function() {
+                return self.driver.appendClip(clip.toJSON());
+            });
+        });
+        var expected = self.getExpectedMedia();
+        if( expected.media ) {
+            ret = ret.then(function() {
+                return self.driver.goto(expected.media.get('actual_order') + end, expected.frame);
+            });
+        };
+        for( var i = 0 ; i < end ; i++ ) {
+            ret = ret.then(function() {
+                return self.driver.removeClip(0);
+            });
+        }
+        return ret;
+    },
 
-                        /* and everything after */
-                        for( var i = status.currentClip.order + 1 ; i < clips.length ; i++ ) {
-                            ret = ret.then(function() {
-                                return self.driver.removeClip(1);
-                            });
-                        }
+    set: function(models, options) {
+        var self = this
+        Backbone.Collection.prototype.set.call(this, models, _.extend(options || {}, { silent: true }));
+        self.take(function() {
+            self.forEach(function(clip, ix) {
+                clip.set({ actual_order: ix });
+            });
+            return self.driver.getServerPlaylist().then(function(clips) {
+                return self.driver.getServerStatus().then(function(status) {
+                    var ids = self.pluck('id');
+                    if( ! status.currentClip )
+                        return self.replaceList(clips);
 
-                        var expected = self.getExpectedMedia();
+                    var cur_i = ids.indexOf(status.currentClip.id);
+                    if( cur_i < 0 )
+                        return self.replaceList(clips);
+
+                    var ret = Q.resolve();
+                    /* remove everything before current */
+                    for( var i = 0 ; i < status.currentClip.order ; i++) {
+                        ret = ret.then(function() {
+                            return self.driver.removeClip(0)
+                        });
+                    }
+
+                    /* and everything after */
+                    for( var i = status.currentClip.order + 1 ; i < clips.length ; i++ ) {
+                        ret = ret.then(function() {
+                            return self.driver.removeClip(1);
+                        });
+                    }
+
+                    var expected = self.getExpectedMedia();
+                    if( expected.media )
                         if( expected.media.id.toString() == status.currentClip.id.toString() ) {
                             /* sice I don't need to jump, and I can't insert clips before
                                the current one without getting a jump, I'll strip myself of
@@ -185,43 +196,12 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                             });
                         }
 
-                        return ret;
-                    });
-                }).fin(function(){
-                    self.leave()
+                    return ret;
                 });
+            }).fin(function(){
+                self.leave()
             });
         });
-
-        this.fetch();
-    },
-
-    replaceList: function(meltedClips) {
-        var self = this;
-        var end = meltedClips.length;
-        var ret = Q.resolve();
-        this.forEach(function(clip) {
-            ret = ret.then(function() {
-                return self.driver.appendClip(clip.toJSON());
-            });
-        });
-        var expected = self.getExpectedMedia();
-        if( expected ) {
-            ret = ret.then(function() {
-                return self.driver.goto(expected.media.get('actual_order') + end, expected.frame);
-            });
-        };
-        for( var i = 0 ; i < end ; i++ ) {
-            ret = ret.then(function() {
-                return self.driver.removeClip(0);
-            });
-        }
-        return ret;
-    },
-
-    setx: function(models, options) {
-        var self = this
-        Backbone.Collection.prototype.set.call(this, models, _.extend(options || {}, { silent: true }));
     },
     sync: function(method, model, options) {
         /*
