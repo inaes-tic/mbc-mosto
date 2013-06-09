@@ -38,8 +38,10 @@ Mosto.Media = Backbone.Model.extend({
     },
 
     constructor: function(attributes, options) {
+        options = _.defaults(options || {}, { override_id: true });
         attributes._id = attributes.id;
-        attributes.id = attributes.playlist_id + '-' + attributes.id;
+        if( options.override_id )
+            attributes.id = attributes.playlist_id + '-' + attributes.id;
         Backbone.Model.apply(this, arguments);
     },
 
@@ -281,7 +283,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
     loadFromMelted: function(clips) {
         var toAdd = [];
         clips.forEach(function(clip) {
-            toAdd.push(new Mosto.Media(clip));
+            toAdd.push(new Mosto.Media(clip, { override_id: false }));
         });
         this.add(toAdd, { merge: true, silent: true });
     },
