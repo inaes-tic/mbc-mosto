@@ -139,7 +139,7 @@ mosto.prototype.initHeartbeats = function() {
             status.clip.next = melted_medias.at(index+1).toJSON();
         /* shows */
         var playlist = playlists.find(function(pl) {
-            return pl.get('medias').get(media.id);
+            return pl.get('medias').get(media.get('_id'));
         });
         index = playlists.indexOf(playlist);
         status.show.current = playlist.toJSON();
