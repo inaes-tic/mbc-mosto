@@ -106,7 +106,7 @@ mosto.prototype.initHeartbeats = function() {
         self.status_driver.setStatusClip(StatusClip(
             status.media.id,
             status.media.get('playlist_order'),
-            status.media.playlist.id,
+            status.media.get('playlist_id'),
             status.media.get('fps'),
             status.frame,
             status.media.get('length')
