@@ -143,18 +143,22 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                             });
                         });
                     }
-                } if( wholeList ) {
+                } 
+                if( wholeList ) {
                     /* since I've got to jump anyways, I'll add everything at the end
                        of the list */
-                    if( status.currentClip ) {
-                        /* I leave the current clip at the top of the melted playlist, it won't do any harm */
-                        self.add(status.currentClip, { at: 0, set_melted: false });
-                    }
                     self.forEach(function(c, i) {
                         ret = ret.then(function() {
                             return self.driver.appendClip(c.toJSON());
                         });
                     });
+
+                    if( status.currentClip ) {
+                        /* I leave the current clip at the top of the melted playlist, it won't do any harm */
+                        ret = ret.then(function() {
+                            return self.add(status.currentClip, { at: 0, set_melted: false });
+                        });
+                    }
                 }
 
                 self.forEach(function(c, i) {
