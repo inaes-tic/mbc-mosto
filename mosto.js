@@ -21,16 +21,16 @@ var fs               = require('fs')
 function mosto(customConfig) {
 
     /** CONFIGURATION */
-    this.config = customConfig || config;
-    this.server = undefined;
+    this.config         = customConfig || config;
+    this.server         = undefined;
     this.server_started = false;
-    this.pl_driver = undefined;
-    this.status_driver = undefined;
+    this.pl_driver      = undefined;
+    this.status_driver  = undefined;
     this.timeWindow     = undefined;
 
     /* MODULES */
     this.heartbeats = undefined;
-    this.playlists = undefined;
+    this.playlists  = undefined;
 
     events.EventEmitter.call(this);
 }
@@ -40,7 +40,8 @@ util.inherits(mosto, events.EventEmitter);
 mosto.prototype.inTimeWindow = function(obj) {
     // expects obj.start and obj.end to exist and be moment()s
     return (obj.end > this.timeWindow.start && obj.start < this.timeWindow.end);
-}
+};
+
 mosto.prototype.addPlaylist = function(playlist) {
     var self = this;
     
@@ -178,40 +179,6 @@ mosto.prototype.fetchPlaylists = function(window) {
     });
 };
 
-mosto.prototype.getModelPlaylistFromApiPlaylist = function(playlist) {
-    //TODO: Remove this function and change driver to send Caspa Models
-    var playlistJson   = {};
-    playlistJson.name  = playlist.name;
-    playlistJson.start = moment(playlist.startDate);
-    playlistJson.end   = moment(playlist.endDate);
-    playlistJson.id    = playlist.id;
-
-    var start = playlistJson.start;
-    var medias = new Mosto.MediaCollection();
-    playlist.medias.forEach(function(media) {
-        var mediaJson = {};
-        mediaJson.playlist_order = media.orig_order;
-        mediaJson.name           = media.name;
-        mediaJson.type           = media.type;
-        mediaJson.file           = media.file;
-        //TODO: ASSUMING LENGTH COMES IN SOME KIND OF DATE FORMAT THAT CAN BE USED BY MOMENT
-        mediaJson.length         = (moment(media.length) / 1000) * media.fps;
-        mediaJson.fps            = media.fps;
-        mediaJson.start          = start;
-        mediaJson.end            = start + moment(media.length);
-        mediaJson.id             = media.id;
-
-        var mostoMedia = new Mosto.Media(mediaJson);
-        medias.add(mostoMedia);
-
-        start = start + moment(media.length);
-    });
-
-    playlistJson.medias = medias;
-
-    return new Mosto.Playlist(playlistJson);
-};
-
 mosto.prototype.stopHeartbeats = function() {
     var self = this;
 
@@ -221,9 +188,11 @@ mosto.prototype.stopHeartbeats = function() {
 
     self.heartbeats.removeAllListeners("frameStatus");
     self.heartbeats.removeAllListeners("clipStatus");
+    self.heartbeats.removeAllListeners("forceCheckout");
+    self.heartbeats.removeAllListeners("noClips");
 };
 
-mosto.prototype.init = function( melted, callback) {
+mosto.prototype.init = function(melted, callback) {
     console.log("mbc-mosto: [INFO] Init mbc-mosto... ") ;
     var self = this;
     /*
@@ -240,7 +209,6 @@ mosto.prototype.init = function( melted, callback) {
         self.status_driver = new status_driver();
         self.playlists     = models.Playlists();
         self.heartbeats    = new heartbeats();
-
         self.timeWindow    = {from: moment(), to: moment().add(4, 'hours')};
 
         self.initDriver();
