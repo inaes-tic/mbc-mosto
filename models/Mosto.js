@@ -176,19 +176,21 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                         } else {
                             /* since I've got to jump anyways, I'll add everything at the end
                                of the list */
-                            self.forEach(function(c) {
+                            self.forEach(function(c, i) {
+                                c.set('actual_order', i + 1);
                                 ret = ret.then(function() {
                                     return self.driver.appendClip(c.toJSON());
                                 });
                             });
                             /* then I'll jump and remove the current clip */
-                            ret = ret.then(function() {
-                                return self.driver.goto(expected.media.get('actual_order') + 1, expected.frame);
-                            }).then(function() {
-                                return self.driver.removeClip(0);
-                            });
+//                            ret = ret.then(function() {
+                            // LET HEARTBEATS HANDLE THIS
+//                                return self.driver.goto(expected.media.get('actual_order') + 1, expected.frame);
+//                            }).then(function() {
+                            // LET THE CLIP THERE, IT WONT MAKE ANY HARM... :)
+//                                return self.driver.removeClip(0);
+//                            });
                         }
-
                     } else {
                         //TODO: What do we do now???
                     }
@@ -222,13 +224,16 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                         if( !self.length )
                             return;
                         // statuses: offline|not_loaded|playing|stopped|paused|disconnected|unknown
+                        
                         if( status.status == 'stopped' ) {
                             self.adjustTimes(0, 0);
-                            return self.driver.play();
+                            // LET HEARTBEATS HANDLE THIS...
+//                            return self.driver.play();
+                        } else {
+                            var current = self.findWhere({id: status.currentClip.id})
+                            var index = self.indexOf(current);
+                            self.adjustTimes(index, status.currentClip.currentFrame);
                         }
-                        var current = self.findWhere({id: status.currentClip.id})
-                        var index = self.indexOf(current);
-                        self.adjustTimes(index, status.currentClip.currentFrame);
                     });
                 promise.fin(self.leave);
             }

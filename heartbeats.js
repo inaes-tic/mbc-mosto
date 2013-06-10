@@ -167,13 +167,15 @@ heartbeats.prototype.syncMelted = function() {
                 var index = expected.media.get('actual_order');
                 var frames = 9999;
                 var currentMedia = self.melted_medias.get(meltedClip.id);
-                var indexDiff = self.melted_medias.indexOf(currentMedia) - index;
-                if (indexDiff === -1) {
-                    // melted's right before the expected media
-                    frames = currentMedia.get('out') - meltedClip.currentFrame + expected.frame;
-                } else if (indexDiff === 1) {
-                    // melted's right after the expected media
-                    frames = meltedClip.currentFrame + (expected.media.get('out') - expected.frame);
+                if (currentMedia) {
+                    var indexDiff = self.melted_medias.indexOf(currentMedia) - index;
+                    if (indexDiff === -1) {
+                        // melted's right before the expected media
+                        frames = currentMedia.get('out') - meltedClip.currentFrame + expected.frame;
+                    } else if (indexDiff === 1) {
+                        // melted's right after the expected media
+                        frames = meltedClip.currentFrame + (expected.media.get('out') - expected.frame);
+                    }
                 }
 
                 if (frames > expected.media.get('fps'))
