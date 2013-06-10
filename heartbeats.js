@@ -123,6 +123,7 @@ heartbeats.prototype.checkSchedules =  function() {
 
 heartbeats.prototype.executeGc = function() {
     //TODO: Eliminar los xml viejos
+    //TODO: Eliminar las playlist caspa en vez de las de melted
     var self = this;
     console.log("[HEARTBEAT-GC] Started Garbage Collector");
     var timeLimit = moment().subtract('hours', 1);
@@ -133,7 +134,6 @@ heartbeats.prototype.executeGc = function() {
         oldMedias.forEach(function(media) {
             self.melted_medias.remove(media);
         });
-        //TODO: Will this remove the clips from melted?
         Mosto.Playlists().save();
     }
     self.scheduleGc();
