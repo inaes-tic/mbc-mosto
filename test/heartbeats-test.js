@@ -174,7 +174,7 @@ describe.only('Mosto Heartbeats Test', function(done) {
             before(function(done) {
                 setTimeout(function() {
                     done();
-                }, 2050);
+                }, 2150);
             });
             it('--- Should have received 2 forceCheckout events', function() {
                 assert.equal(self.checkouts, 2);
