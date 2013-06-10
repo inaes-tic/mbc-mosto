@@ -110,28 +110,29 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         this.fetch();
     },
 
-    replaceList: function(meltedClips) {
-        var self = this;
-        var end = meltedClips.length;
-        /* clear everything but current */
-        var ret = Q.resolve().then(function() {
-            return self.driver.cleanPlaylist();
-        });
-        this.forEach(function(clip) {
-            ret = ret.then(function() {
-                return self.driver.appendClip(clip.toJSON());
-            });
-        });
-        var expected = self.getExpectedMedia();
-        if( expected.media ) {
-            ret = ret.then(function() {
-                return self.driver.goto(expected.media.get('actual_order') + end, expected.frame);
-            });
-        };
-        return ret.then(function() {
-            return self.driver.removeClip(0);
-        });
-    },
+//    replaceList: function(meltedClips) {
+//        var self = this;
+//        var end = meltedClips.length;
+//        /* clear everything but current */
+//        var ret = Q.resolve().then(function() {
+//            return self.driver.cleanPlaylist();
+//        });
+//        this.forEach(function(clip) {
+//            ret = ret.then(function() {
+//                return self.driver.appendClip(clip.toJSON());
+//            });
+//        });
+//        var expected = self.getExpectedMedia();
+//        if( expected.media ) {
+//            ret = ret.then(function() {
+//                return self.driver.goto(expected.media.get('actual_order') + end, expected.frame);
+//            });
+//        };
+//        return ret.then(function() {
+//            return self.driver.removeClip(0);
+//        });
+//        return ret;
+//    },
 
     set: function(models, options) {
         var self = this
@@ -140,15 +141,13 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
             self.forEach(function(clip, ix) {
                 clip.set({ actual_order: ix });
             });
-            return self.driver.getServerPlaylist().then(function(clips) {
+//            return self.driver.getServerPlaylist().then(function(clips) {
                 return self.driver.getServerStatus().then(function(status) {
-                    var ids = self.pluck('id');
-                    if( ! status.currentClip )
-                        return self.replaceList(clips);
+//                    if( ! status.currentClip )
+//                        return self.replaceList(clips);
 
-                    var cur_i = ids.indexOf(status.currentClip.id);
-                    if( cur_i < 0 )
-                        return self.replaceList(clips);
+//                    if( cur_i < 0 )
+//                        return self.replaceList(clips);
 
                     /* remove everything but the current clip */
                     var ret = Q.resolve().then(function() {
@@ -156,11 +155,13 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                     });
 
                     var expected = self.getExpectedMedia();
-                    if( expected.media )
-                        if( expected.media.id.toString() == status.currentClip.id.toString() ) {
-                            /* sice I don't need to jump, and I can't insert clips before
+                    if( expected.media ) {
+                        if(status.currentClip && ( expected.media.id.toString() == status.currentClip.id.toString() )) {
+                            /* since I don't need to jump, and I can't insert clips before
                                the current one without getting a jump, I'll strip myself of
                                any clips before this */
+                            var ids = self.pluck('id');
+                            var cur_i = ids.indexOf(status.currentClip.id);
                             self.remove(ids.slice(0, cur_i));
 
                             /* and then put everything after into melted */
@@ -188,10 +189,13 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                             });
                         }
 
+                    } else {
+                        //TODO: What do we do now???
+                    }
                     return ret;
-                });
+//                });
             }).fin(function(){
-                self.leave()
+                self.leave();
             });
         });
     },
