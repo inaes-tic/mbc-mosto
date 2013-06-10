@@ -110,92 +110,57 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         this.fetch();
     },
 
-//    replaceList: function(meltedClips) {
-//        var self = this;
-//        var end = meltedClips.length;
-//        /* clear everything but current */
-//        var ret = Q.resolve().then(function() {
-//            return self.driver.cleanPlaylist();
-//        });
-//        this.forEach(function(clip) {
-//            ret = ret.then(function() {
-//                return self.driver.appendClip(clip.toJSON());
-//            });
-//        });
-//        var expected = self.getExpectedMedia();
-//        if( expected.media ) {
-//            ret = ret.then(function() {
-//                return self.driver.goto(expected.media.get('actual_order') + end, expected.frame);
-//            });
-//        };
-//        return ret.then(function() {
-//            return self.driver.removeClip(0);
-//        });
-//        return ret;
-//    },
-
     set: function(models, options) {
         var self = this
-        Backbone.Collection.prototype.set.call(this, models, _.extend(options || {}, { silent: true }));
+        options = _.defaults(options || {}, { set_melted: true });
+        Backbone.Collection.prototype.set.call(this, models, _.extend(options, { silent: true }));
+        if(! options.set_melted )
+            return;
         self.take(function() {
-            self.forEach(function(clip, ix) {
-                clip.set({ actual_order: ix });
-            });
-//            return self.driver.getServerPlaylist().then(function(clips) {
-                return self.driver.getServerStatus().then(function(status) {
-//                    if( ! status.currentClip )
-//                        return self.replaceList(clips);
+            return self.driver.getServerStatus().then(function(status) {
 
-//                    if( cur_i < 0 )
-//                        return self.replaceList(clips);
+                /* remove everything but the current clip */
+                var ret = Q.resolve().then(function() {
+                    return self.driver.cleanPlaylist();
+                });
 
-                    /* remove everything but the current clip */
-                    var ret = Q.resolve().then(function() {
-                        return self.driver.cleanPlaylist();
-                    });
+                var expected = self.getExpectedMedia();
+                var wholeList = true;
+                if( expected.media ) {
+                    if(status.currentClip && ( expected.media.id.toString() == status.currentClip.id.toString() )) {
+                        wholeList = false;
+                        /* since I don't need to jump, and I can't insert clips before
+                           the current one without getting a jump, I'll strip myself of
+                           any clips before this */
+                        var ids = self.pluck('id');
+                        var cur_i = ids.indexOf(status.currentClip.id);
+                        self.remove(ids.slice(0, cur_i));
 
-                    var expected = self.getExpectedMedia();
-                    if( expected.media ) {
-                        if(status.currentClip && ( expected.media.id.toString() == status.currentClip.id.toString() )) {
-                            /* since I don't need to jump, and I can't insert clips before
-                               the current one without getting a jump, I'll strip myself of
-                               any clips before this */
-                            var ids = self.pluck('id');
-                            var cur_i = ids.indexOf(status.currentClip.id);
-                            self.remove(ids.slice(0, cur_i));
-
-                            /* and then put everything after into melted */
-                            _.range(1, self.length).forEach(function(i) {
-                                ret = ret.then(function() {
-                                    return self.driver.appendClip(self.at(i).toJSON());
-                                });
+                        /* and then put everything after into melted */
+                        _.range(1, self.length).forEach(function(i) {
+                            ret = ret.then(function() {
+                                return self.driver.appendClip(self.at(i).toJSON());
                             });
-                            self.forEach(function(c, i) {
-                                c.set('actual_order', i);
-                            });
-                        } else {
-                            /* since I've got to jump anyways, I'll add everything at the end
-                               of the list */
-                            self.forEach(function(c, i) {
-                                c.set('actual_order', i + 1);
-                                ret = ret.then(function() {
-                                    return self.driver.appendClip(c.toJSON());
-                                });
-                            });
-                            /* then I'll jump and remove the current clip */
-//                            ret = ret.then(function() {
-                            // LET HEARTBEATS HANDLE THIS
-//                                return self.driver.goto(expected.media.get('actual_order') + 1, expected.frame);
-//                            }).then(function() {
-                            // LET THE CLIP THERE, IT WONT MAKE ANY HARM... :)
-//                                return self.driver.removeClip(0);
-//                            });
-                        }
-                    } else {
-                        //TODO: What do we do now???
+                        });
                     }
-                    return ret;
-//                });
+                } if( wholeList ) {
+                    /* since I've got to jump anyways, I'll add everything at the end
+                       of the list */
+                    if( status.currentClip ) {
+                        /* I leave the current clip at the top of the melted playlist, it won't do any harm */
+                        self.add(status.currentClip, { at: 0, set_melted: false });
+                    }
+                    self.forEach(function(c, i) {
+                        ret = ret.then(function() {
+                            return self.driver.appendClip(c.toJSON());
+                        });
+                    });
+                }
+
+                self.forEach(function(c, i) {
+                    c.set('actual_order', i);
+                });
+                return ret;
             }).fin(function(){
                 self.leave();
             });
