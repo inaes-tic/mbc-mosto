@@ -1,8 +1,10 @@
 var config           = require('mbc-common').config.Mosto.HeartBeats,
+    mvcpConfig       = require('mbc-common').config.Mosto.Melted,
     util             = require('util'),
     events           = require('events'), 
     Mosto            = require('./models/Mosto'), 
     moment           = require('moment'),
+    fs               = require('fs'),
     mvcp_server      = require('./drivers/mvcp/mvcp-driver'), 
     utils            = require('./utils');
 
@@ -123,21 +125,35 @@ heartbeats.prototype.checkSchedules =  function() {
 
 heartbeats.prototype.executeGc = function() {
     //TODO: Eliminar los xml viejos
-    //TODO: Eliminar las playlist caspa en vez de las de melted
     var self = this;
     console.log("[HEARTBEAT-GC] Started Garbage Collector");
     var timeLimit = moment().subtract('hours', 1);
-    var oldMedias = self.melted_medias.filter(function(media) {
+    var playlists = Mosto.Playlists().get("playlists");
+    var oldPlaylists = playlists.filter(function(media) {
         return moment(media.get('end')) < timeLimit;
     });
-    if (oldMedias) {
-        oldMedias.forEach(function(media) {
-            self.melted_medias.remove(media);
+    if (oldPlaylists) {
+        oldPlaylists.forEach(function(pl) {
+            self.removeXml(pl);
+            //TODO: Check if it is ok to make this silent
+            playlists.remove(pl, {silent: true});
         });
-        Mosto.Playlists().save();
     }
     self.scheduleGc();
-    console.log("[HEARTBEAT-GC] Finished Garbage Collector: " + oldMedias.length + " removed.");
+    console.log("[HEARTBEAT-GC] Finished Garbage Collector: " + oldPlaylists.length + " playlists removed.");
+};
+
+heartbeats.prototype.removeXml = function(playlist) {
+    var self = this;
+    var baseDir = config.playlists_xml_dir;
+    playlist.forEach(function(media) {
+        var filename = utils.getXmlFileNameFromClip(media.toJSON());
+        var xmlFile = baseDir + "/" + filename;
+        fs.unlinkSync(xmlFile, function(err) {
+            if (err)
+                self.handleError(err);
+        });
+    });
 };
 
 heartbeats.prototype.sendStatus = function() {
