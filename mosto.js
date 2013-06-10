@@ -26,6 +26,7 @@ function mosto(customConfig) {
     this.server_started = false;
     this.pl_driver = undefined;
     this.status_driver = undefined;
+    this.timeWindow     = undefined;
 
     /* MODULES */
     this.heartbeats = undefined;
@@ -40,32 +41,33 @@ mosto.prototype.inTimeWindow = function(obj) {
     // expects obj.start and obj.end to exist and be moment()s
     return (obj.end > this.timeWindow.start && obj.start < this.timeWindow.end);
 }
+mosto.prototype.addPlaylist = function(playlist) {
+    var self = this;
+    
+    if(self.inTimeWindow(playlist))
+        self.playlists.addPlaylist(playlist);
+};
 
 mosto.prototype.initDriver = function() {
     var self = this;
     console.log("mbc-mosto: [INFO] Initializing playlists driver");
 
     this.pl_driver.on('create', function(playlist) {
-        var now = moment();
-
-        if(!self.inTimeWindow(playlist))
-            return;
-
-        self.playlists.addPlaylist(playlist);
+        self.addPlaylist(playlist);
     });
 
     this.pl_driver.on('update', function(playlist) {
         if(!self.inTimeWindow(playlist))
-            return self.playlists.removePlaylist(playlist);
-        return self.playlists.addPlaylist(playlist);
+            self.playlists.removePlaylist(playlist);
+        else
+            self.addPlaylist(playlist);
     });
 
     this.pl_driver.on('delete', function(playlist) {
-        return self.playlists.removePlaylist(playlist);
+        self.playlists.removePlaylist(playlist);
     });
 
-    //TODO: Esto esta bien?????????????
-    self.pl_driver.start(self.timeWindow);
+    self.pl_driver.start();
 };
 
 mosto.prototype.stopDriver = function() {
@@ -156,8 +158,7 @@ mosto.prototype.initHeartbeats = function() {
     });
 
     self.heartbeats.on("noClips", function() {
-        //TODO: Esto esta bien?????????????
-        var window = { start: moment(), end: moment().add(4, 'hours') };
+        var window = {start: moment(), end: moment().add(4, 'hours')};
         self.timeWindow = window;
         self.fetchPlaylists(window);
     });
@@ -167,6 +168,8 @@ mosto.prototype.initHeartbeats = function() {
 
 mosto.prototype.fetchPlaylists = function(window) {
     var self = this;
+    if (!window)
+        window = self.timeWindow;
     self.pl_driver.getPlaylists(window, function(playlists) {
         playlists.forEach(function(playlist) {
             self.playlists.get("playlists").add(playlist, {merge: true});
@@ -238,14 +241,12 @@ mosto.prototype.init = function( melted, callback) {
         self.playlists     = models.Playlists();
         self.heartbeats    = new heartbeats();
 
-        //TODO: Esto esta bien?????????????
-        self.timeWindow = { start: moment(), end: moment().add(4, 'hours') };
+        self.timeWindow    = {from: moment(), to: moment().add(4, 'hours')};
 
         self.initDriver();
         self.initHeartbeats();
 
         self.startMvcpServer( function() {
-            //TODO: See why this brakes everything :(
             self.fetchPlaylists({from: moment(), to: moment().add(4, 'hours')});
             if (callback) callback();
         } );

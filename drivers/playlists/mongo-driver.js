@@ -22,13 +22,11 @@ function mongo_driver(conf) {
     this.conf = conf;
     events.EventEmitter.call (this);
 
-    this.window = {};
-
     console.log("mongo-driver: [INFO] Creating mongodb playlists driver");
 }
 util.inherits (mongo_driver, events.EventEmitter);
 
-mongo_driver.prototype.start = function(timeSpan) {
+mongo_driver.prototype.start = function() {
     var self = this;
     var db = mbc.db(this.conf && this.conf.db);
     self.channel = mbc.pubsub();
@@ -37,8 +35,6 @@ mongo_driver.prototype.start = function(timeSpan) {
 
     self.scheds = db.collection('scheds');
     self.lists = db.collection('lists');
-
-    self.setWindow({timeSpan: timeSpan});
 
     self.channel.on('JSONmessage', function(chan, msg) {
         var handler = self.pubsub_handler[chan];
@@ -53,7 +49,6 @@ mongo_driver.prototype.start = function(timeSpan) {
 
 mongo_driver.prototype.stop = function(timeSpan) {
     var self = this;
-    var db = mbc.db(this.conf && this.conf.db);
 
     console.log("mongo-driver: [INFO] Stopping mongo playlists driver");
 
@@ -68,105 +63,30 @@ mongo_driver.prototype.stop = function(timeSpan) {
 mongo_driver.prototype.pubsub_handler = {
     'schedbackend.create': function(msg) {
         var self = this;
-        if( this.inTime(msg.model) ) {
-            this.createPlaylist(msg.model, (function(err, playlist) {
-                if( err ) {
-                    self.emit('error', err);
-                    return console.error("mongo-driver [ERROR]:", err);
-                }
-                this.emit('create', playlist);
-            }).bind(this));}},
-    'schedbackend.update': function(msg) {
-        // I forward all create messages
         this.createPlaylist(msg.model, (function(err, playlist) {
             if( err ) {
                 self.emit('error', err);
                 return console.error("mongo-driver [ERROR]:", err);
             }
-            this.emit('update', playlist)
+            this.emit('create', playlist);
+        }).bind(this));
+    },
+    'schedbackend.update': function(msg) {
+        var self = this;
+        this.createPlaylist(msg.model, (function(err, playlist) {
+            if( err ) {
+                self.emit('error', err);
+                return console.error("mongo-driver [ERROR]:", err);
+            }
+            this.emit('update', playlist);
         }).bind(this));
     },
     'schedbackend.delete': function(msg) {
         this.emit('delete', msg.model._id);
-    },
-}
-
-mongo_driver.prototype.getWindow = function(from, to) {
-    // Notice that if from = to = undefined then time window is
-    // set to undefined, and settings file is used again
-    var self = this;
-    if( to === undefined ) {
-        if( from === undefined ) {
-            // use defaults from config file
-            var now = moment(new Date());
-            var until = moment(new Date());
-            var timeSpan = config.load_time * 60 * 1000;
-            until.add(timeSpan);
-            return {
-                from: now,
-                to: until,
-                timeSpan: timeSpan
-            };
-        } else {
-            // assume from = { from: date, to: date }
-            var window = from;
-            var ret = _.clone(window);
-            if( window.from === undefined ) {
-                // I assume from = now
-                ret.from = new moment();
-            } else {
-                ret.from = moment(window.from);
-            }
-            if( window.timeSpan ) {
-                ret.timeSpan = window.timeSpan * 60 * 1000;
-            }
-            if( !(window.to || window.timeSpan) ) {
-                // if neither is present, we use the currently set
-                // value, or default to the config file
-                ret.timeSpan = self.window.timeSpan || config.load_time * 60 * 1000;
-            }
-            if( window.to === undefined ) {
-                // we asume timeSpan is present and calculate it
-                ret.to = new moment(ret.from);
-                ret.to.add(ret.timeSpan);
-            } else {
-                ret.to = moment(window.to);
-            }
-            if( ret.timeSpan === undefined ) {
-                // if we got here, it means window.to was defined
-                // we calculate it using from and to
-                ret.timeSpan = ret.to.diff(ret.from);
-            } else {
-                // this got copied in the _.clone, but it's in minutes
-                ret.timeSpan = window.timeSpan * 60 * 1000;
-            }
-            return ret;
-        }
-    } else {
-
-        var window = {
-            from: moment(from),
-            to: moment(to),
-        };
-        window.timeSpan = window.to.diff(window.from);
-        return window;
     }
 };
 
-mongo_driver.prototype.setWindow = function(from, to) {
-    var self = this;
-    self.window = self.getWindow(from, to);
-    return self.window;
-};
-
-mongo_driver.prototype.inTime = function(sched) {
-    var self = this;
-    var window = self.getWindow();
-    return (sched.start <= window.to.unix() &&
-            sched.end >= window.from.unix());
-};
-
-mongo_driver.prototype.getPlaylists = function(ops, callback) {
+mongo_driver.prototype.getPlaylists = function(window, callback) {
     // read playlists from the database
 
     /*
@@ -175,16 +95,6 @@ mongo_driver.prototype.getPlaylists = function(ops, callback) {
      * which defaults to self.newPlaylistCallback
      */
     var self = this;
-
-    var window;
-
-    if (ops == undefined) {
-        window = self.getWindow();
-    } else if ( ops.setWindow ) {
-        window = self.setWindow(ops.from, ops.to);
-    } else {
-        window = self.getWindow(ops.from, ops.to);
-    }
 
     console.log("mongo-driver: [INFO] getPlaylists" + window);
 
