@@ -26,7 +26,7 @@ function heartbeats(customConfig) {
         mvcp_server: "melted"
     };
     this.config = customConfig || config || defaults;
-    
+
     if (this.config.checkout_interval === undefined)
         this.config.checkout_interval = this.config.min_scheduled / 4;
 
@@ -143,7 +143,7 @@ heartbeats.prototype.executeGc = function() {
 heartbeats.prototype.sendStatus = function() {
     var self = this;
     console.log("[HEARTBEAT-FS] Started Status");
-    var expected = self.getExpectedMedia();
+    var expected = self.melted_medias.getExpectedMedia();
     if ((!self.current_media) || (expected.media.get("id").toString() !== self.current_media.get("id").toString())) {
         self.emit("clipStatus", expected.media);
         console.log("[HEARTBEAT-FS] Sent clipStatus");
@@ -155,29 +155,11 @@ heartbeats.prototype.sendStatus = function() {
     console.log("[HEARTBEAT-FS] Finished Status");
 };
 
-heartbeats.prototype.getExpectedMedia = function() {
-    var self = this;
-    var now = moment();
-    var expected = {};
-    expected.media = undefined;
-    expected.frame = undefined;
-    var media = self.melted_medias.find(function(media) {
-        return moment(media.get('end')) >= now;
-    });
-    if (media) {
-        var elapsed = (now - moment(media.get('start'))) / 1000;
-        var frame = parseInt(elapsed * media.get('fps'));
-        expected.media = media;
-        expected.frame = frame;
-    }
-    return expected;
-};
-
 heartbeats.prototype.syncMelted = function() {
     console.log("[HEARTBEAT-SY] Start Sync");
     var self = this;
     self.server.getServerStatus().then(function(meltedStatus) {
-        var expected = self.getExpectedMedia();
+        var expected = self.melted_medias.getExpectedMedia();
         if (expected.media) {
             var result = undefined;
             var meltedClip = meltedStatus.currentClip;
@@ -188,15 +170,15 @@ heartbeats.prototype.syncMelted = function() {
                 var indexDiff = self.melted_medias.indexOf(currentMedia) - index;
                 if (indexDiff === -1) {
                     // melted's right before the expected media
-                    frames = currentMedia.get('length') - meltedClip.currentFrame + expected.frame;
+                    frames = currentMedia.get('out') - meltedClip.currentFrame + expected.frame;
                 } else if (indexDiff === 1) {
                     // melted's right after the expected media
-                    frames = meltedClip.currentFrame + (expected.media.get('length') - expected.frame);
+                    frames = meltedClip.currentFrame + (expected.media.get('out') - expected.frame);
                 }
 
-                if (frames > expected.media.get('fps')) 
+                if (frames > expected.media.get('fps'))
                     result = self.fixMelted(expected);
-            } else if (Math.abs(meltedClip.currentFrame - expected.frame) > expected.media.get('fps')) 
+            } else if (Math.abs(meltedClip.currentFrame - expected.frame) > expected.media.get('fps'))
                 result = self.fixMelted(expected);
             if (meltedStatus.status !== "playing") {
                 if (result)

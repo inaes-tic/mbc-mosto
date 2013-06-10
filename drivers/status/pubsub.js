@@ -88,33 +88,39 @@ CaspaDriver.prototype.setStatus = function(meltedStatus) {
         if (melclip===undefined) return { name: '', _id: '' };
         var clip = undefined;
         switch(val) {
-            case "previous": 
-                clip = melclip.previous;
-                break;
-            case "current": 
-                clip = melclip.current;
-                break;
-            case "next": 
-                clip = melclip.next;
-                break;
+        case "previous":
+            clip = melclip.previous;
+            break;
+        case "current":
+            clip = melclip.current;
+            break;
+        case "next":
+            clip = melclip.next;
+            break;
         }
         if (clip===undefined) return { name: '', _id: '' };
         return {
             name: clip.name,
-            _id: clip.id
+            _id: clip._id
         }
     }
 
-    function makeShow( show, val ) {
-        if (show===undefined) return { _id: '' };
+    function makeShow( shows, val ) {
+        if (shows === undefined) return { _id: '' };
+        var show = undefined;
         switch(val) {
-            case "previous": 
-                return { _id: show.previous };
-            case "current": 
-                return { _id: show.current };
-            case "next": 
-                return { _id: show.next };
+        case "previous":
+            show = shows.previous;
+            break;
+        case "current":
+            show = shows.current;
+            break;
+        case "next":
+            show = shows.next;
+            break;
         }
+        if( !show ) return {};
+        return { _id: show.id };
     }
 
     var clips = meltedStatus.clips;
@@ -134,15 +140,15 @@ CaspaDriver.prototype.setStatus = function(meltedStatus) {
 
     console.log("mbc-mosto: [INFO] [STATUS] status builded. doing last calculations." );
 
-    if (status.piece.current) 
+    if (status.piece.current)
         status.piece.current.progress = meltedStatus.position * 100 + "%";
 
-    /* all of this nonsense is to avoid undefineds. I don't know 
+    /* all of this nonsense is to avoid undefineds. I don't know
        it's worth the trouble.
 
        in the end all it's doing is taking out currentFrames from both
        the saved status and the received one, and check if anything changed
-    */  
+    */
     var currentButFrames = _.omit(status.piece.current, 'currentFrames');
     var statusButFrames = _.chain(status).clone().extend({piece: { current: currentButFrames }})
     var myButFrames = _.omit(this.status.piece.current, 'currentFrames');
