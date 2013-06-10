@@ -110,30 +110,6 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         this.fetch();
     },
 
-//    replaceList: function(meltedClips) {
-//        var self = this;
-//        var end = meltedClips.length;
-//        /* clear everything but current */
-//        var ret = Q.resolve().then(function() {
-//            return self.driver.cleanPlaylist();
-//        });
-//        this.forEach(function(clip) {
-//            ret = ret.then(function() {
-//                return self.driver.appendClip(clip.toJSON());
-//            });
-//        });
-//        var expected = self.getExpectedMedia();
-//        if( expected.media ) {
-//            ret = ret.then(function() {
-//                return self.driver.goto(expected.media.get('actual_order') + end, expected.frame);
-//            });
-//        };
-//        return ret.then(function() {
-//            return self.driver.removeClip(0);
-//        });
-//        return ret;
-//    },
-
     set: function(models, options) {
         var self = this
         Backbone.Collection.prototype.set.call(this, models, _.extend(options || {}, { silent: true }));
@@ -141,13 +117,8 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
             self.forEach(function(clip, ix) {
                 clip.set({ actual_order: ix });
             });
-//            return self.driver.getServerPlaylist().then(function(clips) {
                 return self.driver.getServerStatus().then(function(status) {
-//                    if( ! status.currentClip )
-//                        return self.replaceList(clips);
 
-//                    if( cur_i < 0 )
-//                        return self.replaceList(clips);
 
                     /* remove everything but the current clip */
                     var ret = Q.resolve().then(function() {
@@ -183,19 +154,13 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                                 });
                             });
                             /* then I'll jump and remove the current clip */
-//                            ret = ret.then(function() {
                             // LET HEARTBEATS HANDLE THIS
-//                                return self.driver.goto(expected.media.get('actual_order') + 1, expected.frame);
-//                            }).then(function() {
                             // LET THE CLIP THERE, IT WONT MAKE ANY HARM... :)
-//                                return self.driver.removeClip(0);
-//                            });
                         }
                     } else {
                         //TODO: What do we do now???
                     }
                     return ret;
-//                });
             }).fin(function(){
                 self.leave();
             });
