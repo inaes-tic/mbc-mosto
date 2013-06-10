@@ -16,13 +16,13 @@ function parseXMLs(path) {
     // Get XMLs
     var files = fs.readdirSync(path);
     var xmls = files.filter(function(elem) {
-        return elem.substr(elem.length - 4).toLowerCase() == ".xml";
+        return (elem.substr(0, 5) !== 'blank') && (elem.substr(elem.length - 4).toLowerCase() === ".xml");
     });
 
     // Pars'em
     var parsed = [];
     for (var i = 0; i < xmls.length; ++i) {
-        var content = fs.readFileSync(path + xmls[i], {encoding: "utf-8"});
+        var content = fs.readFileSync(path + xmls[i]);
         xml2js.parseString(content, function (err, result) {
             parsed.push({filename: String(xmls[i]), data: result});
         });
