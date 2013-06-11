@@ -117,10 +117,86 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         this.fetch();
     },
 
+    getBlankMedias: function(from, to) {
+        /* returns a list of consecutive blank medias to put between from and to */
+        var ret = [];
+        var blanks = this.filter(function(media) {
+            return (media.get('blank') &&
+                    (media.get('start') < to &&
+                     media.get('end') > from))
+        });
+        var current = this.getExpectedMedia();
+        var cur_ix = blanks.indexOf(current.media);
+        if( cur_ix > 0 ) {
+            /* I need to split the process in two:
+               1) before current.start, adjust
+               2) adjust current.end if possible, and then extend
+            */
+            ret.push.apply(ret, this.getBlankMedias(from, current.get('start')));
+            // see if we can extend current
+            if( current.get('out') < Mosto.BlankClip.out ) {
+                current.set('out', Mosto.BlankClip.out );
+            }
+            ret.push(current);
+            var end = moment(current.get('start')).add(
+                moment.duration(current.get('length') / current.get('fps'), 'seconds'));
+            current.set('end', end);
+            ret.push.apply(ret, this.getBlankMedias(end, to));
+            return ret
+        }
+        /* if current is not in the list, I just create a bunch of BlankClips to fill
+           in the range */
+        var timewalk = moment(from);
+        var maxLength = moment.duration(Mosto.BlankClip.length / Mosto.BlankClip.fps, 'seconds');
+        while( timewalk < to ) {
+            var clip = _.clone(Mosto.BlankClip);
+            clip.id = uuid.v4();
+            clip.start = moment(timewalk);
+            clip.end = moment(timewalk.add(Math.min(to - timewalk, maxLength)));
+            clip.length = moment.duration(clip.end - clip.start);
+            // make sure clip.out gets calculated from length
+            delete clip.out;
+            ret.push(clip);
+        }
+        return ret;
+    },
+
     set: function(models, options) {
         var self = this
-        options = _.defaults(options || {}, { set_melted: true });
-        Backbone.Collection.prototype.set.call(this, models, _.extend(options, { silent: true }));
+        options = _.defaults(options || {}, { set_melted: true,
+                                              fix_blanks: true,
+                                              until: moment().add(moment.duration(4,
+                                                                                  'hours')) });
+
+        var get = (function(model, attr) {
+            return this._prepareModel(model, options).get(attr);
+        }).bind(this);
+        models = (_.isArray(models) && models) || [models];
+        var m = _.clone(models);
+        if( options.fix_blanks ) {
+            models.forEach(function(media, i) {
+                /* in falcon we'd say forfirst: forlast: and default: :( */
+                if( i == 0 ) {
+                    var now = moment();
+                    var start = get(media, 'start');
+                    if( start > now ) {
+                        m.splice.apply(m, [0, 0].concat(self.getBlankMedias(now, start)));
+                    }
+                } else {
+                    var prev = models[i-1]
+                    if( get(media, 'start') > get(prev, 'end') ) {
+                        m.splice.apply(m, [i, 0].concat(self.getBlankMedias(get(prev, 'end'), get(media, 'start'))));
+                    }
+                }
+                if( i == (models.length - 1) ) {
+                    /* for the last one, make sure it lasts at least until options.until */
+                    if( get(media, 'end') < options.until ) {
+                        m.push.apply(m, self.getBlankMedias(get(media, 'end'), options.until));
+                    }
+                }
+            });
+        }
+        Backbone.Collection.prototype.set.call(this, m, _.extend(options, { silent: true }));
         if(! options.set_melted )
             return;
         self.take(function() {
@@ -162,9 +238,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
 
                     if( status.currentClip ) {
                         /* I leave the current clip at the top of the melted playlist, it won't do any harm */
-                        ret = ret.then(function() {
-                            return self.add(status.currentClip, { at: 0, set_melted: false });
-                        });
+                        self.add(status.currentClip, { at: 0, set_melted: false, fix_blanks: false });
                     }
                 }
 
@@ -341,53 +415,12 @@ Mosto.Playlist = Backbone.Model.extend({
 Mosto.PlaylistCollection = Backbone.Collection.extend({
     model: Mosto.Playlist,
     comparator: 'start',
-    initialize: function() {
-        Backbone.Collection.prototype.initialize.apply(this, arguments);
-        this.on('sort', this.addBlanks.bind(this));
-    },
-    sort: function(options) {
-        this.removeBlanks({ silent: true });
-        Backbone.Collection.prototype.sort.apply(this);
-    },
     removeBlanks: function(options) {
         /*
          * forwards `options` to `remove`
          */
         this.remove(this.where({ blank: true }),
                     options);
-    },
-    addBlanks: function(collection, options) {
-        var now = moment();
-        var first = this.at(0);
-        if( first && first.get('start') > now ) {
-            this.addBlankPlaylist(now, first.get('start'), 0);
-        }
-        for(var i=1 ; i < this.length ; i++) {
-            var prev = this.at(i-1);
-            var curr = this.at(i);
-            var end = prev.get('end');
-            var start = curr.get('start');
-            if( end < start ) {
-                this.addBlankPlaylist(end, start, i);
-            }
-        }
-    },
-    addBlankPlaylist: function(from, to, at) {
-        var options = { at: at };
-        var blank = _.clone(Mosto.BlankClip);
-        var length = parseInt(((to - from) / 1000) * blank.fps);
-        var playlist = new Mosto.Playlist({
-            name: blank.name,
-            start: from,
-            end: to,
-            blank: true,
-        });
-        _.extend(blank, { 'id': to.valueOf() + '-blank',
-                          length: length,
-                          in: 0,
-                          out: length });
-        playlist.get('medias').add(blank);
-        this.add(playlist, options);
     },
     getMedias: function() {
         var medias = this.map(function(playlist) { return playlist.getMedias() })
