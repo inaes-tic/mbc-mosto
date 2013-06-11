@@ -1,13 +1,13 @@
-var Backbone   = require('backbone')
-,   config     = require('mbc-common').config.Mosto.General
-,   path       = require('path')
-,   uuid       = require('node-uuid')
-,   _          = require('underscore')
-,   moment     = require('moment')
-,   mvcp       = require('../drivers/mvcp/mvcp-driver')
-,   semaphore  = require('semaphore')
-,   utils      = require('../utils')
-,   Q          = require('q')
+var Backbone  = require('backbone')
+,   config    = require('mbc-common').config.Mosto.General
+,   path      = require('path')
+,   uuid      = require('node-uuid')
+,   _         = require('underscore')
+,   moment    = require('moment')
+,   mvcp      = require('../drivers/mvcp/mvcp-driver')
+,   semaphore = require('semaphore')
+,   utils     = require('../utils')
+,   Q         = require('q')
 ;
 
 var Mosto = {};
@@ -226,7 +226,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                             });
                         });
                     }
-                } 
+                }
                 if( wholeList ) {
                     /* since I've got to jump anyways, I'll add everything at the end
                        of the list */
@@ -274,7 +274,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                         if( !self.length )
                             return;
                         // statuses: offline|not_loaded|playing|stopped|paused|disconnected|unknown
-                        
+
                         if( status.status == 'stopped' ) {
                             self.adjustTimes(0, 0);
                             // LET HEARTBEATS HANDLE THIS...
