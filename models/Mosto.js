@@ -38,6 +38,7 @@ Mosto.Media = Backbone.Model.extend({
     },
 
     constructor: function(attributes, options) {
+        attributes = _.defaults(attributes || {}, { id: uuid.v4() });
         options = _.defaults(options || {}, { override_id: true });
         attributes._id = attributes.id;
         if( options.override_id )
