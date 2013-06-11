@@ -8,7 +8,7 @@ var assert      = require("assert"),
     heartbeats  = require('../heartbeats');
 
 
-describe('Mosto Heartbeats Test', function(done) {
+describe.only('Mosto Heartbeats Test', function(done) {
     before(function(done) {
         melted.take(function() {
             melted.stop(function(){
@@ -138,24 +138,31 @@ describe('Mosto Heartbeats Test', function(done) {
             self.hb = new heartbeats(config);
 
             self.hb.on('forceCheckout', function() {
+                console.error("Received FORCECHECKOUT");
                 self.checkouts++;
             });
             self.hb.on('clipStatus', function() {
+                console.error("Received CLIPSTATUS");
                 self.clipStatus++;
             });
             self.hb.on('frameStatus', function() {
+                console.error("Received FRAMESTATUS");
                 self.frameStatus++;
             });
             self.hb.on('startPlaying', function() {
+                console.error("Received STARTPLAYING");
                 self.startPlaying++;
             });
             self.hb.on('outOfSync', function() {
+                console.error("Received OUTOFSYNC");
                 self.outOfSync++;
             });
             self.hb.on('hbErrors', function() {
+                console.error("Received HBERROR");
                 self.hbErrors++;
             });
             self.hb.on('noClips', function() {
+                console.error("Received NOCLIPS");
                 self.noClips++;
             });
             self.hb.init();
