@@ -344,7 +344,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         clips.forEach(function(clip) {
             toAdd.push(new Mosto.Media(clip, { override_id: false }));
         });
-        this.add(toAdd, { merge: true, silent: true });
+        this.add(toAdd, { merge: true, silent: true, set_melted: false, fix_blanks: false });
     },
 });
 
