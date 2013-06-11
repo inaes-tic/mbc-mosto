@@ -35,6 +35,7 @@ Mosto.Media = Backbone.Model.extend({
         // end: undefined,
         in: undefined,
         out: undefined,
+        blank: false,
     },
 
     constructor: function(attributes, options) {
