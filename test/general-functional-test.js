@@ -31,7 +31,7 @@ describe.only("Mosto functional test", function() {
             mediamodels.push( new Media.Piece(media.toJSON()) );
         });
         return new Media.List({
-            models: mediamodels,
+            models: mediamodels
         });
     };
 
@@ -46,7 +46,7 @@ describe.only("Mosto functional test", function() {
         self.occurrences = [];
         var defer = Q.defer();
         var done = _.after(self.playlists.length, function(){
-            defer.resolve()
+            defer.resolve();
         });
         var occcol = self.db.collection('scheds');
         var listcol = self.db.collection('lists');
@@ -54,7 +54,7 @@ describe.only("Mosto functional test", function() {
         for( var i = 0 ; i < self.playlists.length ; i++ ) {
             var playlist = self.playlists[i];
             var occurrence = {
-                start: timewalk.unix(),
+                start: timewalk.unix()
             };
             log.push(i+':');
             log.push('occurrence.start: ' + occurrence.start);
@@ -74,7 +74,9 @@ describe.only("Mosto functional test", function() {
             var playlist_json = _.omit(playlist.toJSON(), 'collection');
             playlist_json.models = _.invoke(playlist_json.models, 'toJSON');
             playlist_json._id = uuid.v4();
-            log.forEach(function(l) { console.log('[setup_playlists]:', l) });
+            log.forEach(function(l) { 
+                console.log('[setup_playlists]:', l) ;
+            });
             console.log('[setup_playlists] final:', playlist_json);
             // I need to wrap this in order to keep the `playlist` variable
             (function(pl, oc) {
@@ -86,7 +88,7 @@ describe.only("Mosto functional test", function() {
                         list: obj._id,
                         start: oc.start,
                         end: oc.end,
-                        _id: uuid.v4(),
+                        _id: uuid.v4()
                     });
                     occcol.insert(occurrence.toJSON(), function(err, obj) {
                         var obj = obj[0];
@@ -106,14 +108,14 @@ describe.only("Mosto functional test", function() {
         self.db.collection('scheds').drop(ready);
         self.db.collection('lists').drop(ready);
         return defer.promise;
-    }
+    };
 
     self.delete_occurrence = function(occurrence) {
         var defer = Q.defer();
         var occurrences = self.db.collection('scheds');
         occurrences.remove({ _id: occurrence._id }, function(err, obj) {
             self.listener.once('message', function(chan, msg) {
-                if( chan == 'schedbackend.delete' ) {
+                if( chan === 'schedbackend.delete' ) {
                     self.listener.unsubscribe('schedbackend.delete');
                     defer.resolve();
                 }
@@ -131,7 +133,7 @@ describe.only("Mosto functional test", function() {
         var occurrences = self.db.collection('scheds');
         occurrences.save(occurrence, function(err, res) {
             self.listener.once('message', function(chan, msg) {
-                if( chan == 'schedbackend.update' ) {
+                if( chan === 'schedbackend.update' ) {
                     self.listener.unsubscribe('schedbackend.update');
                     defer.resolve();
                 }
@@ -153,7 +155,7 @@ describe.only("Mosto functional test", function() {
         time = time || moment();
         var occurrence = self.get_occurrence(time);
         return _.find(self.playlists, function(pl) {
-            return pl._id == occurrence.list;
+            return pl._id === occurrence.list;
         });
     };
 
@@ -187,6 +189,7 @@ describe.only("Mosto functional test", function() {
             var expected = (time - expected_media.start_time).valueOf();
             console.log('[is_synced] got', lines[1], 'at', frame, ':', elapsed, 'expected', expected);
             elapsed.should.be.approximately(expected, 1000);
+            done();
         });
         return result;
     };
@@ -201,8 +204,9 @@ describe.only("Mosto functional test", function() {
         before(function(done) {
             self.db.dropDatabase(function(err, success) {
                 self.mosto = new mosto();
-                self.mosto.once('playing', function() {
-                    done()});
+                self.mosto.once('started', function() {
+                    done();
+                });
                 self.mosto.init();
             });
         });
