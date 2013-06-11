@@ -39,12 +39,12 @@ util.inherits(mosto, events.EventEmitter);
 
 mosto.prototype.inTimeWindow = function(obj) {
     // expects obj.start and obj.end to exist and be moment()s
-    return (obj.end > this.timeWindow.start && obj.start < this.timeWindow.end);
+    return (obj.end > this.timeWindow.from && obj.start < this.timeWindow.to);
 };
 
 mosto.prototype.addPlaylist = function(playlist) {
     var self = this;
-    
+
     if(self.inTimeWindow(playlist))
         self.playlists.addPlaylist(playlist);
 };
@@ -141,15 +141,15 @@ mosto.prototype.initHeartbeats = function() {
         if( index < melted_medias.length - 1 )
             status.clip.next = melted_medias.at(index+1).toJSON();
         /* shows */
-        var playlist = playlists.find(function(pl) {
-            return pl.get('medias').get(media.get('_id'));
-        });
-        index = playlists.indexOf(playlist);
-        status.show.current = playlist.toJSON();
-        if( index > 0 )
-            status.show.previous = playlists.at(index-1).toJSON();
-        if( index < playlists.length - 1 )
-            status.show.next = playlists.at(index+1).toJSON();
+        var playlist = playlists.get(media.get('playlist_id'));
+        if( playlist ) {
+            index = playlists.indexOf(playlist);
+            status.show.current = playlist.toJSON();
+            if( index > 0 )
+                status.show.previous = playlists.at(index-1).toJSON();
+            if( index < playlists.length - 1 )
+                status.show.next = playlists.at(index+1).toJSON();
+        }
         self.status_driver.setStatus(status);
     });
 
@@ -159,7 +159,7 @@ mosto.prototype.initHeartbeats = function() {
     });
 
     self.heartbeats.on("noClips", function() {
-        var window = {start: moment(), end: moment().add(4, 'hours')};
+        var window = {from: moment(), to: moment().add(4, 'hours')};
         self.timeWindow = window;
         self.fetchPlaylists(window);
     });
