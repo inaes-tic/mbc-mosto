@@ -108,6 +108,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         this.semaphore = semaphore(1);
         this.take = this.semaphore.take;
         this.leave = this.semaphore.leave;
+        this.write = semaphore(1);
 
         var self = this;
         this.on('allx', function(event) {
@@ -162,7 +163,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
     },
 
     set: function(models, options) {
-        var self = this
+        var self = this;
         options = _.defaults(options || {}, { set_melted: true,
                                               fix_blanks: true,
                                               until: moment().add(moment.duration(4,
@@ -170,33 +171,37 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
 
         var get = (function(model, attr) {
             return this._prepareModel(model, options).get(attr);
-        }).bind(this);
+        }).bind(self);
         models = (_.isArray(models) && models) || [models];
         var m = _.clone(models);
         if( options.fix_blanks ) {
-            models.forEach(function(media, i) {
-                /* in falcon we'd say forfirst: forlast: and default: :( */
-                if( i == 0 ) {
-                    var now = moment();
-                    var start = get(media, 'start');
-                    if( start > now ) {
-                        m.splice.apply(m, [0, 0].concat(self.getBlankMedias(now, start)));
+            var now = moment();
+            if( m.length <= 0 ) {
+                m.push.apply(m, self.getBlankMedias(now, options.until));
+            } else {
+                models.forEach(function(media, i) {
+                    /* in falcon we'd say forfirst: forlast: and default: :( */
+                    if( i == 0 ) {
+                        var start = get(media, 'start');
+                        if( start > now ) {
+                            m.splice.apply(m, [0, 0].concat(self.getBlankMedias(now, start)));
+                        }
+                    } else {
+                        var prev = models[i-1]
+                        if( get(media, 'start') > get(prev, 'end') ) {
+                            m.splice.apply(m, [i, 0].concat(self.getBlankMedias(get(prev, 'end'), get(media, 'start'))));
+                        }
                     }
-                } else {
-                    var prev = models[i-1]
-                    if( get(media, 'start') > get(prev, 'end') ) {
-                        m.splice.apply(m, [i, 0].concat(self.getBlankMedias(get(prev, 'end'), get(media, 'start'))));
+                    if( i == (models.length - 1) ) {
+                        /* for the last one, make sure it lasts at least until options.until */
+                        if( get(media, 'end') < options.until ) {
+                            m.push.apply(m, self.getBlankMedias(get(media, 'end'), options.until));
+                        }
                     }
-                }
-                if( i == (models.length - 1) ) {
-                    /* for the last one, make sure it lasts at least until options.until */
-                    if( get(media, 'end') < options.until ) {
-                        m.push.apply(m, self.getBlankMedias(get(media, 'end'), options.until));
-                    }
-                }
-            });
+                });
+            }
         }
-        Backbone.Collection.prototype.set.call(this, m, _.extend(options, { silent: true }));
+        Backbone.Collection.prototype.set.call(self, m, _.extend(options, { silent: true }));
         if(! options.set_melted )
             return;
         self.take(function() {
@@ -209,37 +214,55 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
 
                 var expected = self.getExpectedMedia();
                 var wholeList = true;
-                if( expected.media ) {
-                    if(status.currentClip && ( expected.media.id.toString() == status.currentClip.id.toString() )) {
-                        wholeList = false;
-                        /* since I don't need to jump, and I can't insert clips before
-                           the current one without getting a jump, I'll strip myself of
-                           any clips before this */
-                        var ids = self.pluck('id');
-                        var cur_i = ids.indexOf(status.currentClip.id);
-                        self.remove(ids.slice(0, cur_i));
 
-                        /* and then put everything after into melted */
-                        _.range(1, self.length).forEach(function(i) {
-                            ret = ret.then(function() {
-                                return self.driver.appendClip(self.at(i).toJSON());
-                            });
-                        });
+                var addClip = function(media) {
+                    return ret.then(function() {
+                        return self.driver.appendClip(media.toJSON());
+                    });
+                };
+
+                if( expected.media ) {
+                    var ids = self.pluck('id');
+                    // I need to add from expected clip
+                    var cur_i = ids.indexOf(expected.media.id);
+                    self.remove(ids.slice(0, cur_i));
+                    var add_current = false;
+
+                    if(status.currentClip && ( expected.media.id.toString() == status.currentClip.id.toString() )) {
+                    } else {
+                        // append expected clip
+                        ret = addClip(self.at(0));
+
+                        // I'll need to add the current clip to myself to make sure I keep reflecting melted status
+                        add_current = status.currentClip;
                     }
-                }
-                if( wholeList ) {
-                    /* since I've got to jump anyways, I'll add everything at the end
-                       of the list */
-                    self.forEach(function(c, i) {
+
+                    // append next clip just in case
+                    if(self.length > 1) {
+                        ret = addClip(self.at(1));
+                    }
+
+                    // generate a new promise that will release the read semaphore inmediatly after appending the next clip
+                    ret.then(function() {
+                        self.leave();
+                    });
+
+                    /* and then put everything after into melted */
+                    _.range(2, self.length).forEach(function(i) {
+                        ret = addClip(self.at(i));
+                    });
+
+                    if( add_current ) {
+                        /* I leave the current clip at the top of the melted playlist, it won't do any harm */
+                        self.add(status.currentClip, { at: 0, set_melted: false, fix_blanks: false });
+                    }
+                } else {
+                    self.forEach(function(c) {
                         ret = ret.then(function() {
                             return self.driver.appendClip(c.toJSON());
                         });
                     });
-
-                    if( status.currentClip ) {
-                        /* I leave the current clip at the top of the melted playlist, it won't do any harm */
-                        self.add(status.currentClip, { at: 0, set_melted: false, fix_blanks: false });
-                    }
+                    ret = ret.then(self.leave);
                 }
 
                 self.forEach(function(c, i) {
@@ -247,7 +270,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                 });
                 return ret;
             }).fin(function(){
-                self.leave();
+                self.write.leave();
             });
         });
     },
@@ -448,9 +471,8 @@ Mosto.LoadedPlaylists = Backbone.Model.extend({
         // set fires add, remove, change and sort
         var mm = this.get('melted_medias');
         var pl = this.get('playlists');
-        mm.take(function() {
+        mm.write.take(function() {
             mm.set(pl.getMedias());
-            mm.leave()
         });
     },
 
