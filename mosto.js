@@ -216,6 +216,7 @@ mosto.prototype.init = function(melted, callback) {
 
         self.startMvcpServer( function() {
             self.fetchPlaylists({from: moment(), to: moment().add(4, 'hours')});
+            self.emit('started', 'Mosto has started');
             if (callback) callback();
         } );
     }
@@ -224,7 +225,7 @@ mosto.prototype.init = function(melted, callback) {
         Melted.is_running(function(running) {
             if (!running) {
                 Melted.start(function(pid) {
-                    Melted.setup( undefined, undefined, function(result) {
+                    Melted.setup(undefined, undefined, function(result) {
                         startall();
                     });
                 });
@@ -234,12 +235,12 @@ mosto.prototype.init = function(melted, callback) {
         });
     };
 
-    if (melted!==undefined) {
+    if (melted !== undefined) {
         Melted = melted;
         check_and_start();
     }
     else
-        Melted.take( check_and_start );
+        Melted.take(check_and_start);
 
 };
 

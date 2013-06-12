@@ -108,11 +108,11 @@ heartbeats.prototype.stop = function() {
 heartbeats.prototype.checkSchedules =  function() {
     var self = this;
     console.log("[HEARTBEAT-CS] Started Check Schedules");
-    var last = self.melted_medias.at(self.melted_medias.length - 1);
+    var cleanMedias = self.melted_medias.where({blank: false});
+    var last = cleanMedias[cleanMedias.length - 1];
     if (last) {
         var scheduled =  last.get('end') - moment();
         if (scheduled < self.config.min_scheduled) {
-            //TODO: Esto esta bien?????????????
             self.emit("forceCheckout", {from: last.get('end'), to: last.get('end') + scheduled});
             console.warn("[HEARTBEAT-CS] Sent forceCheckout event!");
         }
@@ -124,7 +124,6 @@ heartbeats.prototype.checkSchedules =  function() {
 };
 
 heartbeats.prototype.executeGc = function() {
-    //TODO: Eliminar los xml viejos
     var self = this;
     console.log("[HEARTBEAT-GC] Started Garbage Collector");
     var timeLimit = moment().subtract('hours', 1);
