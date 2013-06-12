@@ -6,6 +6,7 @@ var config           = require('mbc-common').config.Mosto.HeartBeats,
     moment           = require('moment'),
     fs               = require('fs'),
     mvcp_server      = require('./drivers/mvcp/mvcp-driver'), 
+    Q                = require('q'),
     utils            = require('./utils');
 
 /* Events emited
@@ -176,7 +177,7 @@ heartbeats.prototype.syncMelted = function() {
     self.server.getServerStatus().then(function(meltedStatus) {
         var expected = self.melted_medias.getExpectedMedia();
         if (expected.media) {
-            var result = undefined;
+            var result = Q.resolve();
             var meltedClip = meltedStatus.currentClip;
             if (expected.media.get("id").toString() !== meltedClip.id.toString()) {
                 var index = expected.media.get('actual_order');
@@ -194,20 +195,15 @@ heartbeats.prototype.syncMelted = function() {
                 }
 
                 if (frames > expected.media.get('fps'))
-                    result = self.fixMelted(expected);
+                    result = result.then(function() { return self.fixMelted(expected) });
             } else if (Math.abs(meltedClip.currentFrame - expected.frame) > expected.media.get('fps'))
-                result = self.fixMelted(expected);
+                result = result.then(function() { return self.fixMelted(expected) });
             if (meltedStatus.status !== "playing") {
-                if (result)
-                    result = result.then(self.startPlaying()).then(self.sendStatus());
+                result = result.then(self.startPlaying()).then(self.sendStatus());
             } else {
-                if (result)
-                    result = result.then(self.sendStatus());
-                else
-                    self.sendStatus();
+                result = result.then(self.sendStatus());
             }
-            if (result)
-                return result;
+            return result;
         } else {
             self.handleNoMedias();
         }
