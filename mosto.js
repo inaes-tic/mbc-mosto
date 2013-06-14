@@ -121,13 +121,14 @@ mosto.prototype.initHeartbeats = function() {
                 current: undefined,
                 next: undefined
             },
-            position: 0,
+            position: frame / media.get('length'),
             clips: melted_medias.toJSON(),
             status: null,
         };
         /* clips */
         var index = melted_medias.indexOf(media);
         status.clip.current = media.toJSON();
+        status.clip.current.currentFrame  = frame;
         if( index > 0 )
             status.clip.previous = melted_medias.at(index-1).toJSON();
         if( index < melted_medias.length - 1 )
