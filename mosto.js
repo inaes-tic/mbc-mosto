@@ -144,8 +144,9 @@ mosto.prototype.initHeartbeats = function() {
                 status.show.next = playlists.at(index+1).toJSON();
         }
         self.emit('status', status);
-        self.status_driver.setStatus(status);
     });
+
+    self.on('status', self.status_driver.setStatus.bind(self.status_driver));
 
     self.heartbeats.on("forceCheckout", function(window) {
         self.timeWindow = window;
