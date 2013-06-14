@@ -141,35 +141,32 @@ CaspaDriver.prototype.setStatus = function(meltedStatus) {
     console.log("mbc-mosto: [INFO] [STATUS] status builded. doing last calculations." );
 
     if (status.piece.current)
-        status.piece.current.progress = meltedStatus.position * 100 + "%";
+        status.piece.current.progress = (meltedStatus.position / status.piece.current.length) * 100 + "%";
 
-    /* all of this nonsense is to avoid undefineds. I don't know
-       it's worth the trouble.
-
-       in the end all it's doing is taking out currentFrames from both
-       the saved status and the received one, and check if anything changed
-    */
-    var currentButFrames = _.omit(status.piece.current, 'currentFrames');
-    var statusButFrames = _.chain(status).clone().extend({piece: { current: currentButFrames }})
-    var myButFrames = _.omit(this.status.piece.current, 'currentFrames');
-    var myStatusButFrames = _.chain(status).clone().extend({ piece: { current: myButFrames } }).value();
-    if( statusButFrames.isEqual(myStatusButFrames).value() ) {
-        console.log("mbc-mosto: [INFO] [STATUS] no changes, try to send statusclip." );
-        return this.setStatusClip(meltedStatus.clip.current);
-    }
+    var prevStatus = _.clone(this.status);
 
     this.status = _.extend(this.status, status);
     // except next. If that's undefined, I just don't know!
     this.status.show.next = status.show.next;
+
+    if( _.every(['previous', 'current', 'next'], function(val) {
+        return ( status.piece[val]._id == prevStatus.piece[val]._id ||
+                 status.show[val]._id == prevStatus.show[val]._id );
+    }) ) {
+        console.log("mbc-mosto: [INFO] [STATUS] no changes, try to send statusclip." );
+        status.piece.current.progress = meltedStatus.position;
+        return this.setProgressStatus(status.piece.current);
+    }
+
     console.log("mbc-mosto: [INFO] [STATUS] finally publish status." );
     this.publish("mostoStatus", status);
 };
 
-CaspaDriver.prototype.setStatusClip = function(statusClip) {
+CaspaDriver.prototype.setProgressStatus = function(statusPiece) {
     if (statusClip!==undefined)
         this.publish("mostoStatus.progress", {
-            currentFrame: statusClip.currentFrame,
-            totalFrames: statusClip.totalFrames,
+            currentFrame: statusPiece.progress,
+            totalFrames: statusPiece.length,
         });
 }
 

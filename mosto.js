@@ -121,18 +121,19 @@ mosto.prototype.initHeartbeats = function() {
                 current: undefined,
                 next: undefined
             },
-            position: frame / media.get('length'),
+            position: frame,
             clips: melted_medias.toJSON(),
             status: null,
         };
         /* clips */
         var index = melted_medias.indexOf(media);
         status.clip.current = media.toJSON();
-        status.clip.current.currentFrame  = frame;
+
         if( index > 0 )
             status.clip.previous = melted_medias.at(index-1).toJSON();
         if( index < melted_medias.length - 1 )
             status.clip.next = melted_medias.at(index+1).toJSON();
+
         /* shows */
         var playlist = playlists.get(media.get('playlist_id'));
         if( playlist ) {
