@@ -143,6 +143,7 @@ mosto.prototype.initHeartbeats = function() {
             if( index < playlists.length - 1 )
                 status.show.next = playlists.at(index+1).toJSON();
         }
+        self.emit('status', status);
         self.status_driver.setStatus(status);
     });
 
