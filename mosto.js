@@ -105,17 +105,9 @@ mosto.prototype.initHeartbeats = function() {
 
     console.log("mbc-mosto: [INFO] Initializing heartbeats");
 
-    self.heartbeats.on('frameStatus', function(status) {
-        self.status_driver.setStatusClip(StatusClip(
-            status.media.id,
-            status.media.get('playlist_order'),
-            status.media.get('playlist_id'),
-            status.media.get('fps'),
-            status.frame,
-            status.media.get('length')
-        ));
-    });
-    self.heartbeats.on('clipStatus', function(media) {
+    self.heartbeats.on('clipStatus', function(status) {
+        var media = status.media;
+        var frame = status.frame;
         var melted_medias = self.playlists.get('melted_medias');
         var playlists = self.playlists.get('playlists');
         var status = {

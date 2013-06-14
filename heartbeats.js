@@ -160,14 +160,9 @@ heartbeats.prototype.sendStatus = function() {
     var self = this;
     console.log("[HEARTBEAT-FS] Started Status");
     var expected = self.melted_medias.getExpectedMedia();
-    if ((!self.current_media) || (expected.media.get("id").toString() !== self.current_media.get("id").toString())) {
-        self.emit("clipStatus", expected.media);
-        console.log("[HEARTBEAT-FS] Sent clipStatus");
-        self.current_media = expected.media;
-    } else {
-        self.emit("frameStatus", {media: expected.media, frame: expected.frame});
-        console.log("[HEARTBEAT-FS] Sent frameStatus");
-    }
+    self.emit("clipStatus", expected);
+    console.log("[HEARTBEAT-FS] Sent clipStatus");
+    self.current_media = expected.media;
     console.log("[HEARTBEAT-FS] Finished Status");
 };
 
