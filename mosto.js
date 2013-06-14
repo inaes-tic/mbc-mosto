@@ -143,7 +143,24 @@ mosto.prototype.initHeartbeats = function() {
                 status.show.previous = playlists.at(index-1).toJSON();
             if( index < playlists.length - 1 )
                 status.show.next = playlists.at(index+1).toJSON();
+        } else {
+            // next playlist
+            playlist = playlists.find(function(pl) {
+                return pl.get('start') >= status.clip.current.end;
+            });
+            if( playlist ) {
+                status.show.next = playlist.toJSON();
+            }
+            ps = playlists.filter(function(pl) {
+                return pl.get('end') <= status.clip.current.start;
+            }).reverse();
+            if( ps ) {
+                status.show.previous = ps[0];
+            }
+
+            status.show.current = { id: -1, name: "INVALID" };
         }
+
         self.emit('status', status);
     });
 
