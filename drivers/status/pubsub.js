@@ -150,12 +150,14 @@ CaspaDriver.prototype.setStatus = function(meltedStatus) {
     this.status.show.next = status.show.next;
 
     if( _.every(['previous', 'current', 'next'], function(val) {
-        return ( status.piece[val]._id == prevStatus.piece[val]._id ||
+        return ( status.piece[val]._id == prevStatus.piece[val]._id &&
                  status.show[val]._id == prevStatus.show[val]._id );
     }) ) {
         console.log("mbc-mosto: [INFO] [STATUS] no changes, try to send statusclip." );
-        status.piece.current.progress = meltedStatus.position;
-        return this.setProgressStatus(status.piece.current);
+        return this.setProgressStatus({
+            progress: meltedStatus.position,
+            length: meltedStatus.clip.current.length,
+        });
     }
 
     console.log("mbc-mosto: [INFO] [STATUS] finally publish status." );
@@ -163,7 +165,7 @@ CaspaDriver.prototype.setStatus = function(meltedStatus) {
 };
 
 CaspaDriver.prototype.setProgressStatus = function(statusPiece) {
-    if (statusClip!==undefined)
+    if (statusPiece)
         this.publish("mostoStatus.progress", {
             currentFrame: statusPiece.progress,
             totalFrames: statusPiece.length,
