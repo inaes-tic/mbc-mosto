@@ -1,5 +1,6 @@
 ROOT=$(shell pwd)
 NODE=$(shell which node nodejs | head -1)
+MOCHA_DEBUG=node_modules/mocha/bin/mocha --debug-brk --reporter spec --timeout 30000 test
 MOCHA=node_modules/mocha/bin/mocha --reporter spec --timeout 30000 test
 MELTED_BUILD=${ROOT}/melted/BUILD
 MELTED_INTREE=${MELTED_BUILD}/bin/melted
@@ -76,6 +77,9 @@ test/videos/%.mp4: test/images/%.png
 
 test: videos ${MOCHA} melted-check
 	@NODE_ENV=test NODE_CONFIG_DIR=$(PWD)/test/config/ ${NODE} ${MOCHA}
+
+debug-test: videos melted-check
+	@NODE_ENV=test NODE_CONFIG_DIR=$(PWD)/test/config/ ${NODE} ${MOCHA_DEBUG}
 
 clean-test:
 	rm ${TEST_VIDEOS} ${TEST_XMLS}
