@@ -201,19 +201,19 @@ describe.only('Mosto Heartbeats Test', function(done) {
                     console.warn("Received " + self.clipStatus + " events");
                 assert.equal(self.clipStatus, 1);
             });
-            it('--- Should have received at least 1 frameStatus events', function() {
+            it('--- Should have received > 30 frameStatus events', function() {
                 console.warn("Received " + self.frameStatus + " events");
-                assert.ok(self.frameStatus > 0);
+                assert.ok(self.frameStatus > 30);
             });
             it('--- Should have received 1 startPlaying events', function() {
                 if (self.startPlaying !== 1)
                     console.warn("Received " + self.startPlaying + " events");
                 assert.equal(self.startPlaying, 1);
             });
-            it('--- Should have received 1 outOfSync events', function() {
-                if (self.outOfSync !== 1)
+            it('--- Should have received 0 outOfSync events', function() {
+                if (self.outOfSync !== 0)
                     console.warn("Received " + self.outOfSync + " events");
-                assert.equal(self.outOfSync, 1);
+                assert.equal(self.outOfSync, 0);
             });
             it('--- Should have received 0 hbError events', function() {
                 if (self.hbErrors !== 0)
@@ -303,19 +303,19 @@ describe.only('Mosto Heartbeats Test', function(done) {
                     console.warn("Received " + self.clipStatus + " events");
                 assert.equal(self.clipStatus, 0);
             });
-            it('--- Should have received > 5 frameStatus events', function() {
+            it('--- Should have received > 15 frameStatus events', function() {
                 console.warn("Received " + self.frameStatus + " events");
-                assert.ok(self.frameStatus > 5);
+                assert.ok(self.frameStatus > 15);
             });
             it('--- Should have received 1 startPlaying events', function() {
                 if (self.startPlaying !== 1)
                     console.warn("Received " + self.startPlaying + " events");
                 assert.equal(self.startPlaying, 1);
             });
-            it('--- Should have received 1 outOfSync events', function() {
-                if (self.outOfSync !== 1)
+            it('--- Should have received 0 outOfSync events', function() {
+                if (self.outOfSync !== 0)
                     console.warn("Received " + self.outOfSync + " events");
-                assert.equal(self.outOfSync, 1);
+                assert.equal(self.outOfSync, 0);
             });
             it('--- Should have received 0 hbError events', function() {
                 if (self.hbErrors !== 0)
