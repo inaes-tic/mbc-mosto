@@ -177,6 +177,10 @@ mosto.prototype.initHeartbeats = function() {
         self.fetchPlaylists(window);
     });
 
+    self.heartbeats.on('startPlaying', function() {
+        self.emit('playing');
+    });
+
     self.heartbeats.init();
 };
 

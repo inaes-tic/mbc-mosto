@@ -204,7 +204,7 @@ describe("Mosto functional test", function() {
         before(function(done) {
             self.db.dropDatabase(function(err, success) {
                 self.mosto = new mosto();
-                self.mosto.once('started', function() {
+                self.mosto.once('playing', function() {
                     done();
                 });
                 self.mosto.init();
