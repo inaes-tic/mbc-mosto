@@ -70,6 +70,7 @@ Mosto.Media = Backbone.Model.extend({
                    out: attributes.out,
                    length: attributes.out - attributes.in + 1 });
 
+        //TODO: Esta bien que siempre setee start? Se lo llama con change:end tambien
         var toMoment = function(model, value, options) {
             if( !moment.isMoment(value) )
                 model.set('start', moment(value), { silent: true });
@@ -80,6 +81,7 @@ Mosto.Media = Backbone.Model.extend({
     },
 });
 
+//TODO: Todo esto debe pasar a config
 Mosto.BlankClip = {
     blank: true,
     //name: path.basename(config.black).replace(path.extname(config.black, '')),
@@ -103,13 +105,16 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
     model: Mosto.Media,
     comparator: 'start',
     initialize: function() {
+        //TODO: Inicializar el driver como corresponde
         this.driver = new mvcp('melted');
         console.log("MeltedCollection: [INFO] MVCP Server instantiated: " + this.driver.uuid);
+        //TODO: Cambiar esto por this.read = semaphore(1), asi queda mas claro
         this.semaphore = semaphore(1);
         this.take = this.semaphore.take;
         this.leave = this.semaphore.leave;
         this.write = semaphore(1);
 
+        //TODO: Borrar esto
         var self = this;
         this.on('allx', function(event) {
             console.log(self, event, arguments);
@@ -164,6 +169,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
 
     set: function(models, options) {
         var self = this;
+        //TODO: Obtener la window de config
         options = _.defaults(options || {}, { set_melted: true,
                                               fix_blanks: true,
                                               until: moment().add(moment.duration(4,
@@ -257,6 +263,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                         self.add(status.currentClip, { at: 0, set_melted: false, fix_blanks: false });
                     }
                 } else {
+                    //TODO: After fixing blanks, we NEVER should enter here... Throw error??
                     self.forEach(function(c) {
                         ret = ret.then(function() {
                             return self.driver.appendClip(c.toJSON());
