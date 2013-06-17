@@ -156,7 +156,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         var maxLength = moment.duration(Mosto.BlankClip.length / Mosto.BlankClip.fps, 'seconds');
         while( timewalk < to ) {
             var clip = _.clone(Mosto.BlankClip);
-            clip.id = uuid.v4();
+            clip.id = 'black_id' + uuid.v4();
             clip.start = moment(timewalk);
             clip.end = moment(timewalk.add(Math.min(to - timewalk, maxLength)));
             clip.length = moment.duration(clip.end - clip.start);
