@@ -88,7 +88,7 @@ describe("Mosto functional test", function() {
                         list: obj._id,
                         start: oc.start,
                         end: oc.end,
-                        _id: uuid.v4()
+                        _id: oc.start.toString(),
                     });
                     occcol.insert(occurrence.toJSON(), function(err, obj) {
                         var obj = obj[0];
