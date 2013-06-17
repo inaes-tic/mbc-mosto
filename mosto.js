@@ -181,6 +181,7 @@ mosto.prototype.initHeartbeats = function() {
 };
 
 mosto.prototype.fetchPlaylists = function(window) {
+    //TODO: Hacer siempre el playlists.save para forzar que meta mas blank clips si hace falta
     var self = this;
     if (!window)
         window = self.timeWindow;
