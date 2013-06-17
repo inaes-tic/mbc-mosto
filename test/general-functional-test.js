@@ -13,7 +13,7 @@ var helper = require('./media_helpers.js');
 var uuid   = require('node-uuid');
 var mosto_config = require('mbc-common').config.Mosto.General;
 
-describe.only("Mosto functional test", function() {
+describe("Mosto functional test", function() {
     /*
      * arrancar sin playlists
      ** ver negro

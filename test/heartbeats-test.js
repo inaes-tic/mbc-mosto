@@ -8,13 +8,13 @@ var assert      = require("assert"),
     heartbeats  = require('../heartbeats');
 
 
-describe.only('Mosto Heartbeats Test', function(done) {
+describe('Mosto Heartbeats Test', function(done) {
     before(function(done) {
         melted.take(function() {
             melted.stop(function(){
                 melted.start(function(pid) {
-                    melted.setup(undefined, undefined, function(has_err) {                    
-                        done();                    
+                    melted.setup(undefined, undefined, function(has_err) {
+                        done();
                     });
                 });
             });
