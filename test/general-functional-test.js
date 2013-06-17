@@ -74,7 +74,7 @@ describe("Mosto functional test", function() {
             var playlist_json = _.omit(playlist.toJSON(), 'collection');
             playlist_json.models = _.invoke(playlist_json.models, 'toJSON');
             playlist_json._id = uuid.v4();
-            log.forEach(function(l) { 
+            log.forEach(function(l) {
                 console.log('[setup_playlists]:', l) ;
             });
             console.log('[setup_playlists] final:', playlist_json);
