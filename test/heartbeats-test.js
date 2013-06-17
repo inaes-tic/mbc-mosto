@@ -20,7 +20,7 @@ describe('Mosto Heartbeats Test', function(done) {
             });
         });
     });
-    
+
     describe('#Heartbeats: Init with custom config and without medias', function() {
         var self = this;
         self.hb = undefined;
@@ -34,7 +34,7 @@ describe('Mosto Heartbeats Test', function(done) {
             self.hb = new heartbeats(config);
             done();
         });
-        
+
         describe('- Suscribe and wait 1 second', function() {
             self.checkouts = 0;
             self.clipStatus = 0;
@@ -105,7 +105,7 @@ describe('Mosto Heartbeats Test', function(done) {
                 assert.ok(self.noClips > 10);
             });
         });
-        
+
         after(function(done) {
             self.hb.stop();
             setTimeout(function() {
@@ -178,13 +178,13 @@ describe('Mosto Heartbeats Test', function(done) {
             var mediamodels = _.map(medias, function(media, ix) { return new Mosto.Media(_.extend(media, { playlist_order: ix })); });
 
             var pl = createPlaylist(mediamodels);
-            
+
             playlists().addPlaylist(pl);
             playlists().save();
 
             done();
         });
-        
+
         describe('-- Starting playback and wait 3 seconds', function() {
             before(function(done) {
                 setTimeout(function() {
@@ -329,12 +329,12 @@ describe('Mosto Heartbeats Test', function(done) {
                 done();
             });
         });
-        
+
         after(function(done) {
             self.hb.stop();
             melted.stop(function(){
                 melted.start(function(pid) {
-                    melted.setup(undefined, undefined, function(has_err) {                    
+                    melted.setup(undefined, undefined, function(has_err) {
                         setTimeout(function() {
                             done();
                         }, 1000);

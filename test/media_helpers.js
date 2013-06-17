@@ -93,11 +93,11 @@ exports.getMBCMedia = function(path) {
 
 
 /*
-*   getTotalMediaLength(media_array)
-*    - media_array: an array of Media objects
-*
-*   Returns the sum of all media lenghts in milliseconds
-*/
+ *   getTotalMediaLength(media_array)
+ *    - media_array: an array of Media objects
+ *
+ *   Returns the sum of all media lenghts in milliseconds
+ */
 exports.getTotalMediaLength = function(media_array) {
     return media_array.reduce(function(prev_val, cur_val) {
         return prev_val + exports.mediaLengthToMilliseconds(cur_val.length);
@@ -106,12 +106,12 @@ exports.getTotalMediaLength = function(media_array) {
 
 
 /*
-*   getExpectedMediaAtTime(media_array, time_milliseconds)
-*    - media_array: an array of Media objects
-*    - time_milliseconds: the time at which i want to know what clip and frame expect
-*
-*   Returns the media that should be playing at the queried time along with the expected frame
-*/
+ *   getExpectedMediaAtTime(media_array, time_milliseconds)
+ *    - media_array: an array of Media objects
+ *    - time_milliseconds: the time at which i want to know what clip and frame expect
+ *
+ *   Returns the media that should be playing at the queried time along with the expected frame
+ */
 exports.getExpectedMediaAtTime = function(media_array, time_milliseconds) {
     var tmp_time = time_milliseconds;
     for (var i = 0; i < media_array.length; ++i) {
@@ -136,15 +136,15 @@ exports.getExpectedMediaAtTime = function(media_array, time_milliseconds) {
 
 
 /*
-*   playlistToScheduledMedia(playlist)
-*    - playlist: the target playlist
-*
-*   Converts given playlist into ScheduledMedia array
-*
-*   NOTES:
-*    - schedule_time has a timestamp or "now" in case of snapping (not implemented here)
-*    - expected_start and expected_end holds real timestamp calculations
-*/
+ *   playlistToScheduledMedia(playlist)
+ *    - playlist: the target playlist
+ *
+ *   Converts given playlist into ScheduledMedia array
+ *
+ *   NOTES:
+ *    - schedule_time has a timestamp or "now" in case of snapping (not implemented here)
+ *    - expected_start and expected_end holds real timestamp calculations
+ */
 exports.playlistToScheduledMedia = function(playlist) {
     var start_date = playlist.startDate;
     var next_start = start_date;
@@ -165,11 +165,11 @@ exports.playlistToScheduledMedia = function(playlist) {
 
 
 /*
-*   mediaLengthToMilliseconds(length)
-*    - length: media length in format HH:mm:ss:SSS
-*
-*   Converts string length into milliseconds
-*/
+ *   mediaLengthToMilliseconds(length)
+ *    - length: media length in format HH:mm:ss:SSS
+ *
+ *   Converts string length into milliseconds
+ */
 exports.mediaLengthToMilliseconds = function(length) {
     var m = moment(length, "HH:mm:ss.SSS");
     return moment.duration({
