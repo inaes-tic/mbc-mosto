@@ -64,8 +64,8 @@ describe("Mosto functional test", function() {
                 media.start_time = timewalk.valueOf();
                 log.push('media ' + j + ' id      :' + media.get('_id'));
                 log.push('media ' + j + ' start   : ' + media.start_time);
-                timewalk.add(helper.framesToMilliseconds(
-                    media.get('durationraw'), media.get('fps')));
+                timewalk.add(helper.mediaLengthToMilliseconds(
+                    media.get('durationraw')));
                 media.end_time = timewalk.valueOf();
                 log.push('media ' + j + ' end     : ' + media.end_time);
             }
@@ -323,8 +323,9 @@ describe("Mosto functional test", function() {
                     var medias = [];
                     while(length < 10 * 60 * 1000) {
                         var media = _.randelem(self.medias);
-                        length += (helper.framesToMilliseconds(
-                            media.get('durationraw'), media.get('fps')));
+
+                        length += helper.mediaLengthToMilliseconds(
+                            media.get('durationraw'));
                         medias.push(media);
                     }
                     self.playlists = [self.create_playlist(medias)];

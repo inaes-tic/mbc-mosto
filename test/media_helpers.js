@@ -83,7 +83,9 @@ exports.getMBCMedia = function(path) {
         params._id = crypto.createHash('md5').update(params.name).digest('hex');
         params.file = process.cwd() + '/' + path + elem.filename;
         params.fps = parseInt(elem.data.mlt.profile[0]["$"].frame_rate_num, 10);
-        params.durationraw = parseInt(elem.data.mlt.producer[0]["$"].out, 10);
+        var frames = parseInt(elem.data.mlt.producer[0]["$"].out, 10);
+        var duration = moment("0:0:0.0", "HH:mm:ss.SSS").add(exports.framesToMilliseconds(frames, params.fps));
+        params.durationraw = duration.format("HH:mm:ss.SSS");
         return new CMedia.Model(params);
     });
     return medias;
