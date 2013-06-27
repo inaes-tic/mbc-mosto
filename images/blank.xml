@@ -5,7 +5,7 @@
     <property name="mlt_type">producer</property>
     <property name="length">15000</property>
     <property name="eof">loop</property>
-    <property name="resource">test/images/SMPTE_Color_Bars.png</property>
+    <property name="resource">mbc-logo.jpg</property>
     <property name="ttl">25</property>
     <property name="aspect_ratio">1</property>
     <property name="progressive">1</property>
