@@ -213,7 +213,6 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                 });
 
                 var expected = self.getExpectedMedia();
-                var wholeList = true;
 
                 var addClip = function(media) {
                     return ret.then(function() {
@@ -414,7 +413,6 @@ Mosto.Playlist = Backbone.Model.extend({
             self.adjustMediaTimes(0);
         });
 
-
         if ( attributes.medias instanceof Array )
             this.get('medias').set(attributes.medias);
         this.get('medias').on('all', bubbleEvents(this, 'medias'));
@@ -490,6 +488,6 @@ Mosto._globals = {};
 
 Mosto.Playlists = function() {
     return Mosto._globals.playlists || (Mosto._globals.playlists = new Mosto.LoadedPlaylists());
-}
+};
 
 exports = module.exports = Mosto;
