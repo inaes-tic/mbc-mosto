@@ -50,7 +50,7 @@ Mosto.Media = Backbone.Model.extend({
     initialize: function(attributes, options) {
         attributes = attributes || {};
         if( !attributes.fps ){
-            this.set('fps', config.fps);
+            this.set('fps', parseFloat(config.fps));
         }
         if( typeof attributes.length === 'string' ) {
             var m = moment(attributes.length, 'HH:mm:ss.SSS');
@@ -81,15 +81,11 @@ Mosto.Media = Backbone.Model.extend({
     }
 });
 
-//TODO: Todo esto debe pasar a config
 Mosto.BlankClip = {
     blank: true,
-    //name: path.basename(config.black).replace(path.extname(config.black, '')),
-    name: "InfiniteBlankClip",
-    //file: config.black,
-    file: process.cwd() + '/test/videos/blank.xml',
-    //fps: config.fps,
-    fps: 25,
+    name: "BlankClip",
+    file: config.blank,
+    fps: config.fps,
     in: 0,
     out: 14999,
     length: 15000
@@ -169,11 +165,9 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
 
     set: function(models, options) {
         var self = this;
-        //TODO: Obtener la window de config
         options = _.defaults(options || {}, { set_melted: true,
                                               fix_blanks: true,
-                                              until: moment().add(moment.duration(4,
-                                                                                  'hours')) });
+                                              until: moment().add(moment.duration(parseInt(config.min_scheduled_hours), 'hours')) });
 
         var get = (function(model, attr) {
             return this._prepareModel(model, options).get(attr);
@@ -383,7 +377,7 @@ Mosto.Playlist = Backbone.Model.extend({
         name: null,
         start: null,   // moment
         end: null,     // moment
-        mode: "snap",
+        mode: config.playout_mode,
         loaded: false,
         medias: null
     },
