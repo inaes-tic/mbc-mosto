@@ -37,5 +37,22 @@
       <property name="mlt_type">filter</property>
       <property name="mlt_service">dynamictext</property>
     </filter>
+    <filter id="filter1">
+      <property name="track">0</property>
+      <property name="argument">#frame#/#out#</property>
+      <property name="geometry">0%/0%:100%x100%:100</property>
+      <property name="family">Sans</property>
+      <property name="size">48</property>
+      <property name="weight">400</property>
+      <property name="fgcolour">#ffffffff</property>
+      <property name="bgcolour">#00000000</property>
+      <property name="olcolour">#000000</property>
+      <property name="pad">0</property>
+      <property name="halign">right</property>
+      <property name="valign">bottom</property>
+      <property name="outline">2</property>
+      <property name="mlt_type">filter</property>
+      <property name="mlt_service">dynamictext</property>
+    </filter>
   </tractor>
 </mlt>
