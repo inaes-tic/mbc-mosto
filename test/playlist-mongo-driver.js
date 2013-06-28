@@ -33,10 +33,12 @@ describe('PlaylistMongoDriver', function(){
 
                 self.collections = {
                     lists: self.db.collection('lists'),
-                    scheds: self.db.collection('scheds'),
+                    scheds: self.db.collection('scheds')
                 };
 
-                var ready = _.after(self.lists.length + self.scheds.length, function(){ done() });
+                var ready = _.after(self.lists.length + self.scheds.length, function() { 
+                    done();
+                });
 
                 self.lists.forEach(function(playlist) {
                     playlist._id = self.db.ObjectID(playlist._id);
@@ -62,7 +64,6 @@ describe('PlaylistMongoDriver', function(){
     });
 
     after(function(done) {
-        //
         if(self.collections) {
             for( var col in self.collections) {
                 self.collections[col].drop();
@@ -70,51 +71,6 @@ describe('PlaylistMongoDriver', function(){
         }
         melted.leave();
         done();
-    });
-
-    describe('#getWindow()', function() {
-        beforeEach(function(){
-            self.driver.window = undefined;
-        });
-        it('should exist', function() {
-            self.driver.should.have.property('getWindow');
-            self.driver.getWindow.should.be.a('function');
-        });
-        it('should accept two parameters and save them in window = {from, to}', function() {
-            var window = self.driver.getWindow(self.from, self.to);
-            window.from.valueOf().should.equal(self.from.valueOf());
-            window.to.valueOf().should.equal(self.to.valueOf());
-        });
-        it('should accept an object with {from, to}', function() {
-            var window = self.driver.getWindow({from: self.from, to: self.to});
-            window.from.valueOf().should.equal(self.from.valueOf());
-            window.to.valueOf().should.equal(self.to.valueOf());
-        });
-        it('should accept an object with {from, timeSpan}', function() {
-            var window = self.driver.getWindow({from: self.from, timeSpan: self.span});
-            window.from.valueOf().should.equal(self.from.valueOf());
-            var to = moment(self.from.valueOf());
-            to.add(self.span * 60 * 1000);
-            console.log('popop', window.to.valueOf(), to.valueOf())
-            window.to.valueOf().should.equal(to.valueOf());
-        });
-        it('should accept only a "to" object and assume "from" is now', function() {
-            var window = self.driver.getWindow({to: self.to});
-            window.should.have.property('from');
-            window.from.valueOf().should.approximately((new moment()).valueOf(), 10);
-        });
-        it('should accept no parameters, and use the config file from defaults', function(){
-            var window = self.driver.getWindow();
-            var config = require('mbc-common').config.Mosto.Mongo;
-            window.timeSpan.should.equal(config.load_time * 60 * 1000);
-            window.from.valueOf().should.approximately(moment().valueOf(), 10);
-            window.to.diff(window.from).valueOf().should.equal(window.timeSpan.valueOf());
-        });
-        it('should accept dates and transform them to moments', function() {
-            var window = self.driver.getWindow(new Date(), new Date());
-            moment.isMoment(window.from).should.be.ok;
-            moment.isMoment(window.to).should.be.ok;
-        });
     });
 
     describe('#subscriptions', function() {
@@ -136,15 +92,13 @@ describe('PlaylistMongoDriver', function(){
 
         this.timeout(1000);
         it('should respond to create messages',function(done){
-            // set window from now to 10 minutes
             var message = self.message;
             message.method = 'create';
-            self.driver.setWindow(moment(), moment().add(10 * 60 * 1000));
             self.driver.on('create', function(playlist) {
                 console.log("create received!" + playlist.name );
                 playlist.id.should.be.eql(message.model._id);
                 playlist.name.should.be.eql(message.model.title);
-                moment(playlist.startDate).valueOf().should.eql(message.model.start * 1000);
+                moment(playlist.start).valueOf().should.eql(message.model.start * 1000);
                 done();
             });
             self.pubsub.publishJSON(message.channel(), message);
@@ -173,9 +127,9 @@ describe('PlaylistMongoDriver', function(){
                 playlists.forEach(function(playlist) {
                     playlist.should.have.property('id');
                     playlist.should.have.property('name');
-                    playlist.should.have.property('startDate');
+                    playlist.should.have.property('start');
                     playlist.should.have.property('medias');
-                    playlist.should.have.property('endDate');
+                    playlist.should.have.property('end');
                     playlist.should.have.property('loaded');
                 });
                 done();
@@ -195,7 +149,9 @@ describe('PlaylistMongoDriver', function(){
             var out_scheds = _.chain(self.scheds).reject(inside).map(sched_id).value();
 
             self.driver.getPlaylists({from: self.from, to: self.to}, function(playlists) {
-                var pl_ids = _.chain(playlists).map(function(pl) { return pl.id }).value();
+                var pl_ids = _.chain(playlists).map(function(pl) { 
+                    return pl.id;
+                }).value();
 
                 pl_ids.forEach(function(playlist, ix) {
                     playlist.should.eql(in_scheds[ix]);
