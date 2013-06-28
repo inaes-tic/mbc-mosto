@@ -133,7 +133,7 @@ mongo_driver.prototype.createPlaylist = function(sched, callback) {
     var playlist_id = (sched._id.toHexString && sched._id.toHexString()) || sched._id;
 
     var medias = [];
-    _.forEach(sched.playlist.pieces, function(piece, order) {
+    _.forEach(sched.list.pieces, function(piece, order) {
         var piece_id = (piece._id.toHexString && piece._id.toHexString()) || piece._id;
         var orig_order = order;
         var clip_name = piece.name;
