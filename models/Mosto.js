@@ -19,7 +19,7 @@ function bubbleEvents(self, name) {
         event_name.splice(1,0,name);
         event_name = event_name.join(':');
         this.trigger(event_name, args);
-    }).bind(self)
+    }).bind(self);
 }
 
 Mosto.Media = Backbone.Model.extend({
@@ -35,7 +35,7 @@ Mosto.Media = Backbone.Model.extend({
         // end: undefined,
         in: undefined,
         out: undefined,
-        blank: false,
+        blank: false
     },
 
     constructor: function(attributes, options) {
@@ -50,9 +50,9 @@ Mosto.Media = Backbone.Model.extend({
     initialize: function(attributes, options) {
         attributes = attributes || {};
         if( !attributes.fps ){
-            this.set('fps', config.fps);
+            this.set('fps', parseFloat(config.fps));
         }
-        if( typeof attributes.length == 'string' ) {
+        if( typeof attributes.length === 'string' ) {
             var m = moment(attributes.length, 'HH:mm:ss.SSS');
             attributes.length = moment.duration({ hours: m.hour(), minutes: m.minute(), seconds: m.second(), milliseconds: m.millisecond() });
         }
@@ -60,10 +60,10 @@ Mosto.Media = Backbone.Model.extend({
             attributes.length = parseInt(attributes.length.asSeconds() * this.get('fps'));
         }
 
-        if( attributes.in == undefined ) {
+        if( attributes.in === undefined ) {
             attributes.in = 0;
         }
-        if( attributes.out == undefined ) {
+        if( attributes.out === undefined ) {
             attributes.out = attributes.in + attributes.length - 1;
         }
         this.set({ in: attributes.in,
@@ -78,27 +78,23 @@ Mosto.Media = Backbone.Model.extend({
 
         this.on('change:start', toMoment);
         this.on('change:end', toMoment);
-    },
+    }
 });
 
-//TODO: Todo esto debe pasar a config
 Mosto.BlankClip = {
     blank: true,
-    //name: path.basename(config.black).replace(path.extname(config.black, '')),
-    name: "InfiniteBlankClip",
-    //file: config.black,
-    file: process.cwd() + '/test/videos/blank.xml',
-    //fps: config.fps,
-    fps: 25,
+    name: "BlankClip",
+    file: config.blank,
+    fps: config.fps,
     in: 0,
     out: 14999,
-    length: 15000,
+    length: 15000
 };
 
 Mosto.MediaCollection = Backbone.Collection.extend({
     /* this is a playlist's list of clips, it sorts by playlist_order */
     model: Mosto.Media,
-    comparator: 'playlist_order',
+    comparator: 'playlist_order'
 });
 
 Mosto.MeltedCollection = Backbone.Collection.extend({
@@ -129,7 +125,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         var blanks = this.filter(function(media) {
             return (media.get('blank') &&
                     (media.get('start') < to &&
-                     media.get('end') > from))
+                     media.get('end') > from));
         });
         var current = this.getExpectedMedia();
         var cur_ix = blanks.indexOf(current.media);
@@ -148,7 +144,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                 moment.duration(current.get('length') / current.get('fps'), 'seconds'));
             current.set('end', end);
             ret.push.apply(ret, this.getBlankMedias(end, to));
-            return ret
+            return ret;
         }
         /* if current is not in the list, I just create a bunch of BlankClips to fill
            in the range */
@@ -156,7 +152,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         var maxLength = moment.duration(Mosto.BlankClip.length / Mosto.BlankClip.fps, 'seconds');
         while( timewalk < to ) {
             var clip = _.clone(Mosto.BlankClip);
-            clip.id = 'black_id' + uuid.v4();
+            clip.id = 'BLANK-' + uuid.v4();
             clip.start = moment(timewalk);
             clip.end = moment(timewalk.add(Math.min(to - timewalk, maxLength)));
             clip.length = moment.duration(clip.end - clip.start);
@@ -169,11 +165,9 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
 
     set: function(models, options) {
         var self = this;
-        //TODO: Obtener la window de config
         options = _.defaults(options || {}, { set_melted: true,
                                               fix_blanks: true,
-                                              until: moment().add(moment.duration(4,
-                                                                                  'hours')) });
+                                              until: moment().add(moment.duration(parseInt(config.min_scheduled_hours), 'hours')) });
 
         var get = (function(model, attr) {
             return this._prepareModel(model, options).get(attr);
@@ -187,18 +181,18 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
             } else {
                 models.forEach(function(media, i) {
                     /* in falcon we'd say forfirst: forlast: and default: :( */
-                    if( i == 0 ) {
+                    if( i === 0 ) {
                         var start = get(media, 'start');
                         if( start > now ) {
                             m.splice.apply(m, [0, 0].concat(self.getBlankMedias(now, start)));
                         }
                     } else {
-                        var prev = models[i-1]
+                        var prev = models[i-1];
                         if( get(media, 'start') > get(prev, 'end') ) {
                             m.splice.apply(m, [i, 0].concat(self.getBlankMedias(get(prev, 'end'), get(media, 'start'))));
                         }
                     }
-                    if( i == (models.length - 1) ) {
+                    if( i === (models.length - 1) ) {
                         /* for the last one, make sure it lasts at least until options.until */
                         if( get(media, 'end') < options.until ) {
                             m.push.apply(m, self.getBlankMedias(get(media, 'end'), options.until));
@@ -219,7 +213,6 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                 });
 
                 var expected = self.getExpectedMedia();
-                var wholeList = true;
 
                 var addClip = function(media) {
                     return ret.then(function() {
@@ -234,7 +227,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                     self.remove(ids.slice(0, cur_i));
                     var add_current = false;
 
-                    if(status.currentClip && ( expected.media.id.toString() == status.currentClip.id.toString() )) {
+                    if(status.currentClip && ( expected.media.id.toString() === status.currentClip.id.toString() )) {
                     } else {
                         // append expected clip
                         ret = addClip(self.at(0));
@@ -288,7 +281,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
          */
         var self = this;
         self.take(function() {
-            if( method == 'read' ) {
+            if( method === 'read' ) {
                 var promise = self.driver.getServerPlaylist().then(self.loadFromMelted.bind(self));
                 promise = promise.then(self.driver.getServerStatus.bind(self.driver)).then(
                     function(status) {
@@ -305,12 +298,12 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                             return;
                         // statuses: offline|not_loaded|playing|stopped|paused|disconnected|unknown
 
-                        if( status.status == 'stopped' ) {
+                        if( status.status === 'stopped' ) {
                             self.adjustTimes(0, 0);
                             // LET HEARTBEATS HANDLE THIS...
 //                            return self.driver.play();
                         } else {
-                            var current = self.findWhere({id: status.currentClip.id})
+                            var current = self.findWhere({id: status.currentClip.id});
                             var index = self.indexOf(current);
                             self.adjustTimes(index, status.currentClip.currentFrame);
                         }
@@ -324,7 +317,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         time = time || moment();
         var expected = {
             media: undefined,
-            frame: undefined,
+            frame: undefined
         };
         var media = this.find(function(media) {
             return media.get('start') <= time && media.get('end') >= time;
@@ -349,14 +342,14 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         var now = moment();
         current.set({
             start: now - elapsedTime,
-            end: (now - elapsedTime) + ftms(current.get('totalFrames'), current.get('fps')),
+            end: (now - elapsedTime) + ftms(current.get('totalFrames'), current.get('fps'))
         });
         for(var i = index - 1 ; i >= 0 ; i--) {
             var clip = this.at(i);
             var next = this.at(i+1);
             clip.set({
                 end: next.get('start'),
-                start: next.get('start') - ftms(clip.get('length'), clip.get('fps')),
+                start: next.get('start') - ftms(clip.get('length'), clip.get('fps'))
             });
         }
         for(var i = index + 1 ; i < this.length ; i++) {
@@ -364,7 +357,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
             var prev = this.at(i-1);
             clip.set({
                 start: prev.get('end'),
-                end: prev.get('end') + ftms(clip.get('length'), clip.get('fps')),
+                end: prev.get('end') + ftms(clip.get('length'), clip.get('fps'))
             });
         }
     },
@@ -375,7 +368,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
             toAdd.push(new Mosto.Media(clip, { override_id: false }));
         });
         this.add(toAdd, { merge: true, silent: true, set_melted: false, fix_blanks: false });
-    },
+    }
 });
 
 Mosto.Playlist = Backbone.Model.extend({
@@ -383,9 +376,9 @@ Mosto.Playlist = Backbone.Model.extend({
         name: null,
         start: null,   // moment
         end: null,     // moment
-        mode: "snap",
+        mode: config.playout_mode,
         loaded: false,
-        medias: null,
+        medias: null
     },
     initialize: function (attributes, options) {
         console.log ('creating new Mosto.Playlist', attributes, options);
@@ -420,7 +413,6 @@ Mosto.Playlist = Backbone.Model.extend({
             self.adjustMediaTimes(0);
         });
 
-
         if ( attributes.medias instanceof Array )
             this.get('medias').set(attributes.medias);
         this.get('medias').on('all', bubbleEvents(this, 'medias'));
@@ -439,7 +431,7 @@ Mosto.Playlist = Backbone.Model.extend({
             timewalk.add((media.get('length') / media.get('fps')) * 1000);
             media.set('end', moment(timewalk));
         }
-    },
+    }
 });
 
 Mosto.PlaylistCollection = Backbone.Collection.extend({
@@ -449,19 +441,18 @@ Mosto.PlaylistCollection = Backbone.Collection.extend({
         /*
          * forwards `options` to `remove`
          */
-        this.remove(this.where({ blank: true }),
-                    options);
+        this.remove(this.where({ blank: true }), options);
     },
     getMedias: function() {
-        var medias = this.map(function(playlist) { return playlist.getMedias() })
+        var medias = this.map(function(playlist) { return playlist.getMedias(); });
         return _.flatten(medias);
-    },
+    }
 });
 
 Mosto.LoadedPlaylists = Backbone.Model.extend({
     defaults: {
         playlists: null,
-        melted_medias: null,
+        melted_medias: null
     },
 
     initialize: function(attributes, options) {
@@ -490,13 +481,13 @@ Mosto.LoadedPlaylists = Backbone.Model.extend({
     removePlaylist: function(playlist) {
         this.get('playlists').remove(playlist);
         this.save();
-    },
+    }
 });
 
-Mosto._globals = {}
+Mosto._globals = {};
 
 Mosto.Playlists = function() {
     return Mosto._globals.playlists || (Mosto._globals.playlists = new Mosto.LoadedPlaylists());
-}
+};
 
 exports = module.exports = Mosto;
