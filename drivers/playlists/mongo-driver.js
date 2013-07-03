@@ -34,7 +34,6 @@ mongo_driver.prototype.start = function() {
     console.log("mongo-driver: [INFO] Starting mongo playlists driver");
 
     self.scheds = db.collection('scheds');
-    self.lists = db.collection('lists');
 
     self.channel.on('JSONmessage', function(chan, msg) {
         var handler = self.pubsub_handler[chan];
@@ -90,7 +89,7 @@ mongo_driver.prototype.getPlaylists = function(window, callback) {
     // read playlists from the database
 
     /*
-     * This gets the database's 'scheds' and 'lists' collections
+     * This gets the database's 'scheds' collections
      * and turn them into a mosto.api.Playlist. Then return one by one to callback
      * which defaults to self.newPlaylistCallback
      */
@@ -125,42 +124,37 @@ mongo_driver.prototype.getPlaylists = function(window, callback) {
 
 mongo_driver.prototype.createPlaylist = function(sched, callback) {
     var self = this;
+    var err = undefined;
     console.log("mongo-driver: [INFO] Create Playlist:", sched);
-    self.lists.findById(sched.list, function(err, list) {
-        if( err ) {
-            callback(err);
-            return err;
-        }
 
-        console.log("mongo-driver: [INFO] Processing list:", list && list._id, list && list.models.length);
-        var startDate = new Date(sched.start * 1000);
-        var endDate   = new Date(sched.end * 1000);
-        var name = sched.title;
-        var playlist_id = (sched._id.toHexString && sched._id.toHexString()) || sched._id;
+    var startDate = moment.unix(sched.start).valueOf();
+    var endDate = moment.unix(sched.end).valueOf();
+    var name = sched.title;
+    var playlist_id = (sched._id.toHexString && sched._id.toHexString()) || sched._id;
 
-        var medias = [];
-        list.models.forEach(function(block, order) {
-            var block_id = (block._id.toHexString && block._id.toHexString()) || block._id;
-            var orig_order = order;
-            var clip_name = block.name;
-            // TODO: don't know what goes in type
-            var type = "default";
-            var file = block.file;
-            var length = moment(block.durationraw, "HH:mm:ss.SSS");
-            var fps = block.fps;
-            medias.push(new Media(block_id, orig_order, playlist_id, clip_name, type, file,
-                                  moment.duration({
-                                      hours: length.hours(),
-                                      minutes: length.minutes(),
-                                      seconds: length.seconds(),
-                                      milliseconds: length.milliseconds(),
-                                  }), parseFloat(fps)));
-        });
-
-        var playlist = new Playlist(playlist_id, name, startDate, medias, endDate, "snap");
-
-        callback(err, playlist);
+    var medias = [];
+    _.forEach(sched.playlist.pieces, function(piece, order) {
+        var piece_id = (piece._id.toHexString && piece._id.toHexString()) || piece._id;
+        var orig_order = order;
+        var clip_name = piece.name;
+        // TODO: don't know what goes in type
+        var type = "default";
+        var file = piece.file;
+        var length = moment(piece.durationraw, "HH:mm:ss.SSS");
+        var fps = piece.video.fps;
+        medias.push(new Media(piece_id, orig_order, playlist_id, clip_name, type, file,
+                              moment.duration({
+                                  hours: length.hours(),
+                                  minutes: length.minutes(),
+                                  seconds: length.seconds(),
+                                  milliseconds: length.milliseconds(),
+                              }), parseFloat(fps)));
     });
+
+    var playlist = new Playlist(playlist_id, name, startDate, medias, endDate, "snap");
+
+    callback(err, playlist);
+
 };
 
 exports = module.exports = function(conf) {
