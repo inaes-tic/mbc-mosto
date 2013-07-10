@@ -247,6 +247,7 @@ describe("Mosto functional test", function() {
             delete self.playlists;
         });
         describe('starting now', function() {
+            //TODO: Failing because unit status is not loaded...
             before(function(done) {
                 self.db.dropDatabase(function(err, success) {
                     // let playlists start somewhere between now and 30
