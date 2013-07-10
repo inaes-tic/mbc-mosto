@@ -72,12 +72,19 @@ Mosto.Media = Backbone.Model.extend({
 
         //TODO: Esta bien que siempre setee start? Se lo llama con change:end tambien
         var toMoment = function(model, value, options) {
-            if( !moment.isMoment(value) )
+            if( !moment.isMoment(value) ) {
                 model.set('start', moment(value), { silent: true });
+            }
+        };
+
+        var toMoment2 = function(model, value, options) {
+            if( !moment.isMoment(value) ) {
+                model.set('end', moment(value), { silent: true });
+            }
         };
 
         this.on('change:start', toMoment);
-        this.on('change:end', toMoment);
+        this.on('change:end', toMoment2);
     },
 });
 
