@@ -115,6 +115,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         //TODO: Inicializar el driver como corresponde
         this.driver = new mvcp('melted');
         console.log("MeltedCollection: [INFO] MVCP Server instantiated: " + this.driver.uuid);
+        this.initMvcpServer();
         //TODO: Cambiar esto por this.read = semaphore(1), asi queda mas claro
         this.semaphore = semaphore(1);
         this.take = this.semaphore.take;
