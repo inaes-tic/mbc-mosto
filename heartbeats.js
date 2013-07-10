@@ -178,7 +178,9 @@ heartbeats.prototype.syncMelted = function() {
         if (expected.media) {
             var result = Q.resolve();
             var meltedClip = meltedStatus.currentClip;
-            if (expected.media.get("id").toString() !== meltedClip.id.toString()) {
+            if (!meltedClip) {
+                result = result.then(self.fixMelted(expected));
+            } else if (expected.media.get("id").toString() !== meltedClip.id.toString()) {
                 var index = expected.media.get('actual_order');
                 var frames = 9999;
                 var currentMedia = self.melted_medias.get(meltedClip.id);
@@ -194,9 +196,9 @@ heartbeats.prototype.syncMelted = function() {
                 }
 
                 if (frames > expected.media.get('fps'))
-                    result = result.then(function() { return self.fixMelted(expected) });
+                    result = result.then(self.fixMelted(expected));
             } else if (Math.abs(meltedClip.currentFrame - expected.frame) > expected.media.get('fps'))
-                result = result.then(function() { return self.fixMelted(expected) });
+                result = result.then(self.fixMelted(expected));
             if (meltedStatus.status !== "playing") {
                 result = result.then(self.startPlaying()).then(self.sendStatus());
             } else {
