@@ -301,6 +301,10 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                 }
 
                 return ret;
+            }).fail(function(err) {
+                console.error("models: [ERROR] Error getting status froms server", err);
+                self.leave();
+                throw err;
             }).fin(function(){
                 self.write.leave();
             });
