@@ -131,7 +131,7 @@ mosto.prototype.initHeartbeats = function() {
             if( playlist ) {
                 status.show.next = playlist.toJSON();
             }
-            ps = playlists.filter(function(pl) {
+            var ps = playlists.filter(function(pl) {
                 return pl.get('end') <= status.clip.current.start;
             }).reverse();
             if( ps ) {
