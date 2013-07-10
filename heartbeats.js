@@ -69,6 +69,7 @@ heartbeats.prototype.init = function() {
 
 heartbeats.prototype.initTimers = function() {
     var self = this;
+    self.stop_timers = false;
     self.scheduleGc();
     self.scheduleSync();
     self.scheduleCheckout();
@@ -76,37 +77,34 @@ heartbeats.prototype.initTimers = function() {
 
 heartbeats.prototype.scheduleGc = function() {
     var self = this;
-    if (!self.stop_timers) {
-        setTimeout(function() {
-            self.executeGc();
-        }, self.config.gc_interval);
-    }
+    setTimeout(function() {
+        self.executeGc();
+    }, self.config.gc_interval);
 };
 
 heartbeats.prototype.scheduleSync = function() {
     var self = this;
-    if (!self.stop_timers) {
-        setTimeout(function() {
-            self.melted_medias.take(self.syncMelted.bind(self));
-        }, self.config.sync_interval);
-    }
+    setTimeout(function() {
+        self.melted_medias.take(self.syncMelted.bind(self));
+    }, self.config.sync_interval);
 };
 
 heartbeats.prototype.scheduleCheckout = function() {
     var self = this;
-    if (!self.stop_timers) {
-        setTimeout(function() {
-            self.checkSchedules();
-        }, self.config.checkout_interval);
-    }
+    setTimeout(function() {
+        self.checkSchedules();
+    }, self.config.checkout_interval);
 };
 
 heartbeats.prototype.stop = function() {
     this.stop_timers = true;
+    return this.server.stopServer();
 };
 
 heartbeats.prototype.checkSchedules =  function() {
     var self = this;
+    if (self.stop_timers)
+        return;
     console.log("[HEARTBEAT-CS] Started Check Schedules");
     var cleanMedias = self.melted_medias.where({blank: false});
     var last = cleanMedias[cleanMedias.length - 1];
@@ -125,6 +123,8 @@ heartbeats.prototype.checkSchedules =  function() {
 
 heartbeats.prototype.executeGc = function() {
     var self = this;
+    if (self.stop_timers)
+        return;
     console.log("[HEARTBEAT-GC] Started Garbage Collector");
     var timeLimit = moment().subtract('hours', 1);
     var playlists = Mosto.Playlists().get("playlists");
@@ -166,8 +166,12 @@ heartbeats.prototype.sendStatus = function() {
 };
 
 heartbeats.prototype.syncMelted = function() {
-    console.log("[HEARTBEAT-SY] Start Sync");
     var self = this;
+    if (self.stop_timers) {
+        self.melted_medias.leave();
+        return;
+    }
+    console.log("[HEARTBEAT-SY] Start Sync");
     self.server.getServerStatus().then(function(meltedStatus) {
         var expected = self.melted_medias.getExpectedMedia();
         if (expected.media) {
