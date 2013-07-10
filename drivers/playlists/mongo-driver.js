@@ -105,7 +105,7 @@ mongo_driver.prototype.getPlaylists = function(window, callback) {
     self.scheds.findItems(query, function(err, scheds) {
         if( err ) {
             console.log(err);
-            return self.emit('error', err);
+            return self.emit('md-error', err);
         }
 
         if( scheds ) {
