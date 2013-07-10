@@ -143,16 +143,17 @@ heartbeats.prototype.executeGc = function() {
 };
 
 heartbeats.prototype.removeXml = function(playlist) {
-    var self = this;
-    var baseDir = config.playlists_xml_dir;
-    playlist.forEach(function(media) {
-        var filename = utils.getXmlFileNameFromClip(media.toJSON());
-        var xmlFile = baseDir + "/" + filename;
-        fs.unlinkSync(xmlFile, function(err) {
-            if (err)
-                self.handleError(err);
-        });
-    });
+    //TODO: Rewrite and test this!
+//    var self = this;
+//    var baseDir = mvcpConfig.playlists_xml_dir;
+//    playlist.forEach(function(media) {
+//        var filename = utils.getXmlFileNameFromClip(media.toJSON());
+//        var xmlFile = baseDir + "/" + filename;
+//        fs.unlinkSync(xmlFile, function(err) {
+//            if (err)
+//                self.handleError(err);
+//        });
+//    });
 };
 
 heartbeats.prototype.sendStatus = function() {
