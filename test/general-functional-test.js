@@ -18,7 +18,7 @@ describe("Mosto functional test", function() {
      * arrancar sin playlists
      ** ver negro
      */
-    this.timeout(5000);
+    this.timeout(60000);
     var self = this;
     // use a random seed
     self.start_seed = seed()();
