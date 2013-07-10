@@ -6,7 +6,7 @@ var melted  = require('../api/Melted');
 
 describe('start mvcp-driver test', function(done) {
 
-    var server      = undefined;
+    var server = undefined;
 
     this.timeout(15000);
 
@@ -50,9 +50,9 @@ describe('start mvcp-driver test', function(done) {
     });
 
     describe('commands', function() {
-    var file1 = "../videos/SMPTE_Color_Bars_01.mp4";
-    var file2 = "../videos/SMPTE_Color_Bars_02.mp4";
-    var file3 = "../videos/SMPTE_Color_Bars_03.mp4";
+    var file1 = "../videos/Bars-1600.xml";
+    var file2 = "../videos/Bars-3200.xml";
+    var file3 = "../videos/Bars-6400.xml";
     describe('#load', function() {
         var pl = undefined;
         var st = undefined;
