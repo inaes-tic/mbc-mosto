@@ -269,6 +269,13 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
 
                     // generate a new promise that will release the read semaphore inmediatly after appending the next clip
                     ret.then(function() {
+                        var start = 0;
+                        if (add_current)
+                            start = 1;
+                        // we do this here in order to have actual order synched before leaving semaphore
+                        self.forEach(function(c, i) {
+                            c.set('actual_order', i + start);
+                        });
                         self.leave();
                     });
 
@@ -279,21 +286,20 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
 
                     if( add_current ) {
                         /* I leave the current clip at the top of the melted playlist, it won't do any harm */
+                        status.currentClip.actual_order = 0;
                         self.add(status.currentClip, { at: 0, set_melted: false, fix_blanks: false });
                     }
                 } else {
                     //TODO: After fixing blanks, we NEVER should enter here... Throw error??
-                    self.forEach(function(c) {
+                    self.forEach(function(c, i) {
                         ret = ret.then(function() {
+                            c.set("actual_order", i)
                             return self.driver.appendClip(c.toJSON());
                         });
                     });
                     ret = ret.then(self.leave);
                 }
 
-                self.forEach(function(c, i) {
-                    c.set('actual_order', i);
-                });
                 return ret;
             }).fin(function(){
                 self.write.leave();
