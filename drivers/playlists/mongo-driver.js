@@ -96,12 +96,13 @@ mongo_driver.prototype.getPlaylists = function(window, callback) {
      */
     var self = this;
 
-    console.log("mongo-driver: [INFO] getPlaylists" + window);
-
-    self.scheds.findItems({
-        start: { $lte: window.to.unix()},
-        end: { $gte: window.from.unix() }
-    }, function(err, scheds) {
+    console.log("mongo-driver: [INFO] getPlaylists", window);
+       
+    var query = {};
+    query.start = { $lte: window.to.valueOf() };
+    query.end = { $gte: window.from.valueOf() };
+    
+    self.scheds.findItems(query, function(err, scheds) {
         if( err ) {
             console.log(err);
             return self.emit('error', err);
