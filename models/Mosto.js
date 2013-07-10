@@ -223,10 +223,13 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                 });
             }
         }
-        Backbone.Collection.prototype.set.call(self, m, _.extend(options, { silent: true }));
-        if(! options.set_melted )
-            return;
         self.take(function() {
+            Backbone.Collection.prototype.set.call(self, m, _.extend(options, { silent: true }));
+            if(! options.set_melted ) {
+                self.leave();
+                return;
+            }
+            
             return self.driver.getServerStatus().then(function(status) {
 
                 /* remove everything but the current clip */
