@@ -120,7 +120,7 @@ describe('models.Mosto', function() {
                     self.mlt_media.take(function() {
                         var mm = new Mosto.MeltedCollection();
                         mm.take(function() {
-                            mm.length.should.eql(self.medias.length);
+                            mm.length.should.eql(self.mlt_media.length);
                             self.mlt_media.leave();
                             mm.leave();
                             done();
