@@ -111,7 +111,12 @@ mongo_driver.prototype.getPlaylists = function(window, callback) {
         if( scheds ) {
             console.log("mongo-driver: [INFO] Processing sched list:", scheds);
             async.map(scheds, self.createPlaylist.bind(self), function(err, playlists) {
+                if( err ) {
                     console.error("mongo-driver: [ERROR] Error processing playlists: ", err);
+                    return self.emit('md-error', err);
+                } else {
+                    console.log("mongo-driver: [INFO] Playlists obtained: ", playlists);
+                }
                 if( callback )
                     callback(playlists);
                 else
