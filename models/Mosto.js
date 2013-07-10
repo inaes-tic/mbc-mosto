@@ -316,7 +316,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
          * melted
          */
         var self = this;
-        self.take(function() {
+        self.write.take(function() {
             if( method == 'read' ) {
                 var promise = self.driver.getServerPlaylist().then(self.loadFromMelted.bind(self));
                 promise = promise.then(self.driver.getServerStatus.bind(self.driver)).then(
@@ -343,8 +343,9 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                             var index = self.indexOf(current);
                             self.adjustTimes(index, status.currentClip.currentFrame);
                         }
+                    }).fin(function() {
+                        self.write.leave();
                     });
-                promise.fin(self.leave);
             }
         });
     },
