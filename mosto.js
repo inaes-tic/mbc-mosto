@@ -7,7 +7,6 @@ var fs               = require('fs')
 ,   Media            = require('./api/Media')
 ,   ScheduledMedia   = require('./api/ScheduledMedia')
 ,   StatusClip       = require('./api/StatusClip')
-,   mvcp_server      = require('./drivers/mvcp/mvcp-driver')
 ,   playlists_driver = require('./drivers/playlists/playlists-driver')
 ,   status_driver    = require('./drivers/status/pubsub')
 ,   utils            = require('./utils')
@@ -23,7 +22,6 @@ function mosto(customConfig) {
     /** CONFIGURATION */
     this.config         = customConfig || config;
     this.server         = undefined;
-    this.server_started = false;
     this.pl_driver      = undefined;
     this.status_driver  = undefined;
     this.timeWindow     = undefined;
@@ -80,24 +78,6 @@ mosto.prototype.stopDriver = function() {
     this.pl_driver.removeAllListeners("create");
     this.pl_driver.removeAllListeners("update");
     this.pl_driver.removeAllListeners("delete");
-};
-
-mosto.prototype.startMvcpServer = function(callback) {
-    var self = this;
-    var result = self.server.initServer();
-    result.then(function() {
-        console.log("mbc-mosto: [INFO] MVCP server started");
-        self.server_started = true;
-        if (callback !== undefined) {
-            callback();
-        }
-    }, function(err) {
-        var e = new Error("mbc-mosto: [ERROR] Error starting MVCP server: " + err + ".\nRetrying in 2 seconds...");
-        console.error(e);
-        setTimeout(function() {
-            self.startMvcpServer(callback);
-        }, 2000);
-    });
 };
 
 mosto.prototype.initHeartbeats = function() {
@@ -221,8 +201,6 @@ mosto.prototype.init = function(melted, callback) {
      * linkear heartbeat con status driver
      */
     function startall() {
-        self.server        = new mvcp_server(self.config.mvcp_server);
-        console.log("mbc-mosto: [INFO] MVCP Server instantiated: " + self.server.uuid);
         self.pl_driver     = new playlists_driver(self.config.playlist_server);
         self.status_driver = new status_driver();
         self.playlists     = models.Playlists();
@@ -232,11 +210,9 @@ mosto.prototype.init = function(melted, callback) {
         self.initDriver();
         self.initHeartbeats();
 
-        self.startMvcpServer( function() {
-            self.fetchPlaylists({from: moment(), to: moment().add(4, 'hours')});
-            self.emit('started', 'Mosto has started');
-            if (callback) callback();
-        } );
+        self.fetchPlaylists({from: moment(), to: moment().add(4, 'hours')});
+        self.emit('started', 'Mosto has started');
+        if (callback) callback();
     }
 
     function check_and_start() {
