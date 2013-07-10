@@ -141,8 +141,8 @@ mongo_driver.prototype.createPlaylist = function(sched, callback) {
         }
 
         console.log("mongo-driver: [INFO] Processing list:", list && list._id, list && list.models.length);
-        var startDate = new Date(sched.start * 1000);
-        var endDate   = new Date(sched.end * 1000);
+        var startDate = new Date(sched.start);
+        var endDate   = new Date(sched.end);
         var name = sched.title;
         var playlist_id = (sched._id.toHexString && sched._id.toHexString()) || sched._id;
 
