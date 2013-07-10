@@ -143,6 +143,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         /* returns a list of consecutive blank medias to put between from and to */
         var ret = [];
         var blanks = this.filter(function(media) {
+            //TODO: There is the posibility that media is not initialized.  See get func from set
             return (media.get('blank') &&
                     (media.get('start') < to &&
                      media.get('end') > from))
@@ -182,8 +183,9 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         }
         return ret;
     },
-
+            
     set: function(models, options) {
+        //TODO: BE CAREFULL WITH ACTUAL_ORDER, ITS MAKING TESTS FAIL!!!
         var self = this;
         //TODO: Obtener la window de config
         options = _.defaults(options || {}, { set_melted: true,
@@ -290,6 +292,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                         self.add(status.currentClip, { at: 0, set_melted: false, fix_blanks: false });
                     }
                 } else {
+                    console.error("MeltedCollection - JAMAS DEBERIA ENTRAR ACA!", self.models);
                     //TODO: After fixing blanks, we NEVER should enter here... Throw error??
                     self.forEach(function(c, i) {
                         ret = ret.then(function() {
