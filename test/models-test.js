@@ -53,12 +53,13 @@ describe('models.Mosto', function() {
         });
 
         describe("Media juggling", function() {
-            before(function() {
+            before(function(done) {
                 self.mlt_media = self.playlists().get('melted_medias');
                 self.pls = self.playlists().get('playlists');
                 self.mediamodels = _.map(self.medias, function(media, ix) { 
                     return new Mosto.Media(_.extend(media, {playlist_order: ix})); 
                 });
+                done();
             });
             describe("starting without medias in melted", function(){
                 beforeEach(function(done) {
