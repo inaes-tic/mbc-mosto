@@ -11,8 +11,7 @@ var config           = require('mbc-common').config.Mosto.HeartBeats,
 
 /* Events emited
  *  forceCheckout: When medias loaded are less than config time
- *  clipStatus: When clip changes
- *  frameStatus: Every 50 millis
+ *  clipStatus: Every 50 millis aprox
  *  startPlaying: When melted wasnt playing
  *  outOfSync: When melted was more than 1 second defased
  *  hbError: Other errors
