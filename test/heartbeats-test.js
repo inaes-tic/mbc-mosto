@@ -38,7 +38,6 @@ describe('Mosto Heartbeats Test', function(done) {
         describe('- Suscribe and wait 1 second', function() {
             self.checkouts = 0;
             self.clipStatus = 0;
-            self.frameStatus = 0;
             self.startPlaying = 0;
             self.outOfSync = 0;
             self.hbErrors = 0;
@@ -49,9 +48,6 @@ describe('Mosto Heartbeats Test', function(done) {
                 });
                 self.hb.on('clipStatus', function() {
                     self.clipStatus++;
-                });
-                self.hb.on('frameStatus', function() {
-                    self.frameStatus++;
                 });
                 self.hb.on('startPlaying', function() {
                     self.startPlaying++;
@@ -79,11 +75,6 @@ describe('Mosto Heartbeats Test', function(done) {
                 if (self.clipStatus !== 0)
                     console.warn("Received " + self.clipStatus + " events");
                 assert.equal(self.clipStatus, 0);
-            });
-            it('-- Should have received 0 frameStatus events', function() {
-                if (self.frameStatus !== 0)
-                    console.warn("Received " + self.frameStatus + " events");
-                assert.equal(self.frameStatus, 0);
             });
             it('-- Should have received 0 startPlaying events', function() {
                 if (self.startPlaying !== 0)
@@ -136,7 +127,6 @@ describe('Mosto Heartbeats Test', function(done) {
 
         self.checkouts = 0;
         self.clipStatus = 0;
-        self.frameStatus = 0;
         self.startPlaying = 0;
         self.outOfSync = 0;
         self.hbErrors = 0;
@@ -157,9 +147,6 @@ describe('Mosto Heartbeats Test', function(done) {
             });
             self.hb.on('clipStatus', function() {
                 self.clipStatus++;
-            });
-            self.hb.on('frameStatus', function() {
-                self.frameStatus++;
             });
             self.hb.on('startPlaying', function() {
                 self.startPlaying++;
@@ -196,14 +183,9 @@ describe('Mosto Heartbeats Test', function(done) {
                     console.warn("Received " + self.checkouts + " events");
                 assert.equal(self.checkouts, 3);
             });
-            it('--- Should have received 1 clipStatus events', function() {
-                if (self.clipStatus !== 1)
-                    console.warn("Received " + self.clipStatus + " events");
-                assert.equal(self.clipStatus, 1);
-            });
-            it('--- Should have received > 30 frameStatus events', function() {
-                console.warn("Received " + self.frameStatus + " events");
-                assert.ok(self.frameStatus > 30);
+            it('--- Should have received > 30 clipStatus events', function() {
+                console.warn("Received " + self.clipStatus + " events");
+                assert.ok(self.clipStatus > 30);
             });
             it('--- Should have received 1 startPlaying events', function() {
                 if (self.startPlaying !== 1)
@@ -231,7 +213,6 @@ describe('Mosto Heartbeats Test', function(done) {
             before(function(done) {
                 self.checkouts = 0;
                 self.clipStatus = 0;
-                self.frameStatus = 0;
                 self.startPlaying = 0;
                 self.outOfSync = 0;
                 self.hbErrors = 0;
@@ -247,14 +228,9 @@ describe('Mosto Heartbeats Test', function(done) {
                     console.warn("Received " + self.checkouts + " events");
                 assert.equal(self.checkouts, 1);
             });
-            it('--- Should have received 0 clipStatus events', function() {
-                if (self.clipStatus !== 0)
-                    console.warn("Received " + self.clipStatus + " events");
-                assert.equal(self.clipStatus, 0);
-            });
-            it('--- Should have received > 15 frameStatus events', function() {
-                console.warn("Received " + self.frameStatus + " events");
-                assert.ok(self.frameStatus > 15);
+            it('--- Should have received > 15 clipStatus events', function() {
+                console.warn("Received " + self.clipStatus + " events");
+                assert.ok(self.clipStatus > 15);
             });
             it('--- Should have received 0 startPlaying events', function() {
                 if (self.startPlaying !== 0)
@@ -282,7 +258,6 @@ describe('Mosto Heartbeats Test', function(done) {
             before(function(done) {
                 self.checkouts = 0;
                 self.clipStatus = 0;
-                self.frameStatus = 0;
                 self.startPlaying = 0;
                 self.outOfSync = 0;
                 self.hbErrors = 0;
@@ -298,14 +273,9 @@ describe('Mosto Heartbeats Test', function(done) {
                     console.warn("Received " + self.checkouts + " events");
                 assert.equal(self.checkouts, 2);
             });
-            it('--- Should have received 0 clipStatus events', function() {
-                if (self.clipStatus !== 0)
-                    console.warn("Received " + self.clipStatus + " events");
-                assert.equal(self.clipStatus, 0);
-            });
-            it('--- Should have received > 15 frameStatus events', function() {
-                console.warn("Received " + self.frameStatus + " events");
-                assert.ok(self.frameStatus > 15);
+            it('--- Should have received > 15 clipStatus events', function() {
+                console.warn("Received " + self.clipStatus + " events");
+                assert.ok(self.clipStatus > 15);
             });
             it('--- Should have received 1 startPlaying events', function() {
                 if (self.startPlaying !== 1)
