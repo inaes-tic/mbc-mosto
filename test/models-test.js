@@ -11,7 +11,7 @@ describe('models.Mosto', function() {
     var self = this;
     self.playlists = Mosto.Playlists;
     self.medias = helpers.getMedia();
-    this.timeout(300000);
+    this.timeout(15000);
     self.server = new mvcp('melted');
 
     self.createPlaylist = function(medias, start) {
