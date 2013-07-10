@@ -211,9 +211,11 @@ describe("Mosto functional test", function() {
             });
         });
         after(function(done) {
-            self.mosto.finish(function() {
-                delete self.mosto;
-                done();
+            self.melted.disconnect().then(function() {
+                self.mosto.finish(function() {
+                    delete self.mosto;
+                    done();
+                });
             });
         });
         it('should show black', function(done) {
@@ -255,7 +257,7 @@ describe("Mosto functional test", function() {
                         self.mosto = new mosto();
                         self.mosto.once('playing', function() {
                             // send pubsub messages with new playlists
-                            done();
+                            self.melted.connect().then(done);
                         });
                         self.mosto.init();
                     });
