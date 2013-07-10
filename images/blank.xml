@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mlt LC_NUMERIC="en_US.UTF-8" version="0.8.8" root="/home/lacrymology/workspace/nodejs/inaes/mbc-playout/mosto" title="SMPTE_Color_Bars.png">
+<mlt LC_NUMERIC="en_US.UTF-8" version="0.8.8" title="BLANK">
   <profile description="DV/DVD PAL" width="720" height="576" progressive="0" sample_aspect_num="16" sample_aspect_den="15" display_aspect_num="4" display_aspect_den="3" frame_rate_num="25" frame_rate_den="1" colorspace="601"/>
   <producer id="producer0" in="0" out="14999">
     <property name="mlt_type">producer</property>
     <property name="length">15000</property>
     <property name="eof">loop</property>
-    <property name="resource">test/images/SMPTE_Color_Bars.png</property>
+    <property name="resource">mbc-logo.jpg</property>
     <property name="ttl">25</property>
     <property name="aspect_ratio">1</property>
     <property name="progressive">1</property>
@@ -33,6 +33,23 @@
       <property name="pad">0</property>
       <property name="halign">right</property>
       <property name="valign">top</property>
+      <property name="outline">2</property>
+      <property name="mlt_type">filter</property>
+      <property name="mlt_service">dynamictext</property>
+    </filter>
+    <filter id="filter1">
+      <property name="track">0</property>
+      <property name="argument">#frame#/#out#</property>
+      <property name="geometry">0%/0%:100%x100%:100</property>
+      <property name="family">Sans</property>
+      <property name="size">48</property>
+      <property name="weight">400</property>
+      <property name="fgcolour">#ffffffff</property>
+      <property name="bgcolour">#00000000</property>
+      <property name="olcolour">#000000</property>
+      <property name="pad">0</property>
+      <property name="halign">right</property>
+      <property name="valign">bottom</property>
       <property name="outline">2</property>
       <property name="mlt_type">filter</property>
       <property name="mlt_service">dynamictext</property>
