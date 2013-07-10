@@ -22,29 +22,29 @@ describe('Mosto status', function() {
             melted.stop( function(pid) {
                 mosto_server = new mosto();
                 mosto_server.init(melted, function() {
-                    mosto_server.heartbeats.once('hb_error', function(error) {
-                        console.error("Status test", error);
+                    mosto_server.heartbeats.once('clipStatus', function(status) {
+                        console.warn("Frame: ", status.frame);
                         rec++;
                         done();
                     });
                 });
             });
         });
-        it('--should have received 1 error', function() {
+        it('--should have received 1 status', function() {
             assert.equal(rec, 0);
         });
     });
 
 
-    describe('#suscribe to error and wait 1 second', function() {
+    describe('#suscribe to status and wait 1 second', function() {
         before(function(done) {
             rec = 0;
             done();
         });
-        it('--should have received at least 10 error events', function(done) {
+        it('--should have received at least 10 status events', function(done) {
             this.timeout(1000);
-            mosto_server.heartbeats.on('hb_error', function(err) {
-                console.error("Status test: ", err);
+            mosto_server.heartbeats.on('clipStatus', function(status) {
+                console.warn("Frame: ", status.frame);
                 rec++;
                 if (rec === 10) {
                     assert.equal(rec, 10);
