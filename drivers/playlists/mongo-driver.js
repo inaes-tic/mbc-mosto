@@ -104,13 +104,14 @@ mongo_driver.prototype.getPlaylists = function(window, callback) {
     
     self.scheds.findItems(query, function(err, scheds) {
         if( err ) {
-            console.log(err);
+            console.error("mongo-driver: [ERROR] Error obtaining playlists: ", err);
             return self.emit('md-error', err);
         }
 
         if( scheds ) {
-            console.log("Processing sched list:", scheds);
+            console.log("mongo-driver: [INFO] Processing sched list:", scheds);
             async.map(scheds, self.createPlaylist.bind(self), function(err, playlists) {
+                    console.error("mongo-driver: [ERROR] Error processing playlists: ", err);
                 if( callback )
                     callback(playlists);
                 else
@@ -126,9 +127,10 @@ mongo_driver.prototype.getPlaylists = function(window, callback) {
 
 mongo_driver.prototype.createPlaylist = function(sched, callback) {
     var self = this;
-    console.log("mongo-driver: [INFO] Create Playlist:", sched);
+    console.log("mongo-driver: [INFO] Creating Playlist for:", sched);
     self.lists.findById(sched.list, function(err, list) {
         if( err ) {
+            console.error("mongo-driver: [ERROR] Error obtaining list: ", err);
             callback(err);
             return err;
         }
@@ -160,6 +162,8 @@ mongo_driver.prototype.createPlaylist = function(sched, callback) {
 
         var playlist = new Playlist(playlist_id, name, startDate, medias, endDate, "snap");
 
+        console.log("mongo-driver: [INFO] Created Playlist:", playlist);
+        
         callback(err, playlist);
     });
 };
