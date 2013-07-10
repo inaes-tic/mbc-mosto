@@ -103,17 +103,17 @@ describe('models.Mosto', function() {
                     var pl = self.createPlaylist(self.mediamodels);
                     self.pls.set(pl);
                     self.playlists().save();
-                    self.mlt_media.take(function() {
-                        self.mlt_media.leave();
+                    self.mlt_media.write.take(function() {
+                        self.mlt_media.write.leave();
                         done();                        
                     });
                 });
                 afterEach(function(done) {
                     self.pls.set([]);
                     self.playlists().save();
-                    self.mlt_media.take(function() {
+                    self.mlt_media.write.take(function() {
                         done();
-                        self.mlt_media.leave();
+                        self.mlt_media.write.leave();
                     });
                 });
                 it('A new instance should fetch the playlist from the server', function(done){
