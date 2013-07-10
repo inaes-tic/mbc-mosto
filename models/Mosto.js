@@ -129,6 +129,14 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
 
         this.fetch();
     },
+            
+    initMvcpServer: function() {
+        return this.driver.initServer();
+    },
+            
+    stopMvcpServer: function() {
+        return this.driver.stopServer();
+    },
 
     getBlankMedias: function(from, to) {
         /* returns a list of consecutive blank medias to put between from and to */
