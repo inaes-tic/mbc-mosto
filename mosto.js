@@ -182,12 +182,12 @@ mosto.prototype.stopHeartbeats = function() {
 
     console.log("mbc-mosto: [INFO] Stopping heartbeats");
 
-    self.heartbeats.stop();
-
     self.heartbeats.removeAllListeners("frameStatus");
     self.heartbeats.removeAllListeners("clipStatus");
     self.heartbeats.removeAllListeners("forceCheckout");
     self.heartbeats.removeAllListeners("noClips");
+
+    return self.heartbeats.stop();
 };
 
 mosto.prototype.init = function(melted, callback) {
@@ -239,14 +239,18 @@ mosto.prototype.init = function(melted, callback) {
 };
 
 mosto.prototype.finish = function(callback) {
-    console.log("mbc-mosto: [INFO] Finish mbc-mosto... ") ;
+    var self = this;
+    console.error("mbc-mosto: [INFO] Finish mbc-mosto... ") ;
     this.stopDriver();
-    this.stopHeartbeats();
-    Melted.stop(function(pid) {
-        setTimeout( function() {
-            Melted.leave();
-            if (callback) callback();
-        }, 1000 );
+    this.playlists.get("melted_medias").write.take(function() {
+        self.playlists.get("melted_medias").stopMvcpServer().then(self.stopHeartbeats()).then(function() {
+            Melted.stop(function(pid) {
+                setTimeout( function() {
+                    Melted.leave();
+                    if (callback) callback();
+                }, 1000 );
+            });
+        });
     });
 };
 
