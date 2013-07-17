@@ -46,9 +46,11 @@ describe('models.Mosto', function() {
         });
 
         after(function(done) {
-            melted.stop(function() {
-                melted.leave();
-                done();
+            self.playlists().get('melted_medias').stopMvcpServer().fin(self.server.stopServer).fin(function() {
+                melted.stop(function() {
+                    melted.leave();
+                    done();
+                });
             });
         });
 
@@ -117,12 +119,12 @@ describe('models.Mosto', function() {
                     });
                 });
                 it('A new instance should fetch the playlist from the server', function(done){
-                    self.mlt_media.take(function() {
+                    self.mlt_media.write.take(function() {
                         var mm = new Mosto.MeltedCollection();
-                        mm.take(function() {
+                        mm.write.take(function() {
                             mm.length.should.eql(self.mlt_media.length);
-                            self.mlt_media.leave();
-                            mm.leave();
+                            self.mlt_media.write.leave();
+                            mm.write.leave();
                             done();
                         });
                     });
