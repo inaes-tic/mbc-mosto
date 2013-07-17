@@ -1,8 +1,8 @@
-var assert = require("assert");
-var    exec   = require('child_process').exec;
+var assert      = require("assert");
+var exec        = require('child_process').exec;
 var mvcp_server = require('../drivers/mvcp/mvcp-driver');
-var Media        = require('../api/Media.js');
-var melted  = require('../api/Melted');
+var Media       = require('../api/Media.js');
+var melted      = require('../api/Melted');
 
 describe('start mvcp-driver test', function(done) {
 
@@ -58,14 +58,30 @@ describe('start mvcp-driver test', function(done) {
         var st = undefined;
         before(function(done) {
             var clip = new Media(1, 0, 1, file1.substring(file1.lastIndexOf("/") + 1), "default", file1, 1600, 25);
-            server.stop().then(server.clearPlaylist()).then(server.loadClip(clip)).then(function() {
-                return server.getServerPlaylist().then(function(playlist) {
-                    pl = playlist;
-                });
-            }).then(function() {
-                return server.getServerStatus().then(function(status) {
-                    st = status;
-                });
+//            server.stop().then(server.clearPlaylist()).then(server.loadClip(clip)).then(function() {
+//                return server.getServerPlaylist().then(function(playlist) {
+//                    pl = playlist;
+//                });
+//            }).then(function() {
+//                return server.getServerStatus().then(function(status) {
+//                    st = status;
+//                });
+//            }).fail(function(err) {
+//                console.error(err);
+//            }).fin(function() {
+//                done();
+//            });
+            server.stop().then(function() {
+                    return server.clearPlaylist().then(function() {
+                        return server.loadClip(clip).then(function() {
+                            return server.getServerPlaylist().then(function(playlist) {
+                                pl = playlist;
+                            });
+                        }).then(function() {
+                            return server.getServerStatus().then(function(status) {
+                                st = status;
+                            });
+                        })})
             }).fail(function(err) {
                 console.error(err);
             }).fin(function() {
@@ -719,9 +735,11 @@ describe('start mvcp-driver test', function(done) {
 
     describe('#leave melted', function() {
         it('-- leave melted', function(done) {
-            melted.stop(function(pid) {
-                melted.leave();
-                done();
+            server.stopServer().fin(function() {
+                melted.stop(function(pid) {
+                    melted.leave();
+                    done();
+                });
             });
         });
     });
