@@ -186,6 +186,7 @@ mosto.prototype.stopHeartbeats = function() {
     self.heartbeats.removeAllListeners("clipStatus");
     self.heartbeats.removeAllListeners("forceCheckout");
     self.heartbeats.removeAllListeners("noClips");
+    self.heartbeats.removeAllListeners("startPlaying");
 
     return self.heartbeats.stop();
 };
