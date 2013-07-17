@@ -244,7 +244,8 @@ mosto.prototype.finish = function(callback) {
     console.error("mbc-mosto: [INFO] Finish mbc-mosto... ") ;
     this.stopDriver();
     this.playlists.get("melted_medias").write.take(function() {
-        self.playlists.get("melted_medias").stopMvcpServer().then(self.stopHeartbeats()).then(function() {
+        self.playlists.get("melted_medias").stopMvcpServer().fin(self.stopHeartbeats).fin(function() {
+            self.playlists.get("melted_medias").write.leave();
             Melted.stop(function(pid) {
                 setTimeout( function() {
                     Melted.leave();
