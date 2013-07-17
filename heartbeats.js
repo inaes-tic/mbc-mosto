@@ -97,8 +97,9 @@ heartbeats.prototype.scheduleCheckout = function() {
 };
 
 heartbeats.prototype.stop = function() {
-    this.stop_timers = true;
-    return this.server.stopServer();
+    var self = this;
+    self.stop_timers = true;
+    return self.server.stopServer();
 };
 
 heartbeats.prototype.checkSchedules =  function() {
