@@ -144,6 +144,13 @@ melted.prototype.initServer = function() {
     return deferred.promise;
 };
 
+melted.prototype.stopServer = function() {
+    var self = this;
+    console.log("melted-node-driver (" + self.uuid + "): [INFO] Disconnecting from server instance [" + self.mlt.host + ":" + self.mlt.port + "]");
+
+    return self.mlt.disconnect();
+};
+
 melted.prototype.sendClip = function(clip, command) {
     var self = this;
     var xml = new melted_xml();

@@ -96,20 +96,27 @@ mongo_driver.prototype.getPlaylists = function(window, callback) {
      */
     var self = this;
 
-    console.log("mongo-driver: [INFO] getPlaylists" + window);
-
-    self.scheds.findItems({
-        start: { $lte: window.to.unix()},
-        end: { $gte: window.from.unix() }
-    }, function(err, scheds) {
+    console.log("mongo-driver: [INFO] getPlaylists", window);
+       
+    var query = {};
+    query.start = { $lte: window.to.valueOf() };
+    query.end = { $gte: window.from.valueOf() };
+    
+    self.scheds.findItems(query, function(err, scheds) {
         if( err ) {
-            console.log(err);
-            return self.emit('error', err);
+            console.error("mongo-driver: [ERROR] Error obtaining playlists: ", err);
+            return self.emit('md-error', err);
         }
 
         if( scheds ) {
-            console.log("Processing sched list:", scheds);
+            console.log("mongo-driver: [INFO] Processing sched list:", scheds);
             async.map(scheds, self.createPlaylist.bind(self), function(err, playlists) {
+                if( err ) {
+                    console.error("mongo-driver: [ERROR] Error processing playlists: ", err);
+                    return self.emit('md-error', err);
+                } else {
+                    console.log("mongo-driver: [INFO] Playlists obtained: ", playlists);
+                }
                 if( callback )
                     callback(playlists);
                 else
@@ -125,16 +132,17 @@ mongo_driver.prototype.getPlaylists = function(window, callback) {
 
 mongo_driver.prototype.createPlaylist = function(sched, callback) {
     var self = this;
-    console.log("mongo-driver: [INFO] Create Playlist:", sched);
+    console.log("mongo-driver: [INFO] Creating Playlist for:", sched);
     self.lists.findById(sched.list, function(err, list) {
         if( err ) {
+            console.error("mongo-driver: [ERROR] Error obtaining list: ", err);
             callback(err);
             return err;
         }
 
         console.log("mongo-driver: [INFO] Processing list:", list && list._id, list && list.models.length);
-        var startDate = new Date(sched.start * 1000);
-        var endDate   = new Date(sched.end * 1000);
+        var startDate = new Date(sched.start);
+        var endDate   = new Date(sched.end);
         var name = sched.title;
         var playlist_id = (sched._id.toHexString && sched._id.toHexString()) || sched._id;
 
@@ -159,6 +167,8 @@ mongo_driver.prototype.createPlaylist = function(sched, callback) {
 
         var playlist = new Playlist(playlist_id, name, startDate, medias, endDate, "snap");
 
+        console.log("mongo-driver: [INFO] Created Playlist:", playlist);
+        
         callback(err, playlist);
     });
 };

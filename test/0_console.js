@@ -17,6 +17,15 @@ console.log = console.info = function(t) {
   }
   out && log.write(out + '\n');
 };
+
+/*console.log = function(t, t1) {
+  if (t && t.lastIndexOf("melted-node:", 0) !== 0) {
+      if (!t1)
+        console.info(t);
+      else
+        console.info(t, t1);
+  }
+};*/
 // END SILENCE LOG OUTPUT
 
 

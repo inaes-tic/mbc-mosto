@@ -5,7 +5,7 @@ var mbc = require('mbc-common');
 var _ = require('underscore');
 var melted  = require('../api/Melted');
 
-describe('PlaylistMongoDriver', function(){
+describe.skip('PlaylistMongoDriver', function(){
     var self = this;
 
     before(function(done) {

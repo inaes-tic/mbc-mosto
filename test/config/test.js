@@ -1,6 +1,6 @@
 var path = require('path'),
     cwd  = process.cwd();
-  
+
 module.exports = {
     Caspa: {
         Branding: {
@@ -29,11 +29,10 @@ module.exports = {
         General: {
             fps: 25,
             resolution: "hd",
-            playout_mode: "direct",
-            playlist_maxlength: "4 hours",
-            scheduled_playlist_maxlength: "04:00:00",
+            playout_mode: "snap",
+            min_scheduled_hours: "4",
             timer_interval: 1000,
-            black: path.join(cwd, 'images', 'black.png'),
+            blank: path.join(cwd, 'images', 'blank.xml'),
             reload_timer_diff: 20000,
             playlist_server: "mongo",
             mvcp_server: "melted",
@@ -61,9 +60,16 @@ module.exports = {
             description: 'Common code for mbc-playout and mbc-mosto',
         },
         MediaDB: {
-            dbName: "mediadb_test",
+            dbName: "mediadb",
             dbHost: "localhost",
             dbPort: 27017,
+            dbUser: "",
+            dbPassword: "",
         },
-    },
+        Redis: {
+            host: "localhost",
+            port: 6379,
+            password: "",
+        },
+    }
 }
