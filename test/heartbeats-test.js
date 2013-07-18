@@ -102,7 +102,9 @@ describe('Mosto Heartbeats Test', function(done) {
         after(function(done) {
             this.timeout(8000);
             self.hb.stop().then(function() {
-                done();
+                Mosto.Playlists().get('melted_medias').stopMvcpServer().then(function() {
+                    done();
+                });
             });
         });
     });
@@ -303,14 +305,16 @@ describe('Mosto Heartbeats Test', function(done) {
 
         after(function(done) {
             playlists().get("melted_medias").write.take(function() {
-                playlists().get("melted_medias").stopMvcpServer().fin(self.hb.stop.bind(self)).fin(function() {
-                    playlists().get("melted_medias").write.leave();
-                    melted.stop(function(){
-                        melted.start(function(pid) {
-                            melted.setup(undefined, undefined, function(has_err) {
-                                setTimeout(function() {
-                                    done();
-                                }, 1000);
+                playlists().get("melted_medias").stopMvcpServer().then(function() {
+                    self.hb.stop().then(function() {
+                        playlists().get("melted_medias").write.leave();
+                        melted.stop(function(){
+                            melted.start(function(pid) {
+                                melted.setup(undefined, undefined, function(has_err) {
+                                    setTimeout(function() {
+                                        done();
+                                    }, 1000);
+                                });
                             });
                         });
                     });
