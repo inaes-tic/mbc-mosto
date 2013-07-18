@@ -1,12 +1,12 @@
-var assert = require("assert");
-var    exec   = require('child_process').exec;
+var assert      = require("assert");
+var exec        = require('child_process').exec;
 var mvcp_server = require('../drivers/mvcp/mvcp-driver');
-var Media        = require('../api/Media.js');
-var melted  = require('../api/Melted');
+var Media       = require('../api/Media.js');
+var melted      = require('../api/Melted');
 
 describe('start mvcp-driver test', function(done) {
 
-    var server      = undefined;
+    var server = undefined;
 
     this.timeout(15000);
 
@@ -50,38 +50,42 @@ describe('start mvcp-driver test', function(done) {
     });
 
     describe('commands', function() {
-    var file1 = "../videos/SMPTE_Color_Bars_01.mp4";
-    var file2 = "../videos/SMPTE_Color_Bars_02.mp4";
-    var file3 = "../videos/SMPTE_Color_Bars_03.mp4";
+    var file1 = "../videos/Bars-1600.xml";
+    var file2 = "../videos/Bars-3200.xml";
+    var file3 = "../videos/Bars-6400.xml";
     describe('#load', function() {
         var pl = undefined;
         var st = undefined;
         before(function(done) {
+            var clip = new Media(1, 0, 1, file1.substring(file1.lastIndexOf("/") + 1), "default", file1, 1600, 25);
+//            server.stop().then(server.clearPlaylist()).then(server.loadClip(clip)).then(function() {
+//                return server.getServerPlaylist().then(function(playlist) {
+//                    pl = playlist;
+//                });
+//            }).then(function() {
+//                return server.getServerStatus().then(function(status) {
+//                    st = status;
+//                });
+//            }).fail(function(err) {
+//                console.error(err);
+//            }).fin(function() {
+//                done();
+//            });
             server.stop().then(function() {
-                server.clearPlaylist().then(function() {
-                    var clip = new Media(1, 0, undefined, 1, file1.substring(file1.lastIndexOf("/") + 1), "default", file1, "00:05:10", 25);
-                    server.loadClip(clip).then(function() {
-                        server.getServerPlaylist().then(function(playlist) {
-                            pl = playlist;
-                            server.getServerStatus().then(function(status) {
-                                st = status;
-                                done();
-                            }).fail(function(err) {
-                                done();
-                                console.error(err);
+                    return server.clearPlaylist().then(function() {
+                        return server.loadClip(clip).then(function() {
+                            return server.getServerPlaylist().then(function(playlist) {
+                                pl = playlist;
                             });
-                        }).fail(function(err) {
-                            done();
-                            console.error(err);
-                        });
-                    }).fail(function(err) {
-                        console.error(err);
-                    });
-                }).fail(function(err) {
-                    console.error(err);
-                });
+                        }).then(function() {
+                            return server.getServerStatus().then(function(status) {
+                                st = status;
+                            });
+                        })})
             }).fail(function(err) {
                 console.error(err);
+            }).fin(function() {
+                done();
             });
         });
         it('--List: Clips loaded: should return 1', function() {
@@ -114,21 +118,17 @@ describe('start mvcp-driver test', function(done) {
         var st = undefined;
         before(function(done) {
             server.play().then(function() {
-                server.getServerPlaylist().then(function(playlist) {
+                return server.getServerPlaylist().then(function(playlist) {
                     pl = playlist;
-                    server.getServerStatus().then(function(status) {
-                        st = status;
-                        done();
-                    }).fail(function(err) {
-                        done();
-                        console.error(err);
-                    });
-                }).fail(function(err) {
-                    done();
-                    console.error(err);
+                });
+            }).then(function() {
+                return server.getServerStatus().then(function(status) {
+                    st = status;
                 });
             }).fail(function(err) {
                 console.error(err);
+            }).fin(function() {
+                done();
             });
         });
         it('--List: Clips loaded: should return 1', function() {
@@ -160,23 +160,19 @@ describe('start mvcp-driver test', function(done) {
         var pl = undefined;
         var st = undefined;
         before(function(done) {
-            var clip = new Media(2, 1, undefined, 1, file2.substring(file1.lastIndexOf("/") + 1), "default", file2, "00:05:10", 25);
+            var clip = new Media(2, 1, 1, file2.substring(file1.lastIndexOf("/") + 1), "default", file2, 3200, 25);
             server.appendClip(clip).then(function() {
-                server.getServerPlaylist().then(function(playlist) {
+                return server.getServerPlaylist().then(function(playlist) {
                     pl = playlist;
-                    server.getServerStatus().then(function(status) {
-                        st = status;
-                        done();
-                    }).fail(function(err) {
-                        done();
-                        console.error(err);
-                    });
-                }).fail(function(err) {
-                    done();
-                    console.error(err);
+                });
+            }).then(function() {
+                return server.getServerStatus().then(function(status) {
+                    st = status;
                 });
             }).fail(function(err) {
                 console.error(err);
+            }).fin(function() {
+                done();
             });
         });
         it('--List: Clips loaded: should return 2', function() {
@@ -214,23 +210,19 @@ describe('start mvcp-driver test', function(done) {
         var pl = undefined;
         var st = undefined;
         before(function(done) {
-            var clip = new Media(3, 2, undefined, 1, file3.substring(file1.lastIndexOf("/") + 1), "default", file3, "00:05:10", 25);
+            var clip = new Media(3, 2, 1, file3.substring(file1.lastIndexOf("/") + 1), "default", file3, 6400, 25);
             server.insertClip(clip, 1).then(function() {
-                server.getServerPlaylist().then(function(playlist) {
+                return server.getServerPlaylist().then(function(playlist) {
                     pl = playlist;
-                    server.getServerStatus().then(function(status) {
-                        st = status;
-                        done();
-                    }).fail(function(err) {
-                        done();
-                        console.error(err);
-                    });
-                }).fail(function(err) {
-                    done();
-                    console.error(err);
+                });
+            }).then(function() {
+                return server.getServerStatus().then(function(status) {
+                    st = status;
                 });
             }).fail(function(err) {
                 console.error(err);
+            }).fin(function() {
+                done();
             });
         });
         it('--List: Clips loaded: should return 3', function() {
@@ -275,21 +267,17 @@ describe('start mvcp-driver test', function(done) {
         var st = undefined;
         before(function(done) {
             server.moveClip(1, 2).then(function() {
-                server.getServerPlaylist().then(function(playlist) {
+                return server.getServerPlaylist().then(function(playlist) {
                     pl = playlist;
-                    server.getServerStatus().then(function(status) {
-                        st = status;
-                        done();
-                    }).fail(function(err) {
-                        done();
-                        console.error(err);
-                    });
-                }).fail(function(err) {
-                    done();
-                    console.error(err);
+                });
+            }).then(function() {
+                return server.getServerStatus().then(function(status) {
+                    st = status;
                 });
             }).fail(function(err) {
                 console.error(err);
+            }).fin(function() {
+                done();
             });
         });
         it('--List: Clips loaded: should return 3', function() {
@@ -334,21 +322,17 @@ describe('start mvcp-driver test', function(done) {
         var st = undefined;
         before(function(done) {
             server.removeClip(1).then(function() {
-                server.getServerPlaylist().then(function(playlist) {
+                return server.getServerPlaylist().then(function(playlist) {
                     pl = playlist;
-                    server.getServerStatus().then(function(status) {
-                        st = status;
-                        done();
-                    }).fail(function(err) {
-                        done();
-                        console.error(err);
-                    });
-                }).fail(function(err) {
-                    done();
-                    console.error(err);
+                });
+            }).then(function() {
+                return server.getServerStatus().then(function(status) {
+                    st = status;
                 });
             }).fail(function(err) {
                 console.error(err);
+            }).fin(function() {
+                done();
             });
         });
         it('--List: Clips loaded: should return 2', function() {
@@ -386,23 +370,19 @@ describe('start mvcp-driver test', function(done) {
         var pl = undefined;
         var st = undefined;
         before(function(done) {
-            var clip = new Media(4, 3, undefined, 1, file2.substring(file1.lastIndexOf("/") + 1), "default", file2, "00:05:10", 25);
+            var clip = new Media(4, 3, 1, file2.substring(file1.lastIndexOf("/") + 1), "default", file2, 3200, 25);
             server.appendClip(clip).then(function() {
-                server.getServerPlaylist().then(function(playlist) {
+                return server.getServerPlaylist().then(function(playlist) {
                     pl = playlist;
-                    server.getServerStatus().then(function(status) {
-                        st = status;
-                        done();
-                    }).fail(function(err) {
-                        done();
-                        console.error(err);
-                    });
-                }).fail(function(err) {
-                    done();
-                    console.error(err);
+                });
+            }).then(function() {
+                return server.getServerStatus().then(function(status) {
+                    st = status;
                 });
             }).fail(function(err) {
                 console.error(err);
+            }).fin(function() {
+                done();
             });
         });
         it('--List: Clips loaded: should return 3', function() {
@@ -447,22 +427,18 @@ describe('start mvcp-driver test', function(done) {
         var st = undefined;
         before(function(done) {
             server.goto(1, 0).then(function() {
-                server.getServerPlaylist().then(function(playlist) {
+                return server.getServerPlaylist().then(function(playlist) {
                     pl = playlist;
-                    server.getServerStatus().then(function(status) {
-                        st = status;
-                        done();
-                    }).fail(function(err) {
-                        done();
-                        console.error(err);
-                    });
-                }).fail(function(err) {
-                    done();
-                    console.error(err);
+                });
+            }).then(function() {
+                return server.getServerStatus().then(function(status) {
+                    st = status;
                 });
             }).fail(function(err) {
                 console.error(err);
-            }) ;
+            }).fin(function() {
+                done();
+            });
         });
         it('--List: Clips loaded: should return 3', function() {
             assert.equal(pl.length, 3);
@@ -506,21 +482,17 @@ describe('start mvcp-driver test', function(done) {
         var st = undefined;
         before(function(done) {
             server.pause().then(function() {
-                server.getServerPlaylist().then(function(playlist) {
+                return server.getServerPlaylist().then(function(playlist) {
                     pl = playlist;
-                    server.getServerStatus().then(function(status) {
-                        st = status;
-                        done();
-                    }).fail(function(err) {
-                        done();
-                        console.error(err);
-                    });
-                }).fail(function(err) {
-                    done();
-                    console.error(err);
+                });
+            }).then(function() {
+                return server.getServerStatus().then(function(status) {
+                    st = status;
                 });
             }).fail(function(err) {
                 console.error(err);
+            }).fin(function() {
+                done();
             });
         });
         it('--List: Clips loaded: should return 3', function() {
@@ -565,21 +537,17 @@ describe('start mvcp-driver test', function(done) {
         var st = undefined;
         before(function(done) {
             server.play().then(function() {
-                server.getServerPlaylist().then(function(playlist) {
+                return server.getServerPlaylist().then(function(playlist) {
                     pl = playlist;
-                    server.getServerStatus().then(function(status) {
-                        st = status;
-                        done();
-                    }).fail(function(err) {
-                        done();
-                        console.error(err);
-                    });
-                }).fail(function(err) {
-                    done();
-                    console.error(err);
+                });
+            }).then(function() {
+                return server.getServerStatus().then(function(status) {
+                    st = status;
                 });
             }).fail(function(err) {
                 console.error(err);
+            }).fin(function() {
+                done();
             });
         });
         it('--List: Clips loaded: should return 3', function() {
@@ -624,21 +592,17 @@ describe('start mvcp-driver test', function(done) {
         var st = undefined;
         before(function(done) {
             server.cleanPlaylist().then(function() {
-                server.getServerPlaylist().then(function(playlist) {
+                return server.getServerPlaylist().then(function(playlist) {
                     pl = playlist;
-                    server.getServerStatus().then(function(status) {
-                        st = status;
-                        done();
-                    }).fail(function(err) {
-                        done();
-                        console.error(err);
-                    });
-                }).fail(function(err) {
-                    done();
-                    console.error(err);
+                });
+            }).then(function() {
+                return server.getServerStatus().then(function(status) {
+                    st = status;
                 });
             }).fail(function(err) {
                 console.error(err);
+            }).fin(function() {
+                done();
             });
         });
         it('--List: Clips loaded: should return 1', function() {
@@ -671,21 +635,17 @@ describe('start mvcp-driver test', function(done) {
         var st = undefined;
         before(function(done) {
             server.stop().then(function() {
-                server.getServerPlaylist().then(function(playlist) {
+                return server.getServerPlaylist().then(function(playlist) {
                     pl = playlist;
-                    server.getServerStatus().then(function(status) {
-                        st = status;
-                        done();
-                    }).fail(function(err) {
-                        done();
-                        console.error(err);
-                    });
-                }).fail(function(err) {
-                    done();
-                    console.error(err);
+                });
+            }).then(function() {
+                return server.getServerStatus().then(function(status) {
+                    st = status;
                 });
             }).fail(function(err) {
                 console.error(err);
+            }).fin(function() {
+                done();
             });
         });
         it('--List: Clips loaded: should return 1', function() {
@@ -718,22 +678,18 @@ describe('start mvcp-driver test', function(done) {
         var st = undefined;
         before(function(done) {
             server.clearPlaylist().then(function() {
-                server.getServerPlaylist().then(function(playlist) {
+                return server.getServerPlaylist().then(function(playlist) {
                     pl = playlist;
-                    server.getServerStatus().then(function(status) {
-                        st = status;
-                        done();
-                    }).fail(function(err) {
-                        done();
-                        console.error(err);
-                    });
-                }).fail(function(err) {
-                    done();
-                    console.error(err);
+                });
+            }).then(function() {
+                return server.getServerStatus().then(function(status) {
+                    st = status;
                 });
             }).fail(function(err) {
                 console.error(err);
-            }) ;
+            }).fin(function() {
+                done();
+            });
         });
         it('--List: Clips loaded: should return 0', function() {
             assert.equal(pl.length, 0);
@@ -779,9 +735,11 @@ describe('start mvcp-driver test', function(done) {
 
     describe('#leave melted', function() {
         it('-- leave melted', function(done) {
-            melted.stop(function(pid) {
-                melted.leave();
-                done();
+            server.stopServer().fin(function() {
+                melted.stop(function(pid) {
+                    melted.leave();
+                    done();
+                });
             });
         });
     });

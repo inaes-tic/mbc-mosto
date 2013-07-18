@@ -72,13 +72,20 @@ Mosto.Media = Backbone.Model.extend({
 
         //TODO: Esta bien que siempre setee start? Se lo llama con change:end tambien
         var toMoment = function(model, value, options) {
-            if( !moment.isMoment(value) )
+            if( !moment.isMoment(value) ) {
                 model.set('start', moment(value), { silent: true });
+            }
+        };
+
+        var toMoment2 = function(model, value, options) {
+            if( !moment.isMoment(value) ) {
+                model.set('end', moment(value), { silent: true });
+            }
         };
 
         this.on('change:start', toMoment);
-        this.on('change:end', toMoment);
-    }
+        this.on('change:end', toMoment2);
+    },
 });
 
 Mosto.BlankClip = {
@@ -104,6 +111,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         //TODO: Inicializar el driver como corresponde
         this.driver = new mvcp('melted');
         console.log("MeltedCollection: [INFO] MVCP Server instantiated: " + this.driver.uuid);
+        this.initMvcpServer();
         //TODO: Cambiar esto por this.read = semaphore(1), asi queda mas claro
         this.semaphore = semaphore(1);
         this.take = this.semaphore.take;
@@ -118,11 +126,20 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
 
         this.fetch();
     },
+            
+    initMvcpServer: function() {
+        return this.driver.initServer();
+    },
+            
+    stopMvcpServer: function() {
+        return this.driver.stopServer();
+    },
 
     getBlankMedias: function(from, to) {
         /* returns a list of consecutive blank medias to put between from and to */
         var ret = [];
         var blanks = this.filter(function(media) {
+            //TODO: There is the posibility that media is not initialized.  See get func from set
             return (media.get('blank') &&
                     (media.get('start') < to &&
                      media.get('end') > from));
@@ -164,6 +181,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
     },
 
     set: function(models, options) {
+        //TODO: BE CAREFULL WITH ACTUAL_ORDER, ITS MAKING TESTS FAIL!!!
         var self = this;
         options = _.defaults(options || {}, { set_melted: true,
                                               fix_blanks: true,
@@ -201,10 +219,13 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                 });
             }
         }
-        Backbone.Collection.prototype.set.call(self, m, _.extend(options, { silent: true }));
-        if(! options.set_melted )
-            return;
         self.take(function() {
+            Backbone.Collection.prototype.set.call(self, m, _.extend(options, { silent: true }));
+            if(! options.set_melted ) {
+                self.leave();
+                return;
+            }
+            
             return self.driver.getServerStatus().then(function(status) {
 
                 /* remove everything but the current clip */
@@ -243,6 +264,13 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
 
                     // generate a new promise that will release the read semaphore inmediatly after appending the next clip
                     ret.then(function() {
+                        var start = 0;
+                        if (add_current)
+                            start = 1;
+                        // we do this here in order to have actual order synched before leaving semaphore
+                        self.forEach(function(c, i) {
+                            c.set('actual_order', i + start);
+                        });
                         self.leave();
                     });
 
@@ -253,22 +281,26 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
 
                     if( add_current ) {
                         /* I leave the current clip at the top of the melted playlist, it won't do any harm */
+                        status.currentClip.actual_order = 0;
                         self.add(status.currentClip, { at: 0, set_melted: false, fix_blanks: false });
                     }
                 } else {
+                    console.error("MeltedCollection - JAMAS DEBERIA ENTRAR ACA!", self.models);
                     //TODO: After fixing blanks, we NEVER should enter here... Throw error??
-                    self.forEach(function(c) {
+                    self.forEach(function(c, i) {
                         ret = ret.then(function() {
+                            c.set("actual_order", i)
                             return self.driver.appendClip(c.toJSON());
                         });
                     });
                     ret = ret.then(self.leave);
                 }
 
-                self.forEach(function(c, i) {
-                    c.set('actual_order', i);
-                });
                 return ret;
+            }).fail(function(err) {
+                console.error("models: [ERROR] Error getting status froms server", err);
+                self.leave();
+                throw err;
             }).fin(function(){
                 self.write.leave();
             });
@@ -280,8 +312,8 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
          * melted
          */
         var self = this;
-        self.take(function() {
-            if( method === 'read' ) {
+        self.write.take(function() {
+            if( method == 'read' ) {
                 var promise = self.driver.getServerPlaylist().then(self.loadFromMelted.bind(self));
                 promise = promise.then(self.driver.getServerStatus.bind(self.driver)).then(
                     function(status) {
@@ -307,8 +339,9 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                             var index = self.indexOf(current);
                             self.adjustTimes(index, status.currentClip.currentFrame);
                         }
+                    }).fin(function() {
+                        self.write.leave();
                     });
-                promise.fin(self.leave);
             }
         });
     },

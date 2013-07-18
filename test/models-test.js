@@ -11,7 +11,7 @@ describe('models.Mosto', function() {
     var self = this;
     self.playlists = Mosto.Playlists;
     self.medias = helpers.getMedia();
-    this.timeout(300000);
+    this.timeout(15000);
     self.server = new mvcp('melted');
 
     self.createPlaylist = function(medias, start) {
@@ -46,19 +46,22 @@ describe('models.Mosto', function() {
         });
 
         after(function(done) {
-            melted.stop(function() {
-                melted.leave();
-                done();
+            self.playlists().get('melted_medias').stopMvcpServer().fin(self.server.stopServer).fin(function() {
+                melted.stop(function() {
+                    melted.leave();
+                    done();
+                });
             });
         });
 
         describe("Media juggling", function() {
-            before(function() {
+            before(function(done) {
                 self.mlt_media = self.playlists().get('melted_medias');
                 self.pls = self.playlists().get('playlists');
                 self.mediamodels = _.map(self.medias, function(media, ix) { 
                     return new Mosto.Media(_.extend(media, {playlist_order: ix})); 
                 });
+                done();
             });
             describe("starting without medias in melted", function(){
                 beforeEach(function(done) {
@@ -102,26 +105,26 @@ describe('models.Mosto', function() {
                     var pl = self.createPlaylist(self.mediamodels);
                     self.pls.set(pl);
                     self.playlists().save();
-                    self.mlt_media.take(function() {
-                        self.mlt_media.leave();
+                    self.mlt_media.write.take(function() {
+                        self.mlt_media.write.leave();
                         done();                        
                     });
                 });
                 afterEach(function(done) {
                     self.pls.set([]);
                     self.playlists().save();
-                    self.mlt_media.take(function() {
+                    self.mlt_media.write.take(function() {
                         done();
-                        self.mlt_media.leave();
+                        self.mlt_media.write.leave();
                     });
                 });
                 it('A new instance should fetch the playlist from the server', function(done){
-                    self.mlt_media.take(function() {
+                    self.mlt_media.write.take(function() {
                         var mm = new Mosto.MeltedCollection();
-                        mm.take(function() {
-                            mm.length.should.eql(self.medias.length);
-                            self.mlt_media.leave();
-                            mm.leave();
+                        mm.write.take(function() {
+                            mm.length.should.eql(self.mlt_media.length);
+                            self.mlt_media.write.leave();
+                            mm.write.leave();
                             done();
                         });
                     });
