@@ -100,6 +100,7 @@ describe('Mosto Heartbeats Test', function(done) {
         });
 
         after(function(done) {
+            this.timeout(8000);
             self.hb.stop().then(function() {
                 done();
             });
