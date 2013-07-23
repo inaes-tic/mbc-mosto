@@ -8,7 +8,7 @@ var assert      = require("assert"),
     heartbeats  = require('../heartbeats');
 
 
-describe('Mosto Heartbeats Test', function(done) {
+describe('Mosto Heartbeats Test', function() {
     before(function(done) {
         melted.take(function() {
             melted.stop(function(){
@@ -16,9 +16,11 @@ describe('Mosto Heartbeats Test', function(done) {
                     melted.setup(undefined, undefined, function(has_err) {
                         Mosto.Playlists().get('playlists').reset();
                         Mosto.Playlists().save();
-                        Mosto.Playlists().get('melted_medias').write.take(function() {
-                            Mosto.Playlists().get('melted_medias').write.leave();
-                            done();
+                        Mosto.Playlists().get('melted_medias').initMvcpServer().then(function() {
+                            Mosto.Playlists().get('melted_medias').write.take(function() {
+                                Mosto.Playlists().get('melted_medias').write.leave();
+                                done();
+                            });
                         });
                     });
                 });
@@ -100,7 +102,7 @@ describe('Mosto Heartbeats Test', function(done) {
         });
 
         after(function(done) {
-            this.timeout(8000);
+            this.timeout(15000);
             self.hb.stop().then(function() {
                 Mosto.Playlists().get('melted_medias').stopMvcpServer().then(function() {
                     done();
@@ -172,9 +174,11 @@ describe('Mosto Heartbeats Test', function(done) {
 
             playlists().addPlaylist(pl);
             
-            playlists().get('melted_medias').write.take(function() {
-                playlists().get('melted_medias').write.leave();
-                done();                
+            Mosto.Playlists().get('melted_medias').initMvcpServer().then(function() {
+                Mosto.Playlists().get('melted_medias').write.take(function() {
+                    Mosto.Playlists().get('melted_medias').write.leave();
+                    done();
+                });
             });
         });
 
