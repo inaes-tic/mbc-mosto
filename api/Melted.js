@@ -1,4 +1,5 @@
 var spawn = require('child_process').spawn;
+var exec = require('child_process').exec;
 var net = require('net');
 var semaphore = require('semaphore')(1);
 var conf = require('mbc-common').config.Mosto.Melted;
@@ -42,15 +43,20 @@ _meltedbin = function(callback,errorCallback) {
  */
 _do = function(callback) {
     //      var pgrep = spawn('pgrep', ['-x', "melted"]);
-    var pgrep = spawn('pgrep', ["melted"]);
-    var pid;
-
-    pgrep.stdout.on('data', function (data) {
-        pid = data;
+//    var pgrep = spawn('pgrep', ["melted"]);
+//    var pid;
+//
+//    pgrep.stdout.on('data', function (data) {
+//        pid = data;
+//        console.log("Melted.js: [INFO] _do pid : " + pid );
+//    });
+//
+//    pgrep.on('exit', function (code) {
+//        return callback(parseInt(pid));
+//    });
+    exec('pgrep melted', function(error, stdout, stderr) {
+        var pid = stdout;
         console.log("Melted.js: [INFO] _do pid : " + pid );
-    });
-
-    pgrep.on('exit', function (code) {
         return callback(parseInt(pid));
     });
 };
