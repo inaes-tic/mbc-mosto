@@ -30,6 +30,9 @@ function mosto(customConfig) {
     this.heartbeats = undefined;
     this.playlists  = undefined;
 
+    /* MELTED CHECK */
+    this.meltedInterval = undefined;
+    
     events.EventEmitter.call(this);
 }
 
@@ -212,22 +215,13 @@ mosto.prototype.init = function(melted, callback) {
         self.initHeartbeats();
 
         self.fetchPlaylists({from: moment(), to: moment().add(4, 'hours')});
+        self.meltedInterval = setTimeout(self.checkMelted.bind(self, self.scheduleMeltedCheck.bind(self), true), 5000);
         self.emit('started', 'Mosto has started');
         if (callback) callback();
     }
 
     function check_and_start() {
-        Melted.is_running(function(running) {
-            if (!running) {
-                Melted.start(function(pid) {
-                    Melted.setup(undefined, undefined, function(result) {
-                        startall();
-                    });
-                });
-            } else {
-                startall();
-            }
-        });
+        self.checkMelted(startall);
     };
 
     if (melted !== undefined) {
@@ -239,9 +233,33 @@ mosto.prototype.init = function(melted, callback) {
 
 };
 
+mosto.prototype.scheduleMeltedCheck = function() {
+    this.meltedInterval = setTimeout(this.checkMelted.bind(this, this.scheduleMeltedCheck.bind(this), true), 100);
+};
+
+mosto.prototype.checkMelted = function(callback, forceLoad) {
+    var self = this;
+    Melted.is_running(function(running) {
+        if (!running) {
+            Melted.start(function(pid) {
+                Melted.setup(undefined, undefined, function(result) {
+                    if (forceLoad)
+                        self.playlists.save();
+                    if (callback)
+                        callback();
+                });
+            });
+        } else {
+            if (callback)
+                callback();
+        }
+    });
+};
+
 mosto.prototype.finish = function(callback) {
     var self = this;
     console.error("mbc-mosto: [INFO] Finish mbc-mosto... ") ;
+    clearTimeout(self.meltedInterval);
     this.stopDriver();
     this.playlists.get("melted_medias").write.take(function() {
         self.playlists.get("melted_medias").stopMvcpServer().fin(self.stopHeartbeats).fin(function() {
