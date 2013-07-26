@@ -8,6 +8,7 @@ var Backbone  = require('backbone')
 ,   semaphore = require('semaphore')
 ,   utils     = require('../utils')
 ,   Q         = require('q')
+,   logger    = require('../logger').addLogger('MODELS')
 ;
 
 var Mosto = {};
@@ -110,7 +111,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
     initialize: function() {
         //TODO: Inicializar el driver como corresponde
         this.driver = new mvcp('melted');
-        console.log("MeltedCollection: [INFO] MVCP Server instantiated: " + this.driver.uuid);
+        logger.debug("MVCP Server instantiated: " + this.driver.uuid);
         this.initMvcpServer();
         //TODO: Cambiar esto por this.read = semaphore(1), asi queda mas claro
         this.semaphore = semaphore(1);
@@ -121,7 +122,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         //TODO: Borrar esto
         var self = this;
         this.on('allx', function(event) {
-            console.log(self, event, arguments);
+            logger.debug(self, event, arguments);
         });
 
         this.fetch();
@@ -285,7 +286,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                         self.add(status.currentClip, { at: 0, set_melted: false, fix_blanks: false });
                     }
                 } else {
-                    console.error("MeltedCollection - JAMAS DEBERIA ENTRAR ACA!", self.models);
+                    logger.warn("JAMAS DEBERIA ENTRAR ACA!", self.models);
                     //TODO: After fixing blanks, we NEVER should enter here... Throw error??
                     self.forEach(function(c, i) {
                         ret = ret.then(function() {
@@ -298,7 +299,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
 
                 return ret;
             }).fail(function(err) {
-                console.error("models: [ERROR] Error getting status froms server", err);
+                logger.error("Error loading clips to server", err);
                 self.leave();
                 throw err;
             }).fin(function(){
@@ -414,7 +415,7 @@ Mosto.Playlist = Backbone.Model.extend({
         medias: null
     },
     initialize: function (attributes, options) {
-        console.log ('creating new Mosto.Playlist', attributes, options);
+        logger.debug('Creating new Mosto.Playlist', {"attributes": attributes, "options": options});
         var self = this;
 
         this.set('name', this.get('name') || this.get('_id'));
