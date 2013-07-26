@@ -145,8 +145,8 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                     (media.get('start') < to &&
                      media.get('end') > from));
         });
-        var current = this.getExpectedMedia();
-        var cur_ix = blanks.indexOf(current.media);
+        var current = this.getExpectedMedia().media;
+        var cur_ix = blanks.indexOf(current);
         if( cur_ix > 0 ) {
             /* I need to split the process in two:
                1) before current.start, adjust
