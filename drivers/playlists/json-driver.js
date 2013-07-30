@@ -4,39 +4,40 @@ var fs       = require('fs'),
     Media    = require('../../api/Media'),
     watchr   = require('watchr'),
     events   = require ('events'),
+    logger   = require('../../logger').addLogger('JSON-DRIVER'),
     util     = require ('util');
 
 function json_driver() {
     var self = this;
 
-    console.log("json-driver: [INFO] Creating json playlists driver");
+    logger.info("Creating json playlists driver");
 
     json_driver.prototype.start = function() {
-        console.log("json-driver: [INFO] Start watching playlists dir " + config.to_read) ;
+        logger.debug("Start watching playlists dir " + config.to_read) ;
         watchr.watch({
             paths: [config.to_read],
             listeners: {
                 error: function(err){
-                    console.log("json-driver: [ERROR] Error while watching playlists dir " + config.to_read, err);
+                    logger.error("Error while watching playlists dir " + config.to_read, err);
                 },
                 watching: function(err, watcherInstance, isWatching){
                     if (err) {
-                        console.log("json-driver: [ERROR] Error while watching playlists dir " + config.to_read, err);
+                        logger.error("Error while watching playlists dir " + config.to_read, err);
                     } else {
-                        console.log("json-driver: [INFO] Finish watching playlists dir " + config.to_read);
+                        logger.debug("Finish watching playlists dir " + config.to_read);
                     }
                 },
                 change: function(changeType, filePath, fileCurrentStat, filePreviousStat){
                     var name = self.getFileName(filePath);
                     
                     if (changeType === "create") {
-                        console.log("json-driver: [INFO] Playlist added: " + name);
+                        logger.info("Playlist added: " + name);
                         self.createPlaylist(config.playlists.to_read, name, "create");
                     } else if (changeType === "update") {
-                        console.log("json-driver: [INFO] Playlist updated: " + name);
+                        logger.info("Playlist updated: " + name);
                         self.createPlaylist(config.playlists.to_read, name, "update");
                     } else if (changeType === "delete") {
-                        console.log("json-driver: [INFO] Playlist deleted: " + name);
+                        logger.info("Playlist deleted: " + name);
                         self.emit("delete", name);
                     }
                 }
@@ -51,7 +52,7 @@ function json_driver() {
     };
     
     json_driver.prototype.readPlaylists =  function() {
-        console.log("json-driver: [INFO] Start reading playlists from " + config.to_read);
+        logger.info("Start reading playlists from " + config.to_read);
         var aux = fs.readdirSync(config.to_read);
         aux.forEach(function(element, index, array){
             self.createPlaylist(config.to_read, element, "create");
@@ -59,11 +60,10 @@ function json_driver() {
     };
 
     json_driver.prototype.createPlaylist = function(dir, name, signal) {
-        console.log("json-driver: [INFO] Reading playlist: " + name);
+        logger.debug("Reading playlist: " + name);
         var file = fs.readFileSync(dir + "/" + name);
         var aux = JSON.parse(file);
-        console.log("json-driver: [INFO] Parsing playlist:");
-        console.log(aux);
+        logger.debug("Parsing playlist", aux);
 
         var split = aux.startDate.split(" ");
 
@@ -101,11 +101,11 @@ function json_driver() {
                 type = element.type;
             }
             if (file === undefined) {
-                console.warn("json-driver: [WARNING] Cant add a media without the [file] attribute, skipping...");
+                logger.warn("Cant add a media without the [file] attribute, skipping...");
             } else if (length === undefined) {
-                console.warn("json-driver: [WARNING] Cant add media [" + file + "] without the [length] attribute, skipping...");
+                logger.warn("Cant add media [" + file + "] without the [length] attribute, skipping...");
             } else if (length === undefined) {
-                console.warn("json-driver: [WARNING] Cant add media [" + file + "] without the [fps] attribute, skipping...");
+                logger.warn("Cant add media [" + file + "] without the [fps] attribute, skipping...");
             } else {
                 medias.push(new Media(id, orig_order, actual_order, playlist_id, clip_name, type, file, length, parseFloat(fps)));
                 var clipLength = length.split(":");

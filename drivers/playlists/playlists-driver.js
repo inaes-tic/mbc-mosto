@@ -1,9 +1,10 @@
 var json_driver  = require("./json-driver"),
     mongo_driver = require("./mongo-driver"),
+    logger       = require('../../logger').addLogger('PLAYLISTS-DRIVER');
     test_driver  = require("./test-driver");
 
 exports = module.exports = function(type, config) {
-    console.log("playlists-driver: [INFO] Creating playlists driver for type [" + type + "]");
+    logger.info("Creating playlists driver for type [" + type + "]");
 
     if (type === 'json') {
         return new json_driver(config);
@@ -42,8 +43,8 @@ exports = module.exports = function(type, config) {
      * with the same description as in setWindow
      ******************************************************************/
 
-    var err = new Error("playlists-driver: [ERROR] Unknown type of driver [" + type + "]");
-    console.error(err);
+    var err = new Error("Unknown type of driver [" + type + "]");
+    logger.error(err);
     throw err;
     return null;
 };

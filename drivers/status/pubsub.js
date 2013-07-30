@@ -9,6 +9,7 @@ var events = require('events');
 var util = require('util');
 var _ = require('underscore');
 var mbc = require('mbc-common');
+var logger = require('../../logger').addLogger('PUBSUB-DRIVER')
 
 var defaults = { // copied from caspa/models.App.Status
     _id: 2,
@@ -81,7 +82,7 @@ CaspaDriver.prototype.setupMessages = function(callback) {
 
 CaspaDriver.prototype.setStatus = function(meltedStatus) {
 
-    console.log("mbc-mosto: [INFO] [STATUS] building status from melted status " );
+    logger.debug("Building status from melted status");
 
     // this overrides this.status with the values passed by status
     function makePiece( melclip, val ) {
@@ -138,7 +139,7 @@ CaspaDriver.prototype.setStatus = function(meltedStatus) {
         on_air: true,
     };
 
-    console.log("mbc-mosto: [INFO] [STATUS] status builded. doing last calculations." );
+    logger.debug("Status builded. doing last calculations");
 
     if (status.piece.current)
         status.piece.current.progress = (meltedStatus.position / status.piece.current.length) * 100 + "%";
@@ -153,14 +154,14 @@ CaspaDriver.prototype.setStatus = function(meltedStatus) {
         return ( status.piece[val]._id == prevStatus.piece[val]._id &&
                  status.show[val]._id == prevStatus.show[val]._id );
     }) ) {
-        console.log("mbc-mosto: [INFO] [STATUS] no changes, try to send statusclip." );
+        logger.debug("No changes, try to send statusclip");
         return this.setProgressStatus({
             progress: meltedStatus.position,
             length: meltedStatus.clip.current.length,
         });
     }
 
-    console.log("mbc-mosto: [INFO] [STATUS] finally publish status." );
+    logger.debug("Finally publish status");
     this.publish("mostoStatus", status);
 };
 
