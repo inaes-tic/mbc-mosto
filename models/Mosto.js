@@ -438,7 +438,7 @@ Mosto.Playlist = Backbone.Model.extend({
         medias: null
     },
     initialize: function (attributes, options) {
-        logger.debug('Creating new Mosto.Playlist', {"attributes": attributes, "options": options});
+        logger.debug('Creating new Mosto.Playlist');
         var self = this;
 
         this.set('name', this.get('name') || this.get('_id'));
