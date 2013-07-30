@@ -192,7 +192,11 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
             return this._prepareModel(model, options).get(attr);
         }).bind(self);
         models = (_.isArray(models) && models) || [models];
-        logger.info("Received models: ", _.pluck(models, 'file'));
+        var files = [];
+        models.forEach(function(item) {
+            files.push(get(item, 'file'));
+        });
+        logger.info("Received models: ", files);
         var m = _.clone(models);
         if( options.fix_blanks ) {
             logger.debug("Fixing blanks");
@@ -438,7 +442,7 @@ Mosto.Playlist = Backbone.Model.extend({
         medias: null
     },
     initialize: function (attributes, options) {
-        logger.debug('Creating new Mosto.Playlist');
+        logger.debug('Creating new Mosto.Playlist: ',{"name": attributes.name, "start": attributes.start});
         var self = this;
 
         this.set('name', this.get('name') || this.get('_id'));
