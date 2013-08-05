@@ -32,6 +32,8 @@ function mosto(customConfig) {
 
     /* MELTED CHECK */
     this.meltedInterval = undefined;
+    /* TODO: This should be in config */
+    this.restartMelted = true;
     
     events.EventEmitter.call(this);
 }
@@ -215,7 +217,8 @@ mosto.prototype.init = function(melted, callback) {
         self.initHeartbeats();
 
         self.fetchPlaylists({from: moment(), to: moment().add(4, 'hours')});
-        self.meltedInterval = setTimeout(self.checkMelted.bind(self, self.scheduleMeltedCheck.bind(self), true), 5000);
+        if (self.restartMelted)
+            self.meltedInterval = setTimeout(self.checkMelted.bind(self, self.scheduleMeltedCheck.bind(self), true), 5000);
         self.emit('started', 'Mosto has started');
         if (callback) callback();
     }
@@ -259,7 +262,8 @@ mosto.prototype.checkMelted = function(callback, forceLoad) {
 mosto.prototype.finish = function(callback) {
     var self = this;
     console.error("mbc-mosto: [INFO] Finish mbc-mosto... ") ;
-    clearTimeout(self.meltedInterval);
+    if (self.restartMelted)
+        clearTimeout(self.meltedInterval);
     this.stopDriver();
     this.playlists.get("melted_medias").write.take(function() {
         self.playlists.get("melted_medias").stopMvcpServer().fin(self.stopHeartbeats).fin(function() {
