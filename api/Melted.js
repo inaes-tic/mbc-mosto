@@ -57,7 +57,7 @@ _do = function(callback) {
 //    });
     exec('pgrep melted', function(error, stdout, stderr) {
         var pid = stdout;
-        console.log("Melted.js: [INFO] _do pid : " + pid );
+        logger.debug("Melted.js: [INFO] _do pid : " + pid );
         return callback(parseInt(pid));
     });
 };
