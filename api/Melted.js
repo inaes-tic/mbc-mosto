@@ -1,4 +1,5 @@
 var spawn = require('child_process').spawn;
+var exec = require('child_process').exec;
 var net = require('net');
 var semaphore = require('semaphore')(1);
 var conf = require('mbc-common').config.Mosto.Melted;
@@ -8,27 +9,14 @@ var logger = require('../logger').addLogger('MELTED'),
 
 _meltedbin = function(callback,errorCallback) {
     logger.debug("Executing _meltedbin()");
-    var pgrep = spawn( "which", ["melted"] );
+
     var pbin = melted_bin_path;
 
-    pgrep.stdout.on('data', function (data) {
-        pbin = data;
+    exec('which melted', function(error, stdout, stderr) {
         pbin = "melted";
-        logger.debug("Data: " + data );
         conf.bin = pbin;
-    });
-
-    pgrep.on('exit', function (code) {
-        if (code>1) {
-            conf.bin = pbin;
-            errorCallback(code);
-        } else if (code==1) {
-            conf.bin = pbin;
-            return callback(pbin);
-        } else {
-            conf.bin = pbin;
-            return callback(pbin);
-        }
+        logger.debug('Melted binary: ' + stdout);
+        return callback(pbin);
     });
 
 };
@@ -42,16 +30,8 @@ _meltedbin = function(callback,errorCallback) {
  * @callback: Callback function to do to melted.
  */
 _do = function(callback) {
-    //      var pgrep = spawn('pgrep', ['-x', "melted"]);
-    var pgrep = spawn('pgrep', ["melted"]);
-    var pid;
-
-    pgrep.stdout.on('data', function (data) {
-        pid = data;
-        logger.debug("_do pid : " + pid );
-    });
-
-    pgrep.on('exit', function (code) {
+    exec('pgrep melted', function(error, stdout, stderr) {
+        var pid = stdout; 
         return callback(parseInt(pid));
     });
 };
@@ -195,10 +175,11 @@ exports.push = function(conn, commands, command_callback, close_callback) {
 exports.setup = function(root, output, callback) {
     root = root || conf.root;
     output = output || conf.output;
+    output = 'posixshm';
     _do(function(pid) {
         if (pid) {
             logger.debug("Melted.setup > setting up root:" + root + " ouput:" + output);
-            var commands = [ 'NLS', 'SET root='+root, 'UADD '+output, 'BYE' ];
+            var commands = [ 'NLS', 'SET root='+root, 'UADD '+output, 'uset u0 consumer.mlt_profile=dv_pal', 'BYE' ];
             exports.connect(function(conn){ exports.push(conn, commands, undefined, callback)});
         } else {
             callback(new Error("Can't connect to server. Server is not running!"));

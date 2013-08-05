@@ -23,7 +23,7 @@ var general = new (winston.Logger)({
             timestamp: getTimestamp,
             json: false,
             maxsize: 102400000,
-            maxFiles: 5
+            maxFiles: 25
         })
     ],
     exitOnError: false
@@ -45,7 +45,7 @@ var logger = {
                     timestamp: getTimestamp,
                     json: false,
                     maxsize: 102400000,
-                    maxFiles: 5
+                    maxFiles: 25
                 })
             ]
         });
