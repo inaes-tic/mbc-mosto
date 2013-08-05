@@ -10,11 +10,11 @@ var melted_node = require('melted-node'),
     melted_log  = require('../../logger').addLogger('MELTED-NODE'),
     uuid        = require('node-uuid');
 
-function melted(host, port) {
+function melted(host, port, timeout) {
     var self = this;
     this.uuid = uuid.v4();
     logger.debug(self.uuid + " - Creating server instance [" + host + ":" + port + "]");
-    this.mlt = new melted_node(host, port, melted_log);
+    this.mlt = new melted_node(host, port, melted_log, timeout);
     logger.debug(self.uuid + " - Server instance created [" + this.mlt.host + ":" + this.mlt.port + "]");
 }
 
@@ -282,8 +282,8 @@ melted.prototype.goto = function(index, frame) {
     return self.sendCommand("GOTO U0 " + frame + " " + index);
 };
     
-exports = module.exports = function(host, port) {
-    var melted_node_driver = new melted(host, port);
+exports = module.exports = function(host, port, timeout) {
+    var melted_node_driver = new melted(host, port, timeout);
     return melted_node_driver;
 };
 
