@@ -6,6 +6,7 @@ var Playlist = require('../../api/Playlist'),
     async    = require('async'),
     events   = require ('events'),
     util     = require ('util'),
+    logger   = require('../../logger').addLogger('TEST-DRIVER'),
     _        = require('underscore');
 
 
@@ -16,7 +17,7 @@ function test_driver(conf) {
     this.window = {};
     this.co_mode = false;
 
-    console.log("test-driver: [INFO] Creating test playlists driver");
+    logger.info("Creating test playlists driver");
 };
 util.inherits ( test_driver, events.EventEmitter);
 
@@ -77,7 +78,7 @@ test_driver.prototype.TestPlaylist = function( displacement_in_ms ) {
 
     for( var i=0; i<3; i++ ) {
         var clip = new Media(  files[i].substring(files[i].lastIndexOf("/") + 1)+"_id", 0, undefined, 1, files[i].substring(files[i].lastIndexOf("/") + 1), "file", files[i], "00:00:30.00", 25 );
-        console.log("clip " + clip.id + " media:" + clip.file + " length:" + clip.length );
+        logger.debug("clip " + clip.id + " media:" + clip.file + " length:" + clip.length );
         medias.push(clip);
 
     }

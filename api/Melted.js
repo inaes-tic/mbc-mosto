@@ -4,16 +4,17 @@ var semaphore = require('semaphore')(1);
 var conf = require('mbc-common').config.Mosto.Melted;
 var melted_bin_path = conf.root + '/melted/BUILD/bin/melted';
 var melted_lib_path = conf.root + '/melted/BUILD/lib';
+var logger = require('../logger').addLogger('MELTED'),
 
 _meltedbin = function(callback,errorCallback) {
-    console.log("Melted.js: executing _meltedbin()");
+    logger.debug("Executing _meltedbin()");
     var pgrep = spawn( "which", ["melted"] );
     var pbin = melted_bin_path;
 
     pgrep.stdout.on('data', function (data) {
         pbin = data;
         pbin = "melted";
-        console.log("Melted.js: data: " + data );
+        logger.debug("Data: " + data );
         conf.bin = pbin;
     });
 
@@ -47,7 +48,7 @@ _do = function(callback) {
 
     pgrep.stdout.on('data', function (data) {
         pid = data;
-        console.log("Melted.js: [INFO] _do pid : " + pid );
+        logger.debug("_do pid : " + pid );
     });
 
     pgrep.on('exit', function (code) {
@@ -111,7 +112,7 @@ exports.stop = function(callback) {
             var kill = spawn('kill',['-9',pid]);
             //kill.on('close', function(state) { return callback(pid) });
             kill.on('exit', function(code) {
-                if (code) console.log("returned with code:"+code);
+                if (code) logger.debug("Returned with code:"+code);
                 return callback(pid)
             });
         } else
@@ -132,7 +133,7 @@ exports.start = function(callback) {
             callback(pid);
         } else {
             _meltedbin( function(lbin) {
-                console.log("Melted.js: [INFO] Melted.start > melted_bin is at: "+conf.bin);
+                logger.debug("Melted.start > melted_bin is at: "+conf.bin);
 
                 if (process.env.LD_LIBRARY_PATH!==undefined) process.env.LD_LIBRARY_PATH = process.env.LD_LIBRARY_PATH+":"+melted_lib_path;
                 else process.env.LD_LIBRARY_PATH = melted_lib_path;
@@ -196,11 +197,11 @@ exports.setup = function(root, output, callback) {
     output = output || conf.output;
     _do(function(pid) {
         if (pid) {
-            console.log("Melted.js: [INFO] Melted.setup > setting up root:" + root + " ouput:" + output);
+            logger.debug("Melted.setup > setting up root:" + root + " ouput:" + output);
             var commands = [ 'NLS', 'SET root='+root, 'UADD '+output, 'BYE' ];
             exports.connect(function(conn){ exports.push(conn, commands, undefined, callback)});
         } else {
-            callback(new Error("Melted.js: [ERROR] Can't connect to server. Server is not running!"));
+            callback(new Error("Can't connect to server. Server is not running!"));
         };
     })
 };

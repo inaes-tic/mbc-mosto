@@ -14,6 +14,7 @@ var fs               = require('fs')
 ,   _                = require('underscore')
 ,   heartbeats        = require('./heartbeats')
 ,   models           = require('./models/Mosto')
+,   logger           = require('./logger').addLogger('CORE')
 ;
 //TODO: Chequear window, se esta construyendo de formas distintas
 //INCLUSO EN EL DRIVER MISMO SE USA DE FORMAS DISTINTAS!!!
@@ -49,7 +50,7 @@ mosto.prototype.addPlaylist = function(playlist) {
 
 mosto.prototype.initDriver = function() {
     var self = this;
-    console.log("mbc-mosto: [INFO] Initializing playlists driver");
+    logger.info("Initializing playlists driver");
 
     this.pl_driver.on('create', function(playlist) {
         self.addPlaylist(playlist);
@@ -70,8 +71,7 @@ mosto.prototype.initDriver = function() {
 };
 
 mosto.prototype.stopDriver = function() {
-
-    console.log("mbc-mosto: [INFO] Stopping playlists driver");
+    logger.info("Stopping playlists driver");
 
     this.pl_driver.stop();
 
@@ -83,7 +83,7 @@ mosto.prototype.stopDriver = function() {
 mosto.prototype.initHeartbeats = function() {
     var self = this;
 
-    console.log("mbc-mosto: [INFO] Initializing heartbeats");
+    logger.info("Initializing heartbeats");
 
     self.heartbeats.on('clipStatus', function(status) {
         var media = status.media;
@@ -180,7 +180,7 @@ mosto.prototype.fetchPlaylists = function(window) {
 mosto.prototype.stopHeartbeats = function() {
     var self = this;
 
-    console.log("mbc-mosto: [INFO] Stopping heartbeats");
+    logger.info("Stopping heartbeats");
 
     self.heartbeats.removeAllListeners("frameStatus");
     self.heartbeats.removeAllListeners("clipStatus");
@@ -192,7 +192,7 @@ mosto.prototype.stopHeartbeats = function() {
 };
 
 mosto.prototype.init = function(melted, callback) {
-    console.log("mbc-mosto: [INFO] Init mbc-mosto... ") ;
+    logger.info("Init mbc-mosto... ") ;
     var self = this;
     /*
      * inicializar los drivers
@@ -241,7 +241,7 @@ mosto.prototype.init = function(melted, callback) {
 
 mosto.prototype.finish = function(callback) {
     var self = this;
-    console.error("mbc-mosto: [INFO] Finish mbc-mosto... ") ;
+    logger.info("Finish mbc-mosto... ") ;
     this.stopDriver();
     this.playlists.get("melted_medias").write.take(function() {
         self.playlists.get("melted_medias").stopMvcpServer().fin(self.stopHeartbeats).fin(function() {
