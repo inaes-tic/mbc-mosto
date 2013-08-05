@@ -7,6 +7,7 @@ var config           = require('mbc-common').config.Mosto.HeartBeats,
     fs               = require('fs'),
     mvcp_server      = require('./drivers/mvcp/mvcp-driver'), 
     Q                = require('q'),
+    logger           = require('./logger').addLogger('HEARTBEATS'),
     utils            = require('./utils');
 
 /* Events emited
@@ -39,7 +40,7 @@ function heartbeats(customConfig) {
     this.stop_timers = false;
 
     this.server = new mvcp_server(this.config.mvcp_server);
-    console.log("[HEARTBEAT-MVCP] MVCP server instantiated: " + this.server.uuid);
+    logger.debug("MVCP server instantiated: " + this.server.uuid);
 
     events.EventEmitter.call(this);
 }
@@ -50,13 +51,12 @@ heartbeats.prototype.startMvcpServer = function(callback) {
     var self = this;
     var result = self.server.initServer();
     result.then(function() {
-        console.log("[HEARTBEAT-MVCP] MVCP server started");
+        logger.info("MVCP server started");
         if (callback !== undefined) {
             callback();
         }
     }, function(err) {
-        var e = new Error("[HEARTBEAT-MVCP] Error starting MVCP server: " + err + ".\nRetrying in 2 seconds...");
-        console.error(e);
+        logger.error("Error starting MVCP server: " + err + ".\nRetrying in 2 seconds...");
         setTimeout(function() {
             self.startMvcpServer(callback);
         }, 2000);
@@ -106,27 +106,27 @@ heartbeats.prototype.checkSchedules =  function() {
     var self = this;
     if (self.stop_timers)
         return;
-    console.log("[HEARTBEAT-CS] Started Check Schedules");
+    logger.debug("Started Check Schedules");
     var cleanMedias = self.melted_medias.where({blank: false});
     var last = cleanMedias[cleanMedias.length - 1];
     if (last) {
         var scheduled =  last.get('end') - moment();
         if (scheduled < self.config.min_scheduled) {
             self.emit("forceCheckout", {from: last.get('end'), to: last.get('end') + scheduled});
-            console.warn("[HEARTBEAT-CS] Sent forceCheckout event!");
+            logger.debug("Sent forceCheckout event!");
         }
     } else {
         self.handleNoMedias();
     }
     self.scheduleCheckout();
-    console.log("[HEARTBEAT-CS] Finished Check Schedules");
+    logger.debug("Finished Check Schedules");
 };
 
 heartbeats.prototype.executeGc = function() {
     var self = this;
     if (self.stop_timers)
         return;
-    console.log("[HEARTBEAT-GC] Started Garbage Collector");
+    logger.debug("Started Garbage Collector");
     var timeLimit = moment().subtract('hours', 1);
     var playlists = Mosto.Playlists().get("playlists");
     var oldPlaylists = playlists.filter(function(media) {
@@ -140,7 +140,7 @@ heartbeats.prototype.executeGc = function() {
         });
     }
     self.scheduleGc();
-    console.log("[HEARTBEAT-GC] Finished Garbage Collector: " + oldPlaylists.length + " playlists removed.");
+    logger.debug("Finished Garbage Collector: " + oldPlaylists.length + " playlists removed.");
 };
 
 heartbeats.prototype.removeXml = function(playlist) {
@@ -159,12 +159,12 @@ heartbeats.prototype.removeXml = function(playlist) {
 
 heartbeats.prototype.sendStatus = function() {
     var self = this;
-    console.log("[HEARTBEAT-FS] Started Status");
+    logger.debug("Started Status");
     var expected = self.melted_medias.getExpectedMedia();
     self.emit("clipStatus", expected);
-    console.log("[HEARTBEAT-FS] Sent clipStatus");
+    logger.debug("Sent clipStatus");
     self.current_media = expected.media;
-    console.log("[HEARTBEAT-FS] Finished Status");
+    logger.debug("Finished Status");
 };
 
 heartbeats.prototype.syncMelted = function() {
@@ -173,7 +173,7 @@ heartbeats.prototype.syncMelted = function() {
         self.melted_medias.leave();
         return;
     }
-    console.log("[HEARTBEAT-SY] Start Sync");
+    logger.debug("Start Sync");
     self.server.getServerStatus().then(function(meltedStatus) {
         var expected = self.melted_medias.getExpectedMedia();
         if (expected.media) {
@@ -212,32 +212,33 @@ heartbeats.prototype.syncMelted = function() {
     }).fail(self.handleError.bind(self)).fin(function() {
         self.scheduleSync();
         self.melted_medias.leave();
-        console.log("[HEARTBEAT-SY] Finish Sync");
+        logger.debug("Finish Sync");
     });
 };
 
 heartbeats.prototype.startPlaying = function() {
     var self = this;
     self.emit("startPlaying", "Melted was not playing");
-    console.warn("[HEARTBEATS-SY] Melted was not playing");
+    logger.warn("Melted was not playing");
     return self.server.play();
 };
 
 heartbeats.prototype.handleNoMedias = function() {
     var self = this;
     self.emit("noClips", "No medias loaded!");
+    logger.error("No medias loaded!");
 };
 
 heartbeats.prototype.fixMelted = function(expected) {
     var self = this;
-    console.error("[HEARTBEAT-SY] Melted is out of sync!");
+    logger.warn("Melted is out of sync!");
     self.emit("outOfSync", expected);
     return self.server.goto(expected.media.get('actual_order'), expected.frame);
 };
 
 heartbeats.prototype.handleError = function(error) {
     var self = this;
-    console.error(error);
+    logger.error(error.message, error);
     //NEVER emit 'error' event, see https://github.com/LearnBoost/socket.io/issues/476
     self.emit("hbError", error);
 };

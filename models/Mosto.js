@@ -8,6 +8,7 @@ var Backbone  = require('backbone')
 ,   semaphore = require('semaphore')
 ,   utils     = require('../utils')
 ,   Q         = require('q')
+,   logger    = require('../logger').addLogger('MODELS')
 ;
 
 var Mosto = {};
@@ -110,7 +111,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
     initialize: function() {
         //TODO: Inicializar el driver como corresponde
         this.driver = new mvcp('melted');
-        console.log("MeltedCollection: [INFO] MVCP Server instantiated: " + this.driver.uuid);
+        logger.debug("MVCP Server instantiated: " + this.driver.uuid);
         this.initMvcpServer();
         //TODO: Cambiar esto por this.read = semaphore(1), asi queda mas claro
         this.semaphore = semaphore(1);
@@ -121,7 +122,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         //TODO: Borrar esto
         var self = this;
         this.on('allx', function(event) {
-            console.log(self, event, arguments);
+            logger.debug(self, event, arguments);
         });
 
         this.fetch();
@@ -144,8 +145,8 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                     (media.get('start') < to &&
                      media.get('end') > from));
         });
-        var current = this.getExpectedMedia();
-        var cur_ix = blanks.indexOf(current.media);
+        var current = this.getExpectedMedia().media;
+        var cur_ix = blanks.indexOf(current);
         if( cur_ix > 0 ) {
             /* I need to split the process in two:
                1) before current.start, adjust
@@ -181,8 +182,8 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
     },
 
     set: function(models, options) {
-        //TODO: BE CAREFULL WITH ACTUAL_ORDER, ITS MAKING TESTS FAIL!!!
         var self = this;
+        //TODO: BE CAREFULL WITH ACTUAL_ORDER, ITS MAKING TESTS FAIL!!!
         options = _.defaults(options || {}, { set_melted: true,
                                               fix_blanks: true,
                                               until: moment().add(moment.duration(parseInt(config.min_scheduled_hours), 'hours')) });
@@ -191,10 +192,17 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
             return this._prepareModel(model, options).get(attr);
         }).bind(self);
         models = (_.isArray(models) && models) || [models];
+        var files = [];
+        models.forEach(function(item) {
+            files.push(get(item, 'file'));
+        });
+        logger.info("Received models: ", files);
         var m = _.clone(models);
         if( options.fix_blanks ) {
+            logger.debug("Fixing blanks");
             var now = moment();
             if( m.length <= 0 ) {
+                logger.warn("Nothing on the list! Loading all blanks");
                 m.push.apply(m, self.getBlankMedias(now, options.until));
             } else {
                 models.forEach(function(media, i) {
@@ -202,34 +210,42 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                     if( i === 0 ) {
                         var start = get(media, 'start');
                         if( start > now ) {
+                            logger.warn("Loading blanks at start of the list");
                             m.splice.apply(m, [0, 0].concat(self.getBlankMedias(now, start)));
                         }
                     } else {
                         var prev = models[i-1];
                         if( get(media, 'start') > get(prev, 'end') ) {
+                            logger.warn("Loading blanks at the middle of the list");
                             m.splice.apply(m, [i, 0].concat(self.getBlankMedias(get(prev, 'end'), get(media, 'start'))));
                         }
                     }
                     if( i === (models.length - 1) ) {
                         /* for the last one, make sure it lasts at least until options.until */
                         if( get(media, 'end') < options.until ) {
+                            logger.warn("Loading blanks at end of the list");
                             m.push.apply(m, self.getBlankMedias(get(media, 'end'), options.until));
                         }
                     }
                 });
             }
         }
+        logger.debug("Taking read semaphore");
         self.take(function() {
+            logger.debug("Calling super.set");
             Backbone.Collection.prototype.set.call(self, m, _.extend(options, { silent: true }));
             if(! options.set_melted ) {
+                logger.debug("We dont set melted, leaving read semaphore");
                 self.leave();
                 return;
             }
             
             return self.driver.getServerStatus().then(function(status) {
+                logger.debug("Obtained status: ", status);
 
                 /* remove everything but the current clip */
                 var ret = Q.resolve().then(function() {
+                    logger.debug("Cleaning playlist");
                     return self.driver.cleanPlaylist();
                 });
 
@@ -237,11 +253,14 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
 
                 var addClip = function(media) {
                     return ret.then(function() {
+                        logger.info("Adding media: " + media.get('file'));
                         return self.driver.appendClip(media.toJSON());
                     });
                 };
 
                 if( expected.media ) {
+                    logger.debug("Expected media: ", {"media": expected.media.get('file'), "frame": expected.frame});
+                    
                     var ids = self.pluck('id');
                     // I need to add from expected clip
                     var cur_i = ids.indexOf(expected.media.id);
@@ -249,8 +268,10 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                     var add_current = false;
 
                     if(status.currentClip && ( expected.media.id.toString() === status.currentClip.id.toString() )) {
+                        logger.debug("Current playing clip is expected");
                     } else {
                         // append expected clip
+                        logger.debug("Queuing Append for expected clip: " + self.at(0).get('file'));
                         ret = addClip(self.at(0));
 
                         // I'll need to add the current clip to myself to make sure I keep reflecting melted status
@@ -259,6 +280,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
 
                     // append next clip just in case
                     if(self.length > 1) {
+                        logger.debug("Queuing Append for next clip: " + self.at(1).get("file"));
                         ret = addClip(self.at(1));
                     }
 
@@ -268,37 +290,43 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                         if (add_current)
                             start = 1;
                         // we do this here in order to have actual order synched before leaving semaphore
+                        logger.debug("Rearranging actual order");
                         self.forEach(function(c, i) {
                             c.set('actual_order', i + start);
                         });
+                        logger.debug("Leaving read semaphore");
                         self.leave();
                     });
 
                     /* and then put everything after into melted */
+                    logger.debug("Queuing Append for rest of the clips");
                     _.range(2, self.length).forEach(function(i) {
                         ret = addClip(self.at(i));
                     });
 
                     if( add_current ) {
+                        logger.debug("Adding current (wrong) clip so we can reflect melted status");
                         /* I leave the current clip at the top of the melted playlist, it won't do any harm */
                         status.currentClip.actual_order = 0;
                         self.add(status.currentClip, { at: 0, set_melted: false, fix_blanks: false });
                     }
                 } else {
-                    console.error("MeltedCollection - JAMAS DEBERIA ENTRAR ACA!", self.models);
+                    logger.warn("If we fixed blanks, we NEVER should enter here", self.pluck('file'));
                     //TODO: After fixing blanks, we NEVER should enter here... Throw error??
                     self.forEach(function(c, i) {
                         ret = ret.then(function() {
                             c.set("actual_order", i)
+                            logger.debug("Queuing Append for clip: " + c.get('file'));
                             return self.driver.appendClip(c.toJSON());
                         });
                     });
+                    logger.debug("Leaving read semaphore");
                     ret = ret.then(self.leave);
                 }
 
                 return ret;
             }).fail(function(err) {
-                console.error("models: [ERROR] Error getting status froms server", err);
+                logger.error("Error loading clips to server", err);
                 self.leave();
                 throw err;
             }).fin(function(){
@@ -414,7 +442,7 @@ Mosto.Playlist = Backbone.Model.extend({
         medias: null
     },
     initialize: function (attributes, options) {
-        console.log ('creating new Mosto.Playlist', attributes, options);
+        logger.debug('Creating new Mosto.Playlist: ',{"name": attributes.name, "start": attributes.start});
         var self = this;
 
         this.set('name', this.get('name') || this.get('_id'));

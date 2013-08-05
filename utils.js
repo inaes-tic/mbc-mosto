@@ -63,7 +63,6 @@ exports = module.exports = {
         fps = parseFloat(fps);
         var millis = frames * 1000.0 / (1.0 * fps);
         if (millis!==undefined) return millis;
-        console.error("mbc-mosto: utils.convertFramesToMilliseconds frames: " + frames + " fps:" + fps);
     },
 
     convertDurationToString: function( moment_duration ) {

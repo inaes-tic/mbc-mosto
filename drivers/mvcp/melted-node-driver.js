@@ -6,25 +6,27 @@ var melted_node = require('melted-node'),
     config      = require('mbc-common').config.Mosto.Melted,
     Q           = require('q'),
     utils       = require('../../utils'), 
+    logger      = require('../../logger').addLogger('MELTED-NODE-DRIVER'),
+    melted_log  = require('../../logger').addLogger('MELTED-NODE'),
     uuid        = require('node-uuid');
 
 function melted(host, port) {
     var self = this;
     this.uuid = uuid.v4();
-    console.log("melted-node-driver (" + self.uuid + "): [INFO] Creating server instance [" + host + ":" + port + "]");
-    this.mlt = new melted_node(host, port);
-    console.log("melted-node-driver (" + self.uuid + "): [INFO] Server instance created [" + this.mlt.host + ":" + this.mlt.port + "]");
+    logger.debug(self.uuid + " - Creating server instance [" + host + ":" + port + "]");
+    this.mlt = new melted_node(host, port, melted_log);
+    logger.debug(self.uuid + " - Server instance created [" + this.mlt.host + ":" + this.mlt.port + "]");
 }
 
 melted.prototype.sendCommand = function(command) {
     var self = this;
-    console.log("melted-node-driver (" + self.uuid + "): [INFO] Sending command: " + command);
+    logger.debug(self.uuid + " - Sending command: " + command);
     return self.mlt.sendPromisedCommand(command, "200 OK");
 };
 
 melted.prototype.getServerPlaylist = function() {
     var self = this;
-    console.log("melted-node-driver (" + self.uuid + "): [INFO] Sending command: LIST U0");
+    logger.debug(self.uuid + " - Sending command: LIST U0");
     return self.mlt.sendPromisedCommand("list u0", "201 OK").then(function(response) {
         // HACK: Converting the promise object to a string :)
         var data = "." + response;
@@ -36,7 +38,7 @@ melted.prototype.getServerPlaylist = function() {
             var parse = line.split(" ");
 
             if (parse.length >=7 ) {
-                console.log("getServerPlaylist:" + line );
+                logger.debug(self.uuid + " - getServerPlaylist:" + line );
                 var index       = parse[0];
                 // remove sorrounding " from filename
                 var file        = parse[1].replace(/^"|"$/g,'');
@@ -58,15 +60,15 @@ melted.prototype.getServerPlaylist = function() {
         }
         return clips;
     }).fail(function(error) {
-        var err = new Error("melted-node-driver (" + self.uuid + "): [ERROR] Error getting server playlist: " + error);
-        console.error(err);
+        var err = new Error(self.uuid + " - Error getting server playlist: " + error);
+        logger.error(err.message);
         throw err;
     });
 };
 
 melted.prototype.getServerStatus = function() {
     var self = this;
-    console.log("melted-node-driver (" + self.uuid + "): [INFO] Sending command: USTA U0");
+    logger.debug(self.uuid + " - Sending command: USTA U0");
     return self.mlt.sendPromisedCommand("usta u0", "202 OK").then(function(response) {
         // HACK: Converting the promise object to a string :)
         var data = "." + response;
@@ -103,11 +105,11 @@ melted.prototype.getServerStatus = function() {
                 return st;
             }
         }
-        var err = new Error("melted-node-driver (" + self.uuid + "): [ERROR] Error getting server status in response object: " + response)
+        var err = new Error(self.uuid + " - Error getting server status in response object: " + response)
         throw (err);
     }).fail(function() {
-        var err = new Error("melted-node-driver (" + self.uuid + "): [ERROR] Error getting server status: " + error);
-        console.error(err);
+        var err = new Error(self.uuid + " - Error getting server status: " + error);
+        logger.error(err.message);
         throw err;
     });
 };
@@ -119,26 +121,32 @@ melted.prototype.isConnected = function() {
 
 melted.prototype.initServer = function() {
     var self = this;
-    console.log("melted-node-driver (" + self.uuid + "): [INFO] Connecting to server instance [" + self.mlt.host + ":" + self.mlt.port + "]");
+    logger.info(self.uuid + " - Connecting to server instance [" + self.mlt.host + ":" + self.mlt.port + "]");
 
     var deferred = Q.defer();
 
     var result = self.mlt.connect();
 
     result.then(function(response) {
-        console.log("melted-node-driver (" + self.uuid + "): [INFO] Sending command: ULS");
+        logger.debug(self.uuid + " - Sending command: ULS");
         var aux = self.mlt.sendPromisedCommand("ULS", "201 OK");
         aux.then(function(response) {
             if (response.indexOf("U0") === -1) {
-                deferred.reject(new Error("melted-node-driver (" + self.uuid + "): [ERROR] Unit 0 not found"));
+                var err = new Error(self.uuid + " - Unit 0 not found");
+                logger.error(err.message);
+                deferred.reject(err);
             } else {
                 deferred.resolve("OK");
             }
         }, function(error) {
-            deferred.reject(new Error("melted-node-driver (" + self.uuid + "): [ERROR] Could not query Unit status: ") + error);
+            var err = new Error(self.uuid + " - Could not query Unit status: " + error);
+            logger.error(err.message, error);
+            deferred.reject(err);
         });
     }, function(error) {
-        deferred.reject(error);
+        var err = new Error(self.uuid + " - Could not connect to Melted: " + error);
+        logger.error(err.message, error);
+        deferred.reject(err);
     });
 
     return deferred.promise;
@@ -146,7 +154,7 @@ melted.prototype.initServer = function() {
 
 melted.prototype.stopServer = function() {
     var self = this;
-    console.log("melted-node-driver (" + self.uuid + "): [INFO] Disconnecting from server instance [" + self.mlt.host + ":" + self.mlt.port + "]");
+    logger.info(self.uuid + " - Disconnecting from server instance [" + self.mlt.host + ":" + self.mlt.port + "]");
 
     return self.mlt.disconnect();
 };
@@ -161,25 +169,25 @@ melted.prototype.sendClip = function(clip, command) {
 
     //            var filters = self.config.types[type].filters;
 
-    console.log("melted-node-driver (" + self.uuid + "): [INFO] Generating file " + filename);
+    logger.debug(self.uuid + " - Generating file " + filename);
 
-    console.log("melted-node-driver (" + self.uuid + "): [INFO] Adding media [" + file + "] to file " + filename);
+    logger.debug(self.uuid + " - Adding media [" + file + "] to file " + filename);
     var video = new melted_xml.Producer.Video({ source: file, startFrame: clip.in, length: clip.length });
     xml.push(video);
 
-    console.log("melted-node-driver (" + self.uuid + "): [INFO] Creating playlist xml object for file " + filename);
+    logger.debug(self.uuid + " - Creating playlist xml object for file " + filename);
     var pl = new melted_xml.Playlist;
     pl.entry({producer: video});
     xml.push(pl);
 
-    console.log("melted-node-driver (" + self.uuid + "): [INFO] Creating track xml object for file " + filename);
+    logger.debug(self.uuid + " - Creating track xml object for file " + filename);
     var track = new melted_xml.Multitrack.Track(pl);
 
-    console.log("melted-node-driver (" + self.uuid + "): [INFO] Creating multitrack xml object for file " + filename);
+    logger.debug(self.uuid + " - Creating multitrack xml object for file " + filename);
     var multitrack = new melted_xml.Multitrack;
     multitrack.addTrack(track);
 
-    console.log("melted-node-driver (" + self.uuid + "): [INFO] Creating tractor xml object for file " + filename);
+    logger.debug(self.uuid + " - Creating tractor xml object for file " + filename);
     var tractor = new melted_xml.Tractor;
     tractor.push(multitrack);
 
@@ -193,7 +201,7 @@ melted.prototype.sendClip = function(clip, command) {
     //                tractor.push(filterObj);
     //            });
 
-    console.log("melted-node-driver (" + self.uuid + "): [INFO] Pushing xml for file " + filename);
+    logger.debug(self.uuid + " - Pushing xml for file " + filename);
     xml.push(tractor);
 
     //        var fileName = file.substring(file.lastIndexOf("/") + 1);
@@ -201,12 +209,12 @@ melted.prototype.sendClip = function(clip, command) {
 
     var deferred = Q.defer();
 
-    console.log("melted-node-driver (" + self.uuid + "): [INFO] Writing file " + xmlFile);
+    logger.debug(self.uuid + " - Writing file " + xmlFile);
     fs.writeFile(xmlFile, xml.toString({pretty:true}), function(err){
         if (err) {
             deferred.reject(err);
         } else {
-            console.log("melted-node-driver (" + self.uuid + "): [INFO] File ready: " + xmlFile);
+            logger.debug(self.uuid + " - File ready: " + xmlFile);
             deferred.resolve(self.sendCommand(command.replace("{xmlFile}", xmlFile)));
         }
     });

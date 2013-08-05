@@ -7,6 +7,7 @@ var config   = require("mbc-common").config.Mosto.Mongo
 ,   async    = require('async')
 ,   events   = require ('events')
 ,   util     = require ('util')
+,   logger   = require('../../logger').addLogger('MONGO-DRIVER')
 ,   _        = require('underscore');
 
 function drop_err(callback, err_handler) {
@@ -22,7 +23,7 @@ function mongo_driver(conf) {
     this.conf = conf;
     events.EventEmitter.call (this);
 
-    console.log("mongo-driver: [INFO] Creating mongodb playlists driver");
+    logger.info("Creating mongodb playlists driver");
 }
 util.inherits (mongo_driver, events.EventEmitter);
 
@@ -31,7 +32,7 @@ mongo_driver.prototype.start = function() {
     var db = mbc.db(this.conf && this.conf.db);
     self.channel = mbc.pubsub();
 
-    console.log("mongo-driver: [INFO] Starting mongo playlists driver");
+    logger.info("Starting mongo playlists driver");
 
     self.scheds = db.collection('scheds');
     self.lists = db.collection('lists');
@@ -50,7 +51,7 @@ mongo_driver.prototype.start = function() {
 mongo_driver.prototype.stop = function(timeSpan) {
     var self = this;
 
-    console.log("mongo-driver: [INFO] Stopping mongo playlists driver");
+    logger.info("Stopping mongo playlists driver");
 
     self.channel.removeAllListeners('JSONmessage');
     self.channel.unsubscribe('schedbackend.create');
@@ -66,7 +67,8 @@ mongo_driver.prototype.pubsub_handler = {
         this.createPlaylist(msg.model, (function(err, playlist) {
             if( err ) {
                 self.emit('error', err);
-                return console.error("mongo-driver [ERROR]:", err);
+                logger.error(err.message);
+                return err;
             }
             this.emit('create', playlist);
         }).bind(this));
@@ -76,7 +78,8 @@ mongo_driver.prototype.pubsub_handler = {
         this.createPlaylist(msg.model, (function(err, playlist) {
             if( err ) {
                 self.emit('error', err);
-                return console.error("mongo-driver [ERROR]:", err);
+                logger.error(err.message);
+                return err;
             }
             this.emit('update', playlist);
         }).bind(this));
@@ -96,7 +99,7 @@ mongo_driver.prototype.getPlaylists = function(window, callback) {
      */
     var self = this;
 
-    console.log("mongo-driver: [INFO] getPlaylists", window);
+    logger.debug("getPlaylists", window);
        
     var query = {};
     query.start = { $lte: window.to.valueOf() };
@@ -104,18 +107,18 @@ mongo_driver.prototype.getPlaylists = function(window, callback) {
     
     self.scheds.findItems(query, function(err, scheds) {
         if( err ) {
-            console.error("mongo-driver: [ERROR] Error obtaining playlists: ", err);
+            logger.error("Error obtaining playlists: ", err);
             return self.emit('md-error', err);
         }
 
         if( scheds ) {
-            console.log("mongo-driver: [INFO] Processing sched list:", scheds);
+            logger.debug("Processing sched list:", scheds);
             async.map(scheds, self.createPlaylist.bind(self), function(err, playlists) {
                 if( err ) {
-                    console.error("mongo-driver: [ERROR] Error processing playlists: ", err);
+                    logger.error("Error processing playlists: ", err);
                     return self.emit('md-error', err);
                 } else {
-                    console.log("mongo-driver: [INFO] Playlists obtained: ", playlists);
+                    logger.debug("Playlists obtained: ", playlists);
                 }
                 if( callback )
                     callback(playlists);
@@ -125,22 +128,22 @@ mongo_driver.prototype.getPlaylists = function(window, callback) {
                     });
             });
         } else {
-            console.log('Done');
+            logger.debug('No more scheds');
         }
     });
 };
 
 mongo_driver.prototype.createPlaylist = function(sched, callback) {
     var self = this;
-    console.log("mongo-driver: [INFO] Creating Playlist for:", sched);
+    logger.debug("Creating Playlist for:", sched);
     self.lists.findById(sched.list, function(err, list) {
         if( err ) {
-            console.error("mongo-driver: [ERROR] Error obtaining list: ", err);
+            logger.error("Error obtaining list: ", err);
             callback(err);
             return err;
         }
 
-        console.log("mongo-driver: [INFO] Processing list:", list && list._id, list && list.models.length);
+        logger.info("Processing list:", {"id": list && list._id, "clips": list && list.models.length});
         var startDate = new Date(sched.start);
         var endDate   = new Date(sched.end);
         var name = sched.title;
@@ -167,7 +170,7 @@ mongo_driver.prototype.createPlaylist = function(sched, callback) {
 
         var playlist = new Playlist(playlist_id, name, startDate, medias, endDate, "snap");
 
-        console.log("mongo-driver: [INFO] Created Playlist:", playlist);
+        logger.debug("Created Playlist:", playlist);
         
         callback(err, playlist);
     });
