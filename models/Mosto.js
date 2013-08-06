@@ -239,7 +239,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                 self.leave();
                 return false;
             }
-            
+
             return self.driver.getServerStatus().then(function(status) {
                 logger.debug("Obtained status: ", status);
 
