@@ -237,7 +237,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
             if(! options.set_melted ) {
                 logger.debug("We dont set melted, leaving read semaphore");
                 self.leave();
-                return;
+                return false;
             }
             
             return self.driver.getServerStatus().then(function(status) {
