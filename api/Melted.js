@@ -30,18 +30,6 @@ _meltedbin = function(callback,errorCallback) {
  * @callback: Callback function to do to melted.
  */
 _do = function(callback) {
-    //      var pgrep = spawn('pgrep', ['-x', "melted"]);
-//    var pgrep = spawn('pgrep', ["melted"]);
-//    var pid;
-//
-//    pgrep.stdout.on('data', function (data) {
-//        pid = data;
-//        console.log("Melted.js: [INFO] _do pid : " + pid );
-//    });
-//
-//    pgrep.on('exit', function (code) {
-//        return callback(parseInt(pid));
-//    });
     exec('pgrep melted', function(error, stdout, stderr) {
         var pid = stdout;
         logger.debug("Melted.js: [INFO] _do pid : " + pid );
