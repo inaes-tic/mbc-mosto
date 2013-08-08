@@ -328,7 +328,8 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
             }).fail(function(err) {
                 logger.error("Error loading clips to server", err);
                 self.leave();
-                throw err;
+//                throw err;
+                self.set(models, options); 
             }).fin(function(){
                 self.write.leave();
             });
