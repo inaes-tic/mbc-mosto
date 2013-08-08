@@ -9,27 +9,14 @@ var logger = require('../logger').addLogger('MELTED'),
 
 _meltedbin = function(callback,errorCallback) {
     logger.debug("Executing _meltedbin()");
-    var pgrep = spawn( "which", ["melted"] );
+
     var pbin = melted_bin_path;
 
-    pgrep.stdout.on('data', function (data) {
-        pbin = data;
+    exec('which melted', function(error, stdout, stderr) {
         pbin = "melted";
-        logger.debug("Data: " + data );
         conf.bin = pbin;
-    });
-
-    pgrep.on('exit', function (code) {
-        if (code>1) {
-            conf.bin = pbin;
-            errorCallback(code);
-        } else if (code==1) {
-            conf.bin = pbin;
-            return callback(pbin);
-        } else {
-            conf.bin = pbin;
-            return callback(pbin);
-        }
+        logger.debug('Melted binary: ' + stdout);
+        return callback(pbin);
     });
 
 };
