@@ -179,7 +179,8 @@ exports.setup = function(root, output, callback) {
     _do(function(pid) {
         if (pid) {
             logger.debug("Melted.setup > setting up root:" + root + " ouput:" + output);
-            var commands = [ 'NLS', 'SET root='+root, 'UADD '+output, 'BYE' ];
+            //TODO: Move profile to common/config
+            var commands = [ 'NLS', 'SET root='+root, 'UADD '+output, 'USET u0 consumer.mlt_profile=dv_pal', 'BYE' ];
             exports.connect(function(conn){ exports.push(conn, commands, undefined, callback)});
         } else {
             callback(new Error("Can't connect to server. Server is not running!"));
