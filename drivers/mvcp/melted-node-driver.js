@@ -8,6 +8,7 @@ var melted_node = require('melted-node'),
     utils       = require('../../utils'), 
     logger      = require('../../logger').addLogger('MELTED-NODE-DRIVER'),
     melted_log  = require('../../logger').addLogger('MELTED-NODE'),
+    path        = require('path'),
     uuid        = require('node-uuid');
 
 function melted(host, port, timeout) {
@@ -200,7 +201,10 @@ melted.prototype.sendClip = function(clip, command) {
     //                console.log(filter.properties);
     //                tractor.push(filterObj);
     //            });
-
+    logger.debug("mbc-mosto: [INFO] Adding WebVFX filter", path.resolve(__dirname, 'dynamic-filter.html'));
+    var filterObj = new melted_xml.Filter.WebVFX({resource: path.resolve(__dirname, 'dynamic-filter.html')});
+    tractor.push(filterObj);
+    
     logger.debug(self.uuid + " - Pushing xml for file " + filename);
     xml.push(tractor);
 
