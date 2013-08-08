@@ -6,7 +6,8 @@ exports = module.exports = function(type) {
     logger.info("Creating server for type [" + type + "]");
 
     if (type === 'melted') {
-        return new melted_node_driver(conf.host, conf.port);
+        //TODO: Move timeout (2000) to config
+        return new melted_node_driver(conf.host, conf.port, 2000);
     }
     var err = new Error("Unknown type of server [" + type + "]");
     logger.error(err.message);
