@@ -38,7 +38,7 @@ _do = function(callback) {
     exec('pgrep melted', function(error, stdout, stderr) {
         if (error) {
             logger.error("Error obtaining melted pid: [" + error + " - " +  stderr + "]");
-            return callback(0);
+            return callback();
         }
         var pid = stdout;
         logger.debug("Melted.js: [INFO] _do pid : " + pid );
