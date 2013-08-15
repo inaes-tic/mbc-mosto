@@ -7,15 +7,20 @@ var melted_bin_path = conf.root + '/melted/BUILD/bin/melted';
 var melted_lib_path = conf.root + '/melted/BUILD/lib';
 var logger = require('../logger').addLogger('MELTED'),
 
-_meltedbin = function(callback,errorCallback) {
+_meltedbin = function(callback, errorCallback) {
     logger.debug("Executing _meltedbin()");
 
     var pbin = melted_bin_path;
 
     exec('which melted', function(error, stdout, stderr) {
+        if (error) {
+            conf.bin = pbin;
+            logger.warn("Could not define melted binary, using " + pbin + " [" + error + " - " +  stderr + "]");
+            return callback(pbin);
+        } 
         pbin = "melted";
         conf.bin = pbin;
-        logger.debug('Melted binary: ' + stdout);
+        logger.info('Melted binary: ' + pbin);
         return callback(pbin);
     });
 
@@ -31,6 +36,10 @@ _meltedbin = function(callback,errorCallback) {
  */
 _do = function(callback) {
     exec('pgrep melted', function(error, stdout, stderr) {
+        if (error) {
+            logger.error("Error obtaining melted pid: [" + error + " - " +  stderr + "]");
+            return callback(0);
+        }
         var pid = stdout;
         logger.debug("Melted.js: [INFO] _do pid : " + pid );
         return callback(parseInt(pid));
