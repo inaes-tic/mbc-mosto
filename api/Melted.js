@@ -111,13 +111,13 @@ exports.stop = function(callback) {
                     logger.error("Error killing melted process: [" + error + " - " +  stderr + "]");
                 else
                     logger.info("Melted process terminated successfully");
-                return callback(true);
+                setTimeout(function() {callback(error)}, 1000);
             });
         } else {
             logger.info("Melted was not running")
-            return callback();
+            callback();
         }
-    })
+    });
 };
 
 /**
