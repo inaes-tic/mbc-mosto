@@ -96,18 +96,28 @@ exports.is_running = function(callback) {
  * @callback : callback function when process is stopped.
  */
 exports.stop = function(callback) {
+    logger.info("Trying to terminate melted process");
     _do(function(pid) {
         if (pid) {
-            //exports.connect(function(conn){ exports.push(conn, ['SHUTDOWN'], undefined, undefined); });
-            var kill = spawn('kill',['-9',pid]);
-            //kill.on('close', function(state) { return callback(pid) });
-            kill.on('exit', function(code) {
-                if (code) logger.debug("Returned with code:"+code);
-                return callback(pid)
+//            //exports.connect(function(conn){ exports.push(conn, ['SHUTDOWN'], undefined, undefined); });
+//            var kill = spawn('kill',['-9',pid]);
+//            //kill.on('close', function(state) { return callback(pid) });
+//            kill.on('exit', function(code) {
+//                if (code) logger.debug("Returned with code:"+code);
+//                return callback(pid)
+//            });
+            exec('killall -9 melted', function(error, stdout, stderr) {
+                if (error) 
+                    logger.error("Error killing melted process: [" + error + " - " +  stderr + "]");
+                else
+                    logger.info("Melted process terminated successfully");
+                setTimeout(function() {callback(error)}, 1000);
             });
-        } else
-            callback(pid);
-    })
+        } else {
+            logger.info("Melted was not running")
+            callback();
+        }
+    });
 };
 
 /**
