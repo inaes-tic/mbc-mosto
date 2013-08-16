@@ -1,5 +1,6 @@
 var winston = require('winston'), 
-    moment  = require('moment');
+    moment  = require('moment'), 
+    level   = process.env.MBC_CONSOLE_LOG_LEVEL || 'info';
 
 /* LEVELS WE CAN USE
 silly: 0,
@@ -35,7 +36,7 @@ var logger = {
             transports: [
                 new winston.transports.Console({ 
                     colorize: true,
-                    level: 'info',
+                    level: level,
                     label: category,
                     timestamp: getTimestamp
                 }),
