@@ -312,15 +312,15 @@ describe('Mosto Heartbeats Test', function() {
                 playlists().get("melted_medias").stopMvcpServer().then(function() {
                     self.hb.stop().then(function() {
                         playlists().get("melted_medias").write.leave();
-                        melted.stop(function(){
-                            melted.start(function(pid) {
-                                melted.setup(undefined, undefined, function(has_err) {
+//                        melted.stop(function(){
+//                            melted.start(function(pid) {
+//                                melted.setup(undefined, undefined, function(has_err) {
                                     setTimeout(function() {
                                         done();
                                     }, 1000);
-                                });
-                            });
-                        });
+//                                });
+//                            });
+//                        });
                     });
                 });
             });
