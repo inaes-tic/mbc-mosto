@@ -76,7 +76,7 @@ test/videos/%.mp4: test/images/%.png
 	${MELT} $< in=0 out=750 -consumer avformat:$@ acodec=none
 
 test: videos ${MOCHA} melted-check
-	@NODE_ENV=test NODE_CONFIG_DIR=$(PWD)/test/config/ MBC_CONSOLE_LOG_LEVEL='debug' ${NODE} ${MOCHA}
+	@NODE_ENV=test NODE_CONFIG_DIR=$(PWD)/test/config/ ${NODE} ${MOCHA}
 
 debug-test: videos melted-check
 	@NODE_ENV=test NODE_CONFIG_DIR=$(PWD)/test/config/ ${NODE} ${MOCHA_DEBUG}
