@@ -256,8 +256,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                 var addClip = function(media) {
                     //return ret.then(function() {
                     logger.info("Adding media: " + media.get('file'));
-                    //    return
-                    self.driver.appendClip(media.toJSON());
+                    return self.driver.appendClip(media.toJSON());
                     //});
                 };
 
@@ -289,7 +288,9 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                     // append expected clip
                     logger.debug("Queuing Append for expected clip: " + self.at(0).get('file'));
                     //                    ret =
-                    addClip(self.at(0));
+                    ret = addClip(self.at(0)).then(function() {
+                        logger.debug("Appended first clip");
+                    });
 
                     // I'll need to add the current clip to myself to make sure I keep reflecting melted status
                     add_current = status.currentClip;
@@ -298,28 +299,31 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                 // append next clip just in case
                 if(self.length > 1) {
                     logger.debug("Queuing Append for next clip: " + self.at(1).get("file"));
-                    ret = addClip(self.at(1));
+                    ret = addClip(self.at(1)).then(function() {
+                        logger.debug("Appended second clip");
+                    });
                 }
 
                 // generate a new promise that will release the read semaphore inmediatly after appending the next clip
-                //                ret.then(function() {
-                var start = 0;
-                if (add_current)
-                    start = 1;
-                // we do this here in order to have actual order synched before leaving semaphore
-                logger.debug("Rearranging actual order");
-                self.forEach(function(c, i) {
-                    c.set('actual_order', i + start);
+                ret.then(function() {
+                    var start = 0;
+                    if (add_current)
+                        start = 1;
+                    // we do this here in order to have actual order synched before leaving semaphore
+                    logger.debug("Rearranging actual order");
+                    self.forEach(function(c, i) {
+                        c.set('actual_order', i + start);
+                    });
+                    logger.debug("Leaving read semaphore");
+                    self.leave();
                 });
-                logger.debug("Leaving read semaphore");
-                self.leave();
-                //                });
 
                 /* and then put everything after into melted */
                 logger.debug("Queuing Append for rest of the clips");
                 _.range(2, self.length).forEach(function(i) {
-                    //                    ret =
-                    addClip(self.at(i));
+                    ret = addClip(self.at(i)).then(function(){
+                        logger.debug("Appended %d-th clip", i);
+                    });
                 });
 
                 if( add_current ) {
@@ -336,6 +340,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                 //                throw err;
                 self.set(models, options);
             }).fin(function(){
+                logger.info("Leaving write semaphore");
                 self.write.leave();
             });
         });
