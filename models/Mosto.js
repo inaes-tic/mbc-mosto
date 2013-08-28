@@ -127,11 +127,11 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
 
         this.fetch();
     },
-            
+
     initMvcpServer: function() {
         return this.driver.initServer();
     },
-            
+
     stopMvcpServer: function() {
         return this.driver.stopServer();
     },
@@ -248,7 +248,9 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                 //                    .then(function() {
                 logger.debug("Cleaning playlist");
                 //    return
-                self.driver.cleanPlaylist();
+                self.driver.cleanPlaylist().then(function(){
+                    logger.debug("Playlist cleaned");
+                });
                 //                });
 
                 var expected = self.getExpectedMedia();
