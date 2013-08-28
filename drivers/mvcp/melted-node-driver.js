@@ -21,13 +21,13 @@ function melted(host, port, timeout) {
 melted.prototype.sendCommand = function(command) {
     var self = this;
     logger.debug(self.uuid + " - Sending command: " + command);
-    return self.mlt.sendPromisedCommand(command, "200 OK");
+    return self.mlt.sendCommand(command, "200 OK");
 };
 
 melted.prototype.getServerPlaylist = function() {
     var self = this;
     logger.debug(self.uuid + " - Sending command: LIST U0");
-    return self.mlt.sendPromisedCommand("list u0", "201 OK").then(function(response) {
+    return self.mlt.sendCommand("list u0", "201 OK").then(function(response) {
         // HACK: Converting the promise object to a string :)
         var data = "." + response;
 
@@ -69,7 +69,7 @@ melted.prototype.getServerPlaylist = function() {
 melted.prototype.getServerStatus = function() {
     var self = this;
     logger.debug(self.uuid + " - Sending command: USTA U0");
-    return self.mlt.sendPromisedCommand("usta u0", "202 OK").then(function(response) {
+    return self.mlt.sendCommand("usta u0", "202 OK").then(function(response) {
         // HACK: Converting the promise object to a string :)
         var data = "." + response;
 
@@ -129,7 +129,7 @@ melted.prototype.initServer = function() {
 
     result.then(function(response) {
         logger.debug(self.uuid + " - Sending command: ULS");
-        var aux = self.mlt.sendPromisedCommand("ULS", "201 OK");
+        var aux = self.mlt.sendCommand("ULS", "201 OK");
         aux.then(function(response) {
             if (response.indexOf("U0") === -1) {
                 var err = new Error(self.uuid + " - Unit 0 not found");
@@ -281,7 +281,7 @@ melted.prototype.goto = function(index, frame) {
     //Starts playing clip at specified index and frame (use with getServerPlaylist and getServerStatus)
     return self.sendCommand("GOTO U0 " + frame + " " + index);
 };
-    
+
 exports = module.exports = function(host, port, timeout) {
     var melted_node_driver = new melted(host, port, timeout);
     return melted_node_driver;
