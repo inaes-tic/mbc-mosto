@@ -7,15 +7,20 @@ var melted_bin_path = conf.root + '/melted/BUILD/bin/melted';
 var melted_lib_path = conf.root + '/melted/BUILD/lib';
 var logger = require('../logger').addLogger('MELTED'),
 
-_meltedbin = function(callback,errorCallback) {
+_meltedbin = function(callback, errorCallback) {
     logger.debug("Executing _meltedbin()");
 
     var pbin = melted_bin_path;
 
     exec('which melted', function(error, stdout, stderr) {
+        if (error) {
+            conf.bin = pbin;
+            logger.warn("Could not define melted binary, using " + pbin + " [" + error + " - " +  stderr + "]");
+            return callback(pbin);
+        } 
         pbin = "melted";
         conf.bin = pbin;
-        logger.debug('Melted binary: ' + stdout);
+        logger.info('Melted binary: ' + pbin);
         return callback(pbin);
     });
 
@@ -31,6 +36,10 @@ _meltedbin = function(callback,errorCallback) {
  */
 _do = function(callback) {
     exec('pgrep melted', function(error, stdout, stderr) {
+        if (error) {
+            logger.error("Error obtaining melted pid: [" + error + " - " +  stderr + "]");
+            return callback();
+        }
         var pid = stdout;
         logger.debug("Melted.js: [INFO] _do pid : " + pid );
         return callback(parseInt(pid));
@@ -87,18 +96,28 @@ exports.is_running = function(callback) {
  * @callback : callback function when process is stopped.
  */
 exports.stop = function(callback) {
+    logger.info("Trying to terminate melted process");
     _do(function(pid) {
         if (pid) {
-            //exports.connect(function(conn){ exports.push(conn, ['SHUTDOWN'], undefined, undefined); });
-            var kill = spawn('kill',['-9',pid]);
-            //kill.on('close', function(state) { return callback(pid) });
-            kill.on('exit', function(code) {
-                if (code) logger.debug("Returned with code:"+code);
-                return callback(pid)
+//            //exports.connect(function(conn){ exports.push(conn, ['SHUTDOWN'], undefined, undefined); });
+//            var kill = spawn('kill',['-9',pid]);
+//            //kill.on('close', function(state) { return callback(pid) });
+//            kill.on('exit', function(code) {
+//                if (code) logger.debug("Returned with code:"+code);
+//                return callback(pid)
+//            });
+            exec('killall -9 melted', function(error, stdout, stderr) {
+                if (error) 
+                    logger.error("Error killing melted process: [" + error + " - " +  stderr + "]");
+                else
+                    logger.info("Melted process terminated successfully");
+                setTimeout(function() {callback(error)}, 1000);
             });
-        } else
-            callback(pid);
-    })
+        } else {
+            logger.info("Melted was not running")
+            callback();
+        }
+    });
 };
 
 /**

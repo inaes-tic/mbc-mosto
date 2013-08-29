@@ -237,7 +237,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
             if(! options.set_melted ) {
                 logger.debug("We dont set melted, leaving read semaphore");
                 self.leave();
-                return;
+                return false;
             }
 
             return self.driver.getServerStatus().then(function(status) {
@@ -258,59 +258,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                     });
                 };
 
-                if( expected.media ) {
-                    logger.debug("Expected media: ", {"media": expected.media.get('file'), "frame": expected.frame});
-                    
-                    var ids = self.pluck('id');
-                    // I need to add from expected clip
-                    var cur_i = ids.indexOf(expected.media.id);
-                    self.remove(ids.slice(0, cur_i));
-                    var add_current = false;
-
-                    if(status.currentClip && ( expected.media.id.toString() === status.currentClip.id.toString() )) {
-                        logger.debug("Current playing clip is expected");
-                    } else {
-                        // append expected clip
-                        logger.debug("Queuing Append for expected clip: " + self.at(0).get('file'));
-                        ret = addClip(self.at(0));
-
-                        // I'll need to add the current clip to myself to make sure I keep reflecting melted status
-                        add_current = status.currentClip;
-                    }
-
-                    // append next clip just in case
-                    if(self.length > 1) {
-                        logger.debug("Queuing Append for next clip: " + self.at(1).get("file"));
-                        ret = addClip(self.at(1));
-                    }
-
-                    // generate a new promise that will release the read semaphore inmediatly after appending the next clip
-                    ret.then(function() {
-                        var start = 0;
-                        if (add_current)
-                            start = 1;
-                        // we do this here in order to have actual order synched before leaving semaphore
-                        logger.debug("Rearranging actual order");
-                        self.forEach(function(c, i) {
-                            c.set('actual_order', i + start);
-                        });
-                        logger.debug("Leaving read semaphore");
-                        self.leave();
-                    });
-
-                    /* and then put everything after into melted */
-                    logger.debug("Queuing Append for rest of the clips");
-                    _.range(2, self.length).forEach(function(i) {
-                        ret = addClip(self.at(i));
-                    });
-
-                    if( add_current ) {
-                        logger.debug("Adding current (wrong) clip so we can reflect melted status");
-                        /* I leave the current clip at the top of the melted playlist, it won't do any harm */
-                        status.currentClip.actual_order = 0;
-                        self.add(status.currentClip, { at: 0, set_melted: false, fix_blanks: false });
-                    }
-                } else {
+                if( ! expected.media ) {
                     logger.warn("If we fixed blanks, we NEVER should enter here", self.pluck('file'));
                     //TODO: After fixing blanks, we NEVER should enter here... Throw error??
                     self.forEach(function(c, i) {
@@ -321,7 +269,58 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                         });
                     });
                     logger.debug("Leaving read semaphore");
-                    ret = ret.then(self.leave);
+                    return ret.then(self.leave);
+                }
+                logger.debug("Expected media: ", {"media": expected.media.get('file'), "frame": expected.frame});
+
+                var ids = self.pluck('id');
+                // I need to add from expected clip
+                var cur_i = ids.indexOf(expected.media.id);
+                self.remove(ids.slice(0, cur_i));
+                var add_current = false;
+
+                if(status.currentClip && ( expected.media.id.toString() === status.currentClip.id.toString() )) {
+                    logger.debug("Current playing clip is expected");
+                } else {
+                    // append expected clip
+                    logger.debug("Queuing Append for expected clip: " + self.at(0).get('file'));
+                    ret = addClip(self.at(0));
+
+                    // I'll need to add the current clip to myself to make sure I keep reflecting melted status
+                    add_current = status.currentClip;
+                }
+
+                // append next clip just in case
+                if(self.length > 1) {
+                    logger.debug("Queuing Append for next clip: " + self.at(1).get("file"));
+                    ret = addClip(self.at(1));
+                }
+
+                // generate a new promise that will release the read semaphore inmediatly after appending the next clip
+                ret.then(function() {
+                    var start = 0;
+                    if (add_current)
+                        start = 1;
+                    // we do this here in order to have actual order synched before leaving semaphore
+                    logger.debug("Rearranging actual order");
+                    self.forEach(function(c, i) {
+                        c.set('actual_order', i + start);
+                    });
+                    logger.debug("Leaving read semaphore");
+                    self.leave();
+                });
+
+                /* and then put everything after into melted */
+                logger.debug("Queuing Append for rest of the clips");
+                _.range(2, self.length).forEach(function(i) {
+                    ret = addClip(self.at(i));
+                });
+
+                if( add_current ) {
+                    logger.debug("Adding current (wrong) clip so we can reflect melted status");
+                    /* I leave the current clip at the top of the melted playlist, it won't do any harm */
+                    status.currentClip.actual_order = 0;
+                    self.add(status.currentClip, { at: 0, set_melted: false, fix_blanks: false });
                 }
 
                 return ret;
