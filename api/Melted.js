@@ -195,7 +195,7 @@ exports.push = function(conn, commands, command_callback, close_callback) {
 exports.setup = function(root, output, callback) {
     root = root || conf.root;
     output = output || conf.output;
-    output = 'posixshm';
+//    output = 'posixshm';
     _do(function(pid) {
         if (pid) {
             logger.debug("Melted.setup > setting up root:" + root + " ouput:" + output);
