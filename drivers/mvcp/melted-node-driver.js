@@ -201,8 +201,13 @@ melted.prototype.sendClip = function(clip, command) {
     //                console.log(filter.properties);
     //                tractor.push(filterObj);
     //            });
-    logger.debug("mbc-mosto: [INFO] Adding WebVFX filter", path.resolve(__dirname, 'dynamic-filter.html'));
-    var filterObj = new melted_xml.Filter.WebVFX({resource: path.resolve(__dirname, 'dynamic-filter.html')});
+    
+//    logger.debug("mbc-mosto: [INFO] Adding WebVFX filter", path.resolve(__dirname, 'dynamic-filter.html'));
+//    var filterObj = new melted_xml.Filter.WebVFX({resource: path.resolve(__dirname, 'dynamic-filter.html')});
+//    tractor.push(filterObj);
+
+    logger.debug("mbc-mosto: [INFO] Adding PNG filter", path.resolve(__dirname, 'demo.png'));
+    var filterObj = new melted_xml.Filter.Watermark({resource: path.resolve(__dirname, 'demo.png')});
     tractor.push(filterObj);
     
     logger.debug(self.uuid + " - Pushing xml for file " + filename);
