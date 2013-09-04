@@ -176,9 +176,9 @@ heartbeats.prototype.syncMelted = function() {
     logger.debug("[syncMelted] Start Sync");
     self.server.getServerStatus().then(function(meltedStatus) {
         logger.info("[syncMelted] Got status");
-        logger.debug('status: "%s"', status);
+        logger.debug('status: "%s"', JSON.stringify(meltedStatus));
         var expected = self.melted_medias.getExpectedMedia();
-        logger.debug('expected: "%s"', expected);
+        logger.debug('expected: "%s"', JSON.stringify(expected));
         if (expected.media) {
             logger.info("[syncMelted] Got expected media");
             var result = Q.resolve();
@@ -192,6 +192,7 @@ heartbeats.prototype.syncMelted = function() {
                 logger.debug("I should be playing clip #%d", index);
                 var frames = 9999;
                 var currentMedia = self.melted_medias.get(meltedClip.id);
+                logger.debug("currentMedia: ", JSON.stringify(currentMedia));
                 if (currentMedia) {
                     var currIndex = self.melted_medias.indexOf(currentMedia);
                     logger.debug("But I'm playing clip #%d", currIndex);
@@ -205,6 +206,8 @@ heartbeats.prototype.syncMelted = function() {
                         logger.info("[syncMelted] Melted's one clip after");
                         frames = meltedClip.currentFrame + (expected.media.get('out') - expected.frame);
                     }
+                } else {
+                    logger.info("[syncMelted] Got no currently playing media");
                 }
                 logger.debug("frames phase: %d", frames);
                 if (frames > expected.media.get('fps')) {
