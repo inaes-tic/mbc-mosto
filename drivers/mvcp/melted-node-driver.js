@@ -216,7 +216,17 @@ melted.prototype.sendClip = function(clip, command) {
     logger.debug(this.uuid + " - Writing file " + xmlFile);
 
     var writeFile = Q.denodeify(fs.writeFile);
+    this.commandQueue = Q.all([
+        this.commandQueue,
+        writeFile(xmlFile, xml.toString({pretty:true})).then(function(){
             logger.debug(self.uuid + " - File ready: " + xmlFile);
+        }),
+    ]).then(function(){
+        deferred.resolve(self._sendCommand(command.replace("{xmlFile}", xmlFile)));
+    }, function(err){
+        deferred.reject(err);
+    }).thenResolve();
+
     return deferred.promise;
 };
 
