@@ -37,8 +37,7 @@ melted.prototype.sendCommand = function(command) {
 
 melted.prototype.getServerPlaylist = function() {
     var self = this;
-    logger.debug(self.uuid + " - Sending command: LIST U0");
-    return self.mlt.sendCommand("list u0", "201 OK").then(function(response) {
+    return self.sendCommand("list u0", "201 OK").then(function(response) {
         // HACK: Converting the promise object to a string :)
         var data = "." + response;
 
@@ -79,8 +78,7 @@ melted.prototype.getServerPlaylist = function() {
 
 melted.prototype.getServerStatus = function() {
     var self = this;
-    logger.debug(self.uuid + " - Sending command: USTA U0");
-    return self.mlt.sendCommand("usta u0", "202 OK").then(function(response) {
+    return self.sendCommand("usta u0", "202 OK").then(function(response) {
         // HACK: Converting the promise object to a string :)
         var data = "." + response;
 
@@ -139,8 +137,7 @@ melted.prototype.initServer = function() {
     var result = self.mlt.connect();
 
     result.then(function(response) {
-        logger.debug(self.uuid + " - Sending command: ULS");
-        var aux = self.mlt.sendCommand("ULS", "201 OK");
+        var aux = self.sendCommand("ULS", "201 OK");
         aux.then(function(response) {
             if (response.indexOf("U0") === -1) {
                 var err = new Error(self.uuid + " - Unit 0 not found");
