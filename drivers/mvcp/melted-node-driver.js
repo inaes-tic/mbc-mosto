@@ -16,13 +16,23 @@ function melted(host, port, timeout) {
     this.uuid = uuid.v4();
     logger.debug(self.uuid + " - Creating server instance [" + host + ":" + port + "]");
     this.mlt = new melted_node(host, port, melted_log, timeout);
+    this.commandQueue = Q.resolve();
     logger.debug(self.uuid + " - Server instance created [" + this.mlt.host + ":" + this.mlt.port + "]");
 }
 
-melted.prototype.sendCommand = function(command) {
+melted.prototype._sendCommand = function(command) {
     var self = this;
     logger.debug(self.uuid + " - Sending command: " + command);
     return self.mlt.sendCommand(command, "200 OK");
+};
+
+melted.prototype.sendCommand = function(command) {
+    var self = this;
+    var ret = Q.defer();
+    this.commandQueue = this.commandQueue.then(function() {
+        ret.resolve(self._sendCommand(command));
+    });
+    return ret.promise;
 };
 
 melted.prototype.getServerPlaylist = function() {
