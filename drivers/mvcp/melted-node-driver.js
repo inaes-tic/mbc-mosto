@@ -1,14 +1,15 @@
-var melted_node = require('melted-node'),
-    melted_xml  = require('node-mlt'),
-    Status      = require('../../api/Status'),
-    StatusClip  = require('../../api/StatusClip'),
-    fs          = require('fs'),
-    config      = require('mbc-common').config.Mosto.Melted,
-    Q           = require('q'),
-    utils       = require('../../utils'), 
-    logger      = require('../../logger').addLogger('MELTED-NODE-DRIVER'),
-    melted_log  = require('../../logger').addLogger('MELTED-NODE'),
-    uuid        = require('node-uuid');
+var melted_node = require('melted-node')
+,   melted_xml  = require('node-mlt')
+,   Status      = require('../../api/Status')
+,   StatusClip  = require('../../api/StatusClip')
+,   fs          = require('fs')
+,   config      = require('mbc-common').config.Mosto.Melted
+,   Q           = require('q')
+,   utils       = require('../../utils')
+,   logger      = require('../../logger').addLogger('MELTED-NODE-DRIVER')
+,   melted_log  = require('../../logger').addLogger('MELTED-NODE')
+,   uuid        = require('node-uuid')
+;
 
 function melted(host, port, timeout) {
     var self = this;
