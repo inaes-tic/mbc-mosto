@@ -12,18 +12,16 @@ var melted_node = require('melted-node')
 ;
 
 function melted(host, port, timeout) {
-    var self = this;
     this.uuid = uuid.v4();
-    logger.debug(self.uuid + " - Creating server instance [" + host + ":" + port + "]");
+    logger.debug(this.uuid + " - Creating server instance [" + host + ":" + port + "]");
     this.mlt = new melted_node(host, port, melted_log, timeout);
     this.commandQueue = Q.resolve();
-    logger.debug(self.uuid + " - Server instance created [" + this.mlt.host + ":" + this.mlt.port + "]");
+    logger.debug(this.uuid + " - Server instance created [" + this.mlt.host + ":" + this.mlt.port + "]");
 }
 
 melted.prototype._sendCommand = function(command) {
-    var self = this;
-    logger.debug(self.uuid + " - Sending command: " + command);
-    return self.mlt.sendCommand(command, "200 OK");
+    logger.debug(this.uuid + " - Sending command: " + command);
+    return this.mlt.sendCommand(command, "200 OK");
 };
 
 melted.prototype.sendCommand = function(command) {
@@ -37,7 +35,7 @@ melted.prototype.sendCommand = function(command) {
 
 melted.prototype.getServerPlaylist = function() {
     var self = this;
-    return self.sendCommand("list u0", "201 OK").then(function(response) {
+    return this.sendCommand("list u0", "201 OK").then(function(response) {
         // HACK: Converting the promise object to a string :)
         var data = "." + response;
 
@@ -78,7 +76,7 @@ melted.prototype.getServerPlaylist = function() {
 
 melted.prototype.getServerStatus = function() {
     var self = this;
-    return self.sendCommand("usta u0", "202 OK").then(function(response) {
+    return this.sendCommand("usta u0", "202 OK").then(function(response) {
         // HACK: Converting the promise object to a string :)
         var data = "." + response;
 
@@ -124,17 +122,16 @@ melted.prototype.getServerStatus = function() {
 };
 
 melted.prototype.isConnected = function() {
-    var self = this;
-    return self.mlt.connected;
+    return this.mlt.connected;
 };
 
 melted.prototype.initServer = function() {
     var self = this;
-    logger.info(self.uuid + " - Connecting to server instance [" + self.mlt.host + ":" + self.mlt.port + "]");
+    logger.info(this.uuid + " - Connecting to server instance [" + this.mlt.host + ":" + this.mlt.port + "]");
 
     var deferred = Q.defer();
 
-    var result = self.mlt.connect();
+    var result = this.mlt.connect();
 
     result.then(function(response) {
         var aux = self.sendCommand("ULS", "201 OK");
@@ -161,10 +158,9 @@ melted.prototype.initServer = function() {
 };
 
 melted.prototype.stopServer = function() {
-    var self = this;
-    logger.info(self.uuid + " - Disconnecting from server instance [" + self.mlt.host + ":" + self.mlt.port + "]");
+    logger.info(this.uuid + " - Disconnecting from server instance [" + this.mlt.host + ":" + this.mlt.port + "]");
 
-    return self.mlt.disconnect();
+    return this.mlt.disconnect();
 };
 
 melted.prototype.sendClip = function(clip, command) {
@@ -177,39 +173,39 @@ melted.prototype.sendClip = function(clip, command) {
 
     //            var filters = self.config.types[type].filters;
 
-    logger.debug(self.uuid + " - Generating file " + filename);
+    logger.debug(this.uuid + " - Generating file " + filename);
 
-    logger.debug(self.uuid + " - Adding media [" + file + "] to file " + filename);
+    logger.debug(this.uuid + " - Adding media [" + file + "] to file " + filename);
     var video = new melted_xml.Producer.Video({ source: file, startFrame: clip.in, length: clip.length });
     xml.push(video);
 
-    logger.debug(self.uuid + " - Creating playlist xml object for file " + filename);
+    logger.debug(this.uuid + " - Creating playlist xml object for file " + filename);
     var pl = new melted_xml.Playlist;
     pl.entry({producer: video});
     xml.push(pl);
 
-    logger.debug(self.uuid + " - Creating track xml object for file " + filename);
+    logger.debug(this.uuid + " - Creating track xml object for file " + filename);
     var track = new melted_xml.Multitrack.Track(pl);
 
-    logger.debug(self.uuid + " - Creating multitrack xml object for file " + filename);
+    logger.debug(this.uuid + " - Creating multitrack xml object for file " + filename);
     var multitrack = new melted_xml.Multitrack;
     multitrack.addTrack(track);
 
-    logger.debug(self.uuid + " - Creating tractor xml object for file " + filename);
+    logger.debug(this.uuid + " - Creating tractor xml object for file " + filename);
     var tractor = new melted_xml.Tractor;
     tractor.push(multitrack);
 
     //            console.log("mbc-mosto: [INFO] Creating filter xml objects for file " + filename);
     //            console.log("mbc-mosto: [INFO] Filters: " + filters);
     //            filters.forEach(function(element, index, array){
-    //                var filter = self.config.filters[element];
+    //                var filter = this.config.filters[element];
     //                var filterObj = new melted_xml.Filter[filter.filter.charAt(0).toUpperCase() + filter.filter.slice(1)](filter.properties);
     //                console.log("mbc-mosto: [INFO] Adding filter " + filter.filter);
     //                console.log(filter.properties);
     //                tractor.push(filterObj);
     //            });
 
-    logger.debug(self.uuid + " - Pushing xml for file " + filename);
+    logger.debug(this.uuid + " - Pushing xml for file " + filename);
     xml.push(tractor);
 
     //        var fileName = file.substring(file.lastIndexOf("/") + 1);
@@ -217,7 +213,7 @@ melted.prototype.sendClip = function(clip, command) {
 
     var deferred = Q.defer();
 
-    logger.debug(self.uuid + " - Writing file " + xmlFile);
+    logger.debug(this.uuid + " - Writing file " + xmlFile);
     fs.writeFile(xmlFile, xml.toString({pretty:true}), function(err){
         if (err) {
             deferred.reject(err);
@@ -230,64 +226,52 @@ melted.prototype.sendClip = function(clip, command) {
 };
 
 melted.prototype.loadClip = function(clip) {
-    var self = this;
     //Load clip removing the whole playlist and starting playback
-    return self.sendClip(clip, "LOAD U0 {xmlFile}");
+    return this.sendClip(clip, "LOAD U0 {xmlFile}");
 };
 melted.prototype.appendClip = function(clip) {
-    var self = this;
     //Appends clip to the end of the playlist
-    return self.sendClip(clip, "APND UO {xmlFile}");
+    return this.sendClip(clip, "APND UO {xmlFile}");
 };
 melted.prototype.insertClip = function(clip, index) {
-    var self = this;
     //Insert clip at specified index
-    return self.sendClip(clip, "INSERT UO {xmlFile} " + index);
+    return this.sendClip(clip, "INSERT UO {xmlFile} " + index);
 };
 melted.prototype.removeClip = function(index) {
-    var self = this;
     //Removes clip at specified index
-    return self.sendCommand("REMOVE U0 " + index);
+    return this.sendCommand("REMOVE U0 " + index);
 };
 melted.prototype.cleanPlaylist = function() {
-    var self = this;
     //Removes all clips but playing clip
-    return self.sendCommand("CLEAN U0");
+    return this.sendCommand("CLEAN U0");
 };
 //    melted.prototype.wipePlaylist = function(successCallback, errorCallback) {
-//        var self = this;
 //        //Removes all clips before playing clip
-//        self.sendCommand("WIPE U0", successCallback, errorCallback);
+//        this.sendCommand("WIPE U0", successCallback, errorCallback);
 //    };
 melted.prototype.clearPlaylist = function() {
-    var self = this;
     //Removes all clips, including playing clip
-    return self.sendCommand("CLEAR U0");
+    return this.sendCommand("CLEAR U0");
 };
 melted.prototype.moveClip = function(oldIndex, newIndex) {
-    var self = this;
     //Moves the clip at oldIndex to newIndex (use it with getServerPlaylist)
-    return self.sendCommand("MOVE U0 " + oldIndex + " " + newIndex);
+    return this.sendCommand("MOVE U0 " + oldIndex + " " + newIndex);
 };
 melted.prototype.play = function() {
-    var self = this;
     //Play
-    return self.sendCommand("PLAY U0");
+    return this.sendCommand("PLAY U0");
 };
 melted.prototype.stop = function() {
-    var self = this;
     //Stop
-    return self.sendCommand("STOP U0");
+    return this.sendCommand("STOP U0");
 };
 melted.prototype.pause = function() {
-    var self = this;
     //Pause
-    return self.sendCommand("PAUSE U0");
+    return this.sendCommand("PAUSE U0");
 };
 melted.prototype.goto = function(index, frame) {
-    var self = this;
     //Starts playing clip at specified index and frame (use with getServerPlaylist and getServerStatus)
-    return self.sendCommand("GOTO U0 " + frame + " " + index);
+    return this.sendCommand("GOTO U0 " + frame + " " + index);
 };
 
 exports = module.exports = function(host, port, timeout) {
