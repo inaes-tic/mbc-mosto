@@ -1,8 +1,10 @@
 var assert      = require("assert");
 var exec        = require('child_process').exec;
+var _           = require('underscore');
 var mvcp_server = require('../drivers/mvcp/mvcp-driver');
 var Media       = require('../api/Media.js');
 var melted      = require('../api/Melted');
+var helpers     = require('./media_helpers');
 
 describe('start mvcp-driver test', function(done) {
 
@@ -767,7 +769,27 @@ describe('start mvcp-driver test', function(done) {
                     });
                 });
             });
+            describe('make sure appends all happen in the right order', function() {
+                var files = ["../videos/Bars-1600.xml",
+                             "../videos/Bars-3200.xml",
+                             "../videos/Bars-6400.xml"];
+                it('', function(done) {
+                    var n = 100;
+                    var list = _.draw(files, n);
+                    var count = 0;
+                    var good = _.after(n, function() {
+                        done();
+                    });
+                    list.forEach(function(f, i) {
+                        var clip = new Media(i, 0, 1, f.substring(f.lastIndexOf("/") + 1),
+                                             "default", f, 1600, 25);
+                        server.appendClip(clip).then(function() {
+                            assert.equal(count, i);
+                            count++;
+                        }).then(good).done();
+                    });
+                });
+            });
         });
-
     });
 });
