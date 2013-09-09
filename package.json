@@ -1,7 +1,7 @@
 {
     "name": "mbc-mosto",
     "description": "@mbc-playout's playlist juggler",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "author": "Juan Martin Runge <jmrunge@gmail.com>",
     "contributors": [ "Niv Sardi <xaiki@inaes.gob.ar>", "hatcsh"],
     "scripts": {
@@ -19,7 +19,7 @@
     ],
     "dependencies" : {
         "q"           : "0.9.x",
-        "melted-node" : "git://github.com/inaes-tic/melted-node.git",
+        "melted-node" : "git://github.com/inaes-tic/melted-node.git#0.0.11",
         "underscore"  : "1.4.x",
         "node-uuid"   : "1.3.x",
         "xmlbuilder"  : "0.3.x",
