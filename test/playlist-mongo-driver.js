@@ -5,7 +5,7 @@ var mbc = require('mbc-common');
 var _ = require('underscore');
 var melted  = require('../api/Melted');
 
-describe.skip('PlaylistMongoDriver', function(){
+describe('PlaylistMongoDriver', function(){
     var self = this;
 
     before(function(done) {
@@ -72,7 +72,7 @@ describe.skip('PlaylistMongoDriver', function(){
         done();
     });
 
-    describe('#getWindow()', function() {
+    describe.skip('#getWindow()', function() {
         beforeEach(function(){
             self.driver.window = undefined;
         });
@@ -135,7 +135,7 @@ describe.skip('PlaylistMongoDriver', function(){
         });
 
         this.timeout(1000);
-        it('should respond to create messages',function(done){
+        it.skip('should respond to create messages',function(done){
             // set window from now to 10 minutes
             var message = self.message;
             message.method = 'create';
