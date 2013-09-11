@@ -15,7 +15,7 @@ describe.skip('models.Mosto', function() {
     self.server = new mvcp('melted');
 
     self.createPlaylist = function(medias, start) {
-        var duration = _.reduce(medias, function(acc, m) { 
+        var duration = _.reduce(medias, function(acc, m) {
             return acc + m.get('length') * m.get('fps');
         }, 0);
         start = start || moment();
@@ -58,8 +58,8 @@ describe.skip('models.Mosto', function() {
             before(function(done) {
                 self.mlt_media = self.playlists().get('melted_medias');
                 self.pls = self.playlists().get('playlists');
-                self.mediamodels = _.map(self.medias, function(media, ix) { 
-                    return new Mosto.Media(_.extend(media, {playlist_order: ix})); 
+                self.mediamodels = _.map(self.medias, function(media, ix) {
+                    return new Mosto.Media(_.extend(media, {playlist_order: ix}));
                 });
                 done();
             });
@@ -107,7 +107,7 @@ describe.skip('models.Mosto', function() {
                     self.playlists().save();
                     self.mlt_media.write.take(function() {
                         self.mlt_media.write.leave();
-                        done();                        
+                        done();
                     });
                 });
                 afterEach(function(done) {
