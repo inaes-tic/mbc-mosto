@@ -176,6 +176,7 @@ exports.push = function(conn, commands, command_callback, close_callback) {
     var s = 0;
     conn.on('connect', function() {
         conn.on('data', function(data) {
+            logger.debug('[push] got data: "%s"', data);
             if (command_callback) command_callback(data);
             if (s < commands.length && data.indexOf("\n") > -1) {
                 conn.write(commands[s]+"\n");
@@ -216,7 +217,10 @@ exports.setup = function(root, output, callback) {
  * @callback: callback function to process while take melted.
  *
  */
-exports.take = semaphore.take;
+exports.take = function() {
+    logger.info('take');
+    return semaphore.take.apply(this, arguments);
+};
 
 /**
  * leave
@@ -224,4 +228,7 @@ exports.take = semaphore.take;
  * Leave execution to other melted taked.
  *
  */
-exports.leave = semaphore.leave;
+exports.leave = function() {
+    logger.info('leave');
+    return semaphore.leave.apply(this, arguments);
+};
