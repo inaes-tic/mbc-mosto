@@ -1,27 +1,28 @@
 var assert = require("assert"),
-    mosto  = require('../mosto'),
-    melted  = require('../api/Melted');
+mosto  = require('../mosto'),
+melted  = require('../api/Melted');
 
 //TODO: This test should be rewritten after @fabriciocosta merges his part with more usefull data!
-describe.skip('Mosto status', function() {
+describe('Mosto status', function() {
 
     var mosto_server = undefined;
     var rec = -1;
 
     before(function(done) {
         melted.take(function() {
-                        console.error("MELTED 1");
             melted.stop(function(){
-                        console.error("MELTED 2");
                 melted.start(function() {
-                        console.error("MELTED 3");
                     melted.setup(undefined, undefined, function() {
-                        console.error("MELTED READY");
-//                        melted.leave();
                         done();
                     });
                 });
             });
+        });
+    });
+
+    after(function(done) {
+        mosto_server.finish(function() {
+            melted.stop(done);
         });
     });
 
@@ -57,11 +58,4 @@ describe.skip('Mosto status', function() {
             });
         });
     });
-
-
-    after(function(done) {
-        mosto_server.finish(done);
-    });
-
-
 });
