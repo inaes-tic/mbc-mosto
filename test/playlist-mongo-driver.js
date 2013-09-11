@@ -106,51 +106,6 @@ describe('PlaylistMongoDriver', function(){
         done();
     });
 
-    describe.skip('#getWindow()', function() {
-        beforeEach(function(){
-            self.driver.window = undefined;
-        });
-        it('should exist', function() {
-            self.driver.should.have.property('getWindow');
-            self.driver.getWindow.should.be.a('function');
-        });
-        it('should accept two parameters and save them in window = {from, to}', function() {
-            var window = self.driver.getWindow(self.from, self.to);
-            window.from.valueOf().should.equal(self.from.valueOf());
-            window.to.valueOf().should.equal(self.to.valueOf());
-        });
-        it('should accept an object with {from, to}', function() {
-            var window = self.driver.getWindow({from: self.from, to: self.to});
-            window.from.valueOf().should.equal(self.from.valueOf());
-            window.to.valueOf().should.equal(self.to.valueOf());
-        });
-        it('should accept an object with {from, timeSpan}', function() {
-            var window = self.driver.getWindow({from: self.from, timeSpan: self.span});
-            window.from.valueOf().should.equal(self.from.valueOf());
-            var to = moment(self.from.valueOf());
-            to.add(self.span * 60 * 1000);
-            console.log('popop', window.to.valueOf(), to.valueOf())
-            window.to.valueOf().should.equal(to.valueOf());
-        });
-        it('should accept only a "to" object and assume "from" is now', function() {
-            var window = self.driver.getWindow({to: self.to});
-            window.should.have.property('from');
-            window.from.valueOf().should.approximately((new moment()).valueOf(), 10);
-        });
-        it('should accept no parameters, and use the config file from defaults', function(){
-            var window = self.driver.getWindow();
-            var config = require('mbc-common').config.Mosto.Mongo;
-            window.timeSpan.should.equal(config.load_time * 60 * 1000);
-            window.from.valueOf().should.approximately(moment().valueOf(), 10);
-            window.to.diff(window.from).valueOf().should.equal(window.timeSpan.valueOf());
-        });
-        it('should accept dates and transform them to moments', function() {
-            var window = self.driver.getWindow(new Date(), new Date());
-            moment.isMoment(window.from).should.be.ok;
-            moment.isMoment(window.to).should.be.ok;
-        });
-    });
-
     describe('#subscriptions', function() {
         before(function() {
             self.pubsub = mbc.pubsub();
