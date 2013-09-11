@@ -267,11 +267,20 @@ mosto.prototype.finish = function(callback) {
         clearTimeout(self.meltedInterval);
     this.stopDriver();
     this.playlists.get("melted_medias").write.take(function() {
-        self.playlists.get("melted_medias").stopMvcpServer().fin(self.stopHeartbeats).fin(function() {
+        logger.debug("[finish] stop melted_medias mvcp server");
+        self.playlists.get("melted_medias").stopMvcpServer().fin(function() {
+            logger.debug("[finish] stop heartbeats");
+            return self.stopHeartbeats();
+        }).fin(function() {
+            logger.debug("[finish] leave melted_medias write lock")
             self.playlists.get("melted_medias").write.leave();
+            logger.debug("[finish] stop Melted");
             Melted.stop(function(pid) {
+                logger.debug("[finish] melted stopped");
                 setTimeout( function() {
+                    logger.debug("[finish] leaving Melted lock");
                     Melted.leave();
+                    logger.debug("[finish] calling callback");
                     if (callback) callback();
                 }, 1000 );
             });
