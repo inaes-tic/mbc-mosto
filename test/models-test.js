@@ -7,7 +7,7 @@ var Mosto   = require('../models/Mosto')
 ,   moment  = require('moment')
 ;
 
-describe.skip('models.Mosto', function() {
+describe('models.Mosto', function() {
     var self = this;
     self.playlists = Mosto.Playlists;
     self.medias = helpers.getMedia();
