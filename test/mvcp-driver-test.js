@@ -41,7 +41,7 @@ describe('start mvcp-driver test', function(done) {
             });
         });
         it('-- mvcp server created', function(done) {
-            server = silence(function(){ return mvcp_server("melted"); });
+            server = mvcp_server("melted");
             assert.notEqual(server, undefined);
             done();
         });
