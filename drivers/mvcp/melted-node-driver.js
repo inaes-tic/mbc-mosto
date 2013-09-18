@@ -21,7 +21,7 @@ function melted(host, port, timeout) {
 
 melted.prototype._sendCommand = function(command) {
     logger.debug(this.uuid + " - Sending command: " + command);
-    return this.mlt.sendCommand(command, "200 OK");
+    return this.mlt.sendCommand(command);
 };
 
 melted.prototype.sendCommand = function(command) {
@@ -35,7 +35,7 @@ melted.prototype.sendCommand = function(command) {
 
 melted.prototype.getServerPlaylist = function() {
     var self = this;
-    return this.sendCommand("list u0", "201 OK").then(function(response) {
+    return this.sendCommand("list u0").then(function(response) {
         // HACK: Converting the promise object to a string :)
         var data = "." + response;
 
@@ -76,7 +76,7 @@ melted.prototype.getServerPlaylist = function() {
 
 melted.prototype.getServerStatus = function() {
     var self = this;
-    return this.sendCommand("usta u0", "202 OK").then(function(response) {
+    return this.sendCommand("usta u0").then(function(response) {
         // HACK: Converting the promise object to a string :)
         var data = "." + response;
 
@@ -134,7 +134,7 @@ melted.prototype.initServer = function() {
     var result = this.mlt.connect();
 
     result.then(function(response) {
-        var aux = self.sendCommand("ULS", "201 OK");
+        var aux = self.sendCommand("ULS");
         aux.then(function(response) {
             if (response.indexOf("U0") === -1) {
                 var err = new Error(self.uuid + " - Unit 0 not found");
@@ -250,9 +250,9 @@ melted.prototype.cleanPlaylist = function() {
     //Removes all clips but playing clip
     return this.sendCommand("CLEAN U0");
 };
-//    melted.prototype.wipePlaylist = function(successCallback, errorCallback) {
+//    melted.prototype.wipePlaylist = function() {
 //        //Removes all clips before playing clip
-//        this.sendCommand("WIPE U0", successCallback, errorCallback);
+//        return this.sendCommand("WIPE U0");
 //    };
 melted.prototype.clearPlaylist = function() {
     //Removes all clips, including playing clip
