@@ -34,7 +34,7 @@ var logger = {
     addLogger: function(category) {
         winston.loggers.add(category, {
             transports: [
-                new winston.transports.Console({ 
+                new winston.transports.Console({
                     colorize: true,
                     level: level,
                     label: category,
@@ -54,42 +54,36 @@ var logger = {
         return logger.getLogger(category);
     },
     getLogger: function(category) {
+        var _wlogger = winston.loggers.get(category);
+        var _label = "[" + category + "] ";
         var tmp = {
-            error: function(message, metadata) {
-                if (metadata) {
-                    winston.loggers.get(category).error(message, metadata);
-                    general.error("[" + category + "] " + message, metadata);
-                } else {
-                    winston.loggers.get(category).error(message);
-                    general.error("[" + category + "] " + message);
-                }
+            _getArguments: function() {
+                var args = Array.prototype.slice.call(arguments);
+                return args;
             },
-            warn: function(message, metadata) {
-                if (metadata) {
-                    winston.loggers.get(category).warn(message, metadata);
-                    general.warn("[" + category + "] " + message, metadata);
-                } else {
-                    winston.loggers.get(category).warn(message);
-                    general.warn("[" + category + "] " + message);
-                }
+            error: function() {
+                var args = this._getArguments.apply(this, arguments);
+                _wlogger.error.apply(_wlogger, args);
+                args[0] = _label + args[0];
+                general.error.apply(general, args);
             },
-            info: function(message, metadata) {
-                if (metadata) {
-                    winston.loggers.get(category).info(message, metadata);
-                    general.info("[" + category + "] " + message, metadata);
-                } else {
-                    winston.loggers.get(category).info(message);
-                    general.info("[" + category + "] " + message);
-                }
+            warn: function(message) {
+                var args = this._getArguments.apply(this, arguments);
+                _wlogger.warn.apply(_wlogger, args);
+                args[0] = _label + args[0];
+                general.warn.apply(general, args);
             },
-            debug: function(message, metadata) {
-                if (metadata) {
-                    winston.loggers.get(category).debug(message, metadata);
-                    general.debug("[" + category + "] " + message, metadata);
-                } else {
-                    winston.loggers.get(category).debug(message);
-                    general.debug("[" + category + "] " + message);
-                }
+            info: function(message) {
+                var args = this._getArguments.apply(this, arguments);
+                _wlogger.info.apply(_wlogger, args);
+                args[0] = _label + args[0];
+                general.info.apply(general, args);
+            },
+            debug: function(message) {
+                var args = this._getArguments.apply(this, arguments);
+                _wlogger.debug.apply(_wlogger, args);
+                args[0] = _label + args[0];
+                general.debug.apply(general, args);
             }
         };
         return tmp;

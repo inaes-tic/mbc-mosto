@@ -173,34 +173,56 @@ heartbeats.prototype.syncMelted = function() {
         self.melted_medias.leave();
         return;
     }
-    logger.debug("Start Sync");
+    logger.debug("[syncMelted] Start Sync");
     self.server.getServerStatus().then(function(meltedStatus) {
+        logger.info("[syncMelted] Got status");
+        logger.debug('status: "%s"', JSON.stringify(meltedStatus));
         var expected = self.melted_medias.getExpectedMedia();
+        logger.debug('expected: "%s"', JSON.stringify(expected));
         if (expected.media) {
+            logger.info("[syncMelted] Got expected media");
             var result = Q.resolve();
             var meltedClip = meltedStatus.currentClip;
             if (!meltedClip) {
+                logger.info("[syncMelted] There's no clip playing");
                 result = result.then(self.fixMelted(expected));
             } else if (expected.media.get("id").toString() !== meltedClip.id.toString()) {
+                logger.info("[syncMelted] Expected and playing medias aren't the same");
                 var index = expected.media.get('actual_order');
+                logger.debug("I should be playing clip #%d", index);
                 var frames = 9999;
                 var currentMedia = self.melted_medias.get(meltedClip.id);
+                logger.debug("currentMedia: ", JSON.stringify(currentMedia));
                 if (currentMedia) {
-                    var indexDiff = self.melted_medias.indexOf(currentMedia) - index;
+                    var currIndex = self.melted_medias.indexOf(currentMedia);
+                    logger.debug("But I'm playing clip #%d", currIndex);
+                    var indexDiff = currIndex - index;
                     if (indexDiff === -1) {
                         // melted's right before the expected media
+                        logger.info("[syncMelted] Melted's one clip before");
                         frames = currentMedia.get('out') - meltedClip.currentFrame + expected.frame;
                     } else if (indexDiff === 1) {
                         // melted's right after the expected media
+                        logger.info("[syncMelted] Melted's one clip after");
                         frames = meltedClip.currentFrame + (expected.media.get('out') - expected.frame);
                     }
+                } else {
+                    logger.info("[syncMelted] Got no currently playing media");
                 }
-
-                if (frames > expected.media.get('fps'))
+                logger.debug("frames phase: %d", frames);
+                if (frames > expected.media.get('fps')) {
+                    logger.info("[syncMelted] I'm over 1 second off");
                     result = result.then(self.fixMelted(expected));
-            } else if (Math.abs(meltedClip.currentFrame - expected.frame) > expected.media.get('fps'))
-                result = result.then(self.fixMelted(expected));
+                }
+            } else {
+                logger.info("[syncMelted Expected and playing medias are the same");
+                if (Math.abs(meltedClip.currentFrame - expected.frame) > expected.media.get('fps')) {
+                    logger.info("[syncMelted] I'm over 1 second off")
+                    result = result.then(self.fixMelted(expected));
+                }
+            }
             if (meltedStatus.status !== "playing") {
+                logger.info("[syncMelted] need to start playing");
                 result = result.then(self.startPlaying()).then(self.sendStatus());
             } else {
                 result = result.then(self.sendStatus());

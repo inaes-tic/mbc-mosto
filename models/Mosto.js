@@ -127,11 +127,11 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
 
         this.fetch();
     },
-            
+
     initMvcpServer: function() {
         return this.driver.initServer();
     },
-            
+
     stopMvcpServer: function() {
         return this.driver.stopServer();
     },
@@ -244,29 +244,34 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                 logger.debug("Obtained status: ", status);
 
                 /* remove everything but the current clip */
-                var ret = Q.resolve().then(function() {
-                    logger.debug("Cleaning playlist");
-                    return self.driver.cleanPlaylist();
+                var ret = Q.resolve()               ;
+                //                    .then(function() {
+                logger.debug("Cleaning playlist");
+                //    return
+                self.driver.cleanPlaylist().then(function(){
+                    logger.debug("Playlist cleaned");
                 });
+                //                });
 
                 var expected = self.getExpectedMedia();
 
                 var addClip = function(media) {
-                    return ret.then(function() {
-                        logger.info("Adding media: " + media.get('file'));
-                        return self.driver.appendClip(media.toJSON());
-                    });
+                    //return ret.then(function() {
+                    logger.info("Adding media: " + media.get('file'));
+                    return self.driver.appendClip(media.toJSON());
+                    //});
                 };
 
                 if( ! expected.media ) {
                     logger.warn("If we fixed blanks, we NEVER should enter here", self.pluck('file'));
                     //TODO: After fixing blanks, we NEVER should enter here... Throw error??
                     self.forEach(function(c, i) {
-                        ret = ret.then(function() {
-                            c.set("actual_order", i)
-                            logger.debug("Queuing Append for clip: " + c.get('file'));
-                            return self.driver.appendClip(c.toJSON());
-                        });
+                        //                        ret = ret.then(function() {
+                        c.set("actual_order", i)
+                        logger.debug("Queuing Append for clip: " + c.get('file'));
+                        //    return
+                        self.driver.appendClip(c.toJSON());
+                        //                        });
                     });
                     logger.debug("Leaving read semaphore");
                     return ret.then(self.leave);
@@ -284,7 +289,10 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                 } else {
                     // append expected clip
                     logger.debug("Queuing Append for expected clip: " + self.at(0).get('file'));
-                    ret = addClip(self.at(0));
+                    //                    ret =
+                    ret = addClip(self.at(0)).then(function() {
+                        logger.debug("Appended first clip");
+                    });
 
                     // I'll need to add the current clip to myself to make sure I keep reflecting melted status
                     add_current = status.currentClip;
@@ -293,7 +301,9 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                 // append next clip just in case
                 if(self.length > 1) {
                     logger.debug("Queuing Append for next clip: " + self.at(1).get("file"));
-                    ret = addClip(self.at(1));
+                    ret = addClip(self.at(1)).then(function() {
+                        logger.debug("Appended second clip");
+                    });
                 }
 
                 // generate a new promise that will release the read semaphore inmediatly after appending the next clip
@@ -313,7 +323,9 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                 /* and then put everything after into melted */
                 logger.debug("Queuing Append for rest of the clips");
                 _.range(2, self.length).forEach(function(i) {
-                    ret = addClip(self.at(i));
+                    ret = addClip(self.at(i)).then(function(){
+                        logger.debug("Appended %d-th clip", i);
+                    });
                 });
 
                 if( add_current ) {
@@ -327,9 +339,10 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
             }).fail(function(err) {
                 logger.error("Error loading clips to server", err);
                 self.leave();
-//                throw err;
-                self.set(models, options); 
+                //                throw err;
+                self.set(models, options);
             }).fin(function(){
+                logger.info("Leaving write semaphore");
                 self.write.leave();
             });
         });
@@ -361,7 +374,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                         if( status.status === 'stopped' ) {
                             self.adjustTimes(0, 0);
                             // LET HEARTBEATS HANDLE THIS...
-//                            return self.driver.play();
+                            //                            return self.driver.play();
                         } else {
                             var current = self.findWhere({id: status.currentClip.id});
                             var index = self.indexOf(current);
