@@ -152,8 +152,8 @@ mongo_driver.prototype.createPlaylist = function(sched, callback) {
             }).sortBy(function(block){
                 return list.pieces.indexOf(block._id);
             }).value();
-            var startDate = new Date(sched.start);
-            var endDate   = new Date(sched.end);
+            var startDate = moment(sched.start);
+            var endDate   = moment(sched.end);
             var name = sched.title;
             var playlist_id = (sched._id.toHexString && sched._id.toHexString()) || sched._id;
 
