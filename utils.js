@@ -2,11 +2,11 @@ var moment = require('moment');
 
 exports = module.exports = {
     getXmlFileNameFromClip: function(clip) {
-        return clip.playlist_id + "-" + clip.id + ".xml";
+        return clip.playlist_id + "$" + clip.id + ".xml";
     },
 
     getPlaylistIdFromXmlFileName: function(filename) {
-        var aux = filename.split("-");
+        var aux = filename.split("$");
         if ( aux.length > 0 ) {
             filename = aux[0];
         }
@@ -15,10 +15,11 @@ exports = module.exports = {
 
     getClipIdFromXmlFileName: function(filename) {
         // return everything between the first - and .xml
-        var match = filename.match(/^[^-]+-(.*)\.xml$/);
+        var match = filename.match(/^[^\$]+\$(.*)\.xml$/);
         if( match ) {
             return match[1];
         }
+        return filename;
     },
 
     getTimeLengthFromFrames: function(frames, fps) {
@@ -79,7 +80,7 @@ exports = module.exports = {
         var date = new moment(date_timestamp);
         return date.unix();
     },
-    
+
     convertTimeToFrames: function(time, fps) {
         var mTime = moment(time, "HH:mm:ss");
         var seconds = mTime.seconds() + (mTime.minutes() * 60) + (mTime.hours() * 60 * 60);
