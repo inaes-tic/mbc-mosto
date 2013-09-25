@@ -36,6 +36,7 @@ mongo_driver.prototype.start = function() {
 
     self.scheds = db.collection('scheds');
     self.lists = db.collection('lists');
+    self.pieces = db.collection('pieces');
 
     self.channel.on('JSONmessage', function(chan, msg) {
         var handler = self.pubsub_handler[chan];
@@ -136,43 +137,51 @@ mongo_driver.prototype.getPlaylists = function(window, callback) {
 mongo_driver.prototype.createPlaylist = function(sched, callback) {
     var self = this;
     logger.debug("Creating Playlist for:", sched);
-    self.lists.findById(sched.list, function(err, list) {
+    self.lists.findById(sched.playlist, function(err, list) {
         if( err ) {
             logger.error("Error obtaining list: ", err);
             callback(err);
             return err;
         }
 
-        logger.info("Processing list:", {"id": list && list._id, "clips": list && list.models.length});
-        var startDate = new Date(sched.start);
-        var endDate   = new Date(sched.end);
-        var name = sched.title;
-        var playlist_id = (sched._id.toHexString && sched._id.toHexString()) || sched._id;
+        logger.info("Processing list:", {"id": list && list._id, "clips": list && list.pieces.length});
+        self.pieces.findItems({_id:{"$in": list.pieces}}, function(err, pieces) {
+            pieces = _.chain(pieces).map(function(block){
+                block._id = (block._id.toHexString && block._id.toHexString()) || block._id;
+                return block;
+            }).sortBy(function(block){
+                return list.pieces.indexOf(block._id);
+            }).value();
+            var startDate = new Date(sched.start);
+            var endDate   = new Date(sched.end);
+            var name = sched.title;
+            var playlist_id = (sched._id.toHexString && sched._id.toHexString()) || sched._id;
 
-        var medias = [];
-        list.models.forEach(function(block, order) {
-            var block_id = (block._id.toHexString && block._id.toHexString()) || block._id;
-            var orig_order = order;
-            var clip_name = block.name;
-            // TODO: don't know what goes in type
-            var type = "default";
-            var file = block.file;
-            var length = moment(block.durationraw, "HH:mm:ss.SSS");
-            var fps = block.fps;
-            medias.push(new Media(block_id, orig_order, playlist_id, clip_name, type, file,
-                                  moment.duration({
-                                      hours: length.hours(),
-                                      minutes: length.minutes(),
-                                      seconds: length.seconds(),
-                                      milliseconds: length.milliseconds(),
-                                  }), parseFloat(fps)));
+            var medias = [];
+            pieces.forEach(function(block, order) {
+                var block_id = (block._id.toHexString && block._id.toHexString()) || block._id;
+                var orig_order = order;
+                var clip_name = block.name;
+                // TODO: don't know what goes in type
+                var type = "default";
+                var file = block.file;
+                var length = moment(block.durationraw, "HH:mm:ss.SSS");
+                var fps = block.fps;
+                medias.push(new Media(block_id, orig_order, playlist_id, clip_name, type, file,
+                                      moment.duration({
+                                          hours: length.hours(),
+                                          minutes: length.minutes(),
+                                          seconds: length.seconds(),
+                                          milliseconds: length.milliseconds(),
+                                      }), parseFloat(fps)));
+            });
+
+            var playlist = new Playlist(playlist_id, name, startDate, medias, endDate, "snap");
+
+            logger.debug("Created Playlist:", playlist);
+
+            callback(err, playlist);
         });
-
-        var playlist = new Playlist(playlist_id, name, startDate, medias, endDate, "snap");
-
-        logger.debug("Created Playlist:", playlist);
-
-        callback(err, playlist);
     });
 };
 
