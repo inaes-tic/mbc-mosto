@@ -5,7 +5,7 @@
     "author": "Juan Martin Runge <jmrunge@gmail.com>",
     "contributors": [ "Niv Sardi <xaiki@inaes.gob.ar>", "hatcsh"],
     "scripts": {
-        "test": "make test"
+        "test": "make coverage"
     },
     "main": "mosto",
     "repository": {
@@ -31,7 +31,8 @@
         "node-mlt"    : "git://github.com/inaes-tic/node-mlt.git#0.0.1",
         "semaphore"   : "1.0.x",
         "backbone"    : "1.x.x", 
-        "winston"     : "0.7.x"
+        "winston"     : "0.7.x",
+        "istanbul"    : "0.1.43"
     },
     "devDependencies": {
         "mocha"       : "1.7.x",

@@ -1,7 +1,10 @@
 ROOT=$(shell pwd)
 NODE=$(shell which node nodejs | head -1)
-MOCHA_DEBUG=node_modules/mocha/bin/mocha --debug-brk --reporter spec --timeout 30000 test
-MOCHA=node_modules/mocha/bin/mocha --reporter spec --timeout 30000 test
+MOCHA_BIN=node_modules/mocha/bin/mocha
+MOCHA_ARGS=--reporter spec --timeout 30000
+MOCHA_DEBUG=${MOCHA_BIN} --debug-brk ${MOCHA_ARGS} test
+MOCHA=${MOCHA_BIN} ${MOCHA_ARGS} test
+COVERAGE=node_modules/.bin/istanbul cover
 MELTED_BUILD=${ROOT}/melted/BUILD
 MELTED_INTREE=${MELTED_BUILD}/bin/melted
 MELTED = $(shell sh -c "which melted || echo ${MELTED_INTREE}")
@@ -77,6 +80,9 @@ test/videos/%.mp4: test/images/%.png
 
 test: videos ${MOCHA} melted-check
 	@NODE_ENV=test NODE_CONFIG_DIR=$(PWD)/test/config/ ${NODE} ${MOCHA}
+
+coverage: videos melted-check
+	@NODE_ENV=test NODE_CONFIG_DIR=$(PWD)/test/config/ ${COVERAGE} ./node_modules/.bin/_mocha -- ${MOCHA_ARGS}
 
 debug-test: videos melted-check
 	@NODE_ENV=test NODE_CONFIG_DIR=$(PWD)/test/config/ ${NODE} ${MOCHA_DEBUG}
