@@ -18,7 +18,7 @@ _meltedbin = function(callback, errorCallback) {
             conf.bin = pbin;
             logger.warn("Could not define melted binary, using " + pbin + " [" + error + " - " +  stderr + "]");
             return callback(pbin);
-        } 
+        }
         pbin = "melted";
         conf.bin = pbin;
         logger.info('Melted binary: ' + pbin);
@@ -108,7 +108,7 @@ exports.stop = function(callback) {
 //                return callback(pid)
 //            });
             exec('killall -9 melted', function(error, stdout, stderr) {
-                if (error) 
+                if (error)
                     logger.error("Error killing melted process: [" + error + " - " +  stderr + "]");
                 else
                     logger.info("Melted process terminated successfully");

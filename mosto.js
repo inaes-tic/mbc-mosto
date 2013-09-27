@@ -13,7 +13,7 @@ var fs               = require('fs')
 ,   mbc              = require('mbc-common')
 ,   config           = mbc.config.Mosto.General
 ,   _                = require('underscore')
-,   heartbeats        = require('./heartbeats')
+,   heartbeats       = require('./heartbeats')
 ,   models           = require('./models/Mosto')
 ,   logger           = mbc.logger().addLogger('CORE')
 ;
@@ -36,7 +36,7 @@ function mosto(customConfig) {
     this.meltedInterval = undefined;
     /* TODO: This should be in config */
     this.restartMelted = true;
-    
+
     events.EventEmitter.call(this);
 }
 

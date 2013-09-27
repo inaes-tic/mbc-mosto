@@ -30,7 +30,7 @@ function json_driver() {
                 },
                 change: function(changeType, filePath, fileCurrentStat, filePreviousStat){
                     var name = self.getFileName(filePath);
-                    
+
                     if (changeType === "create") {
                         logger.info("Playlist added: " + name);
                         self.createPlaylist(config.playlists.to_read, name, "create");
@@ -51,7 +51,7 @@ function json_driver() {
     json_driver.prototype.getFileName = function(path) {
         return path.substring(path.lastIndexOf("/") + 1);
     };
-    
+
     json_driver.prototype.readPlaylists =  function() {
         logger.info("Start reading playlists from " + config.to_read);
         var aux = fs.readdirSync(config.to_read);
@@ -125,7 +125,7 @@ function json_driver() {
             }
         });
     };
-    
+
 }
 
 exports = module.exports = function() {
