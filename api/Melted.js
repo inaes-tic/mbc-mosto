@@ -2,10 +2,11 @@ var spawn = require('child_process').spawn;
 var exec = require('child_process').exec;
 var net = require('net');
 var semaphore = require('semaphore')(1);
-var conf = require('mbc-common').config.Mosto.Melted;
+var mbc = require('mbc-common');
+var conf = mbc.config.Mosto.Melted;
 var melted_bin_path = conf.root + '/melted/BUILD/bin/melted';
 var melted_lib_path = conf.root + '/melted/BUILD/lib';
-var logger = require('../logger').addLogger('MELTED'),
+var logger = mbc.logger().addLogger('MELTED'),
 
 _meltedbin = function(callback, errorCallback) {
     logger.debug("Executing _meltedbin()");

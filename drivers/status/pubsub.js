@@ -9,7 +9,7 @@ var events = require('events');
 var util = require('util');
 var _ = require('underscore');
 var mbc = require('mbc-common');
-var logger = require('../../logger').addLogger('PUBSUB-DRIVER')
+var logger = mbc.logger().addLogger('PUBSUB-DRIVER');
 
 var defaults = { // copied from caspa/models.App.Status
     _id: 2,

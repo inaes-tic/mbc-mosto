@@ -1,6 +1,7 @@
 var melted_node_driver = require("./melted-node-driver"),
-    logger             = require('../../logger').addLogger('MVCP-DRIVER'),
-    conf               = require('mbc-common').config.Mosto.Melted;
+    mbc                = require("mbc-common"),
+    logger             = mbc.logger().addLogger('MVCP-DRIVER'),
+    conf               = mbc.config.Mosto.Melted;
 
 exports = module.exports = function(type) {
     logger.info("Creating server for type [" + type + "]");
