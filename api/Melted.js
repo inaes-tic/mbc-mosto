@@ -2,10 +2,11 @@ var spawn = require('child_process').spawn;
 var exec = require('child_process').exec;
 var net = require('net');
 var semaphore = require('semaphore')(1);
-var conf = require('mbc-common').config.Mosto.Melted;
+var mbc = require('mbc-common');
+var conf = mbc.config.Mosto.Melted;
 var melted_bin_path = conf.root + '/melted/BUILD/bin/melted';
 var melted_lib_path = conf.root + '/melted/BUILD/lib';
-var logger = require('../logger').addLogger('MELTED'),
+var logger = mbc.logger().addLogger('MELTED'),
 
 _meltedbin = function(callback, errorCallback) {
     logger.debug("Executing _meltedbin()");
@@ -17,7 +18,7 @@ _meltedbin = function(callback, errorCallback) {
             conf.bin = pbin;
             logger.warn("Could not define melted binary, using " + pbin + " [" + error + " - " +  stderr + "]");
             return callback(pbin);
-        } 
+        }
         pbin = "melted";
         conf.bin = pbin;
         logger.info('Melted binary: ' + pbin);
@@ -107,7 +108,7 @@ exports.stop = function(callback) {
 //                return callback(pid)
 //            });
             exec('killall -9 melted', function(error, stdout, stderr) {
-                if (error) 
+                if (error)
                     logger.error("Error killing melted process: [" + error + " - " +  stderr + "]");
                 else
                     logger.info("Melted process terminated successfully");

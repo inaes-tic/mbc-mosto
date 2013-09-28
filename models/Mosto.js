@@ -1,5 +1,6 @@
 var Backbone  = require('backbone')
-,   config    = require('mbc-common').config.Mosto.General
+,   mbc       = require('mbc-common')
+,   config    = mbc.config.Mosto.General
 ,   path      = require('path')
 ,   uuid      = require('node-uuid')
 ,   _         = require('underscore')
@@ -8,7 +9,7 @@ var Backbone  = require('backbone')
 ,   semaphore = require('semaphore')
 ,   utils     = require('../utils')
 ,   Q         = require('q')
-,   logger    = require('../logger').addLogger('MODELS')
+,   logger    = mbc.logger().addLogger('MODELS')
 ;
 
 var Mosto = {};
