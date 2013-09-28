@@ -1,13 +1,13 @@
-var config   = require("mbc-common").config.Mosto.Mongo
+var mbc      = require('mbc-common')
+,   config   = mbc.config.Mosto.Mongo
 ,   Playlist = require('../../api/Playlist')
 ,   Media    = require('../../api/Media')
 ,   mubsub   = require("mubsub")
 ,   moment   = require("moment")
-,   mbc      = require('mbc-common')
 ,   async    = require('async')
 ,   events   = require ('events')
 ,   util     = require ('util')
-,   logger   = require('../../logger').addLogger('MONGO-DRIVER')
+,   logger   = mbc.logger().addLogger('MONGO-DRIVER')
 ,   _        = require('underscore');
 
 function drop_err(callback, err_handler) {
@@ -100,11 +100,11 @@ mongo_driver.prototype.getPlaylists = function(window, callback) {
     var self = this;
 
     logger.debug("getPlaylists", window);
-       
+
     var query = {};
     query.start = { $lte: window.to.valueOf() };
     query.end = { $gte: window.from.valueOf() };
-    
+
     self.scheds.findItems(query, function(err, scheds) {
         if( err ) {
             logger.error("Error obtaining playlists: ", err);
@@ -171,7 +171,7 @@ mongo_driver.prototype.createPlaylist = function(sched, callback) {
         var playlist = new Playlist(playlist_id, name, startDate, medias, endDate, "snap");
 
         logger.debug("Created Playlist:", playlist);
-        
+
         callback(err, playlist);
     });
 };

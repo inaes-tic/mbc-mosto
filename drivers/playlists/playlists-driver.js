@@ -1,6 +1,7 @@
 var json_driver  = require("./json-driver"),
     mongo_driver = require("./mongo-driver"),
-    logger       = require('../../logger').addLogger('PLAYLISTS-DRIVER');
+    mbc          = require("mbc-common"),
+    logger       = mbc.logger().addLogger('PLAYLISTS-DRIVER'),
     test_driver  = require("./test-driver");
 
 exports = module.exports = function(type, config) {

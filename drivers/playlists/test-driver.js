@@ -6,7 +6,7 @@ var Playlist = require('../../api/Playlist'),
     async    = require('async'),
     events   = require ('events'),
     util     = require ('util'),
-    logger   = require('../../logger').addLogger('TEST-DRIVER'),
+    logger   = mbc.logger().addLogger('TEST-DRIVER'),
     _        = require('underscore');
 
 

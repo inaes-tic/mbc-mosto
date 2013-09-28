@@ -3,11 +3,12 @@ var melted_node = require('melted-node')
 ,   Status      = require('../../api/Status')
 ,   StatusClip  = require('../../api/StatusClip')
 ,   fs          = require('fs')
-,   config      = require('mbc-common').config.Mosto.Melted
+,   mbc         = require('mbc-common')
+,   config      = mbc.config.Mosto.Melted
 ,   Q           = require('q')
 ,   utils       = require('../../utils')
-,   logger      = require('../../logger').addLogger('MELTED-NODE-DRIVER')
-,   melted_log  = require('../../logger').addLogger('MELTED-NODE')
+,   logger      = mbc.logger().addLogger('MELTED-NODE-DRIVER')
+,   melted_log  = mbc.logger().addLogger('MELTED-NODE')
 ,   uuid        = require('node-uuid')
 ;
 

@@ -25,7 +25,7 @@ export NODE_CONFIG_DIR ?= $(PWD)/node_modules/mbc-common/config
 all: test serve
 
 serve: melted-check mosto.js server.js
-	${NODE} server.js
+	@LOG_LEVEL=info ${NODE} server.js
 
 debug: melted-check mosto.js server.js
 	${NODE} --debug-brk server.js

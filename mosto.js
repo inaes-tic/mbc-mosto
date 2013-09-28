@@ -10,11 +10,12 @@ var fs               = require('fs')
 ,   playlists_driver = require('./drivers/playlists/playlists-driver')
 ,   status_driver    = require('./drivers/status/pubsub')
 ,   utils            = require('./utils')
-,   config           = require('mbc-common').config.Mosto.General
+,   mbc              = require('mbc-common')
+,   config           = mbc.config.Mosto.General
 ,   _                = require('underscore')
-,   heartbeats        = require('./heartbeats')
+,   heartbeats       = require('./heartbeats')
 ,   models           = require('./models/Mosto')
-,   logger           = require('./logger').addLogger('CORE')
+,   logger           = mbc.logger().addLogger('CORE')
 ;
 //TODO: Chequear window, se esta construyendo de formas distintas
 //INCLUSO EN EL DRIVER MISMO SE USA DE FORMAS DISTINTAS!!!
@@ -35,7 +36,7 @@ function mosto(customConfig) {
     this.meltedInterval = undefined;
     /* TODO: This should be in config */
     this.restartMelted = true;
-    
+
     events.EventEmitter.call(this);
 }
 

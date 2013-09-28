@@ -1,13 +1,14 @@
-var config           = require('mbc-common').config.Mosto.HeartBeats,
-    mvcpConfig       = require('mbc-common').config.Mosto.Melted,
+var mbc              = require('mbc-common'),
+    config           = mbc.config.Mosto.HeartBeats,
+    mvcpConfig       = mbc.config.Mosto.Melted,
     util             = require('util'),
-    events           = require('events'), 
-    Mosto            = require('./models/Mosto'), 
+    events           = require('events'),
+    Mosto            = require('./models/Mosto'),
     moment           = require('moment'),
     fs               = require('fs'),
-    mvcp_server      = require('./drivers/mvcp/mvcp-driver'), 
+    mvcp_server      = require('./drivers/mvcp/mvcp-driver'),
     Q                = require('q'),
-    logger           = require('./logger').addLogger('HEARTBEATS'),
+    logger           = mbc.logger().addLogger('HEARTBEATS'),
     utils            = require('./utils');
 
 /* Events emited
