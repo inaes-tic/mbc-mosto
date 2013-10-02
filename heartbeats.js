@@ -174,7 +174,7 @@ heartbeats.prototype.syncMelted = function() {
         self.melted_medias.leave();
         return;
     }
-    logger.debug("[syncMelted] Start Sync");
+    logger.info("[syncMelted] Start Sync");
     self.server.getServerStatus().then(function(meltedStatus) {
         logger.info("[syncMelted] Got status");
         logger.debug('status: "%s"', JSON.stringify(meltedStatus));
@@ -235,7 +235,7 @@ heartbeats.prototype.syncMelted = function() {
     }).fail(self.handleError.bind(self)).fin(function() {
         self.scheduleSync();
         self.melted_medias.leave();
-        logger.debug("Finish Sync");
+        logger.info("Finish Sync");
     });
 };
 
