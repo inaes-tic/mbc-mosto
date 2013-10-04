@@ -177,6 +177,7 @@ heartbeats.prototype.syncMelted = function() {
         return;
     }
     logger.info("[syncMelted] Start Sync");
+    self.emit("syncStarted");
     self.server.getServerStatus().then(function(meltedStatus) {
         logger.info("[syncMelted] Got status");
         logger.debug('status: "%s"', JSON.stringify(meltedStatus));
@@ -230,15 +231,24 @@ heartbeats.prototype.syncMelted = function() {
             } else {
                 result = result.then(self.sendStatus());
             }
+            result = result.then(self.sendSyncEnded("Success"));
             return result;
         } else {
             self.handleNoMedias();
+            self.sendSyncEnded("Success");
         }
-    }).fail(self.handleError.bind(self)).fin(function() {
+    }).fail(function(err) {
+        self.handleError(err);
+        self.sendSyncEnded("Failed", err);
+    }).fin(function() {
         self.scheduleSync();
         self.melted_medias.leave();
         logger.info("Finish Sync");
     });
+};
+
+heartbeats.prototype.sendSyncEnded = function(result, error) {
+    this.emit("syncEnded", result, error);
 };
 
 heartbeats.prototype.startPlaying = function() {
