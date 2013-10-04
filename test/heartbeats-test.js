@@ -49,6 +49,8 @@ describe('Mosto Heartbeats Test', function() {
             self.outOfSync = 0;
             self.hbErrors = 0;
             self.noClips = 0;
+            self.start = 0;
+            self.end = 0;
             before(function(done) {
                 self.hb.on('forceCheckout', function() {
                     self.ckeckouts++;
@@ -67,6 +69,14 @@ describe('Mosto Heartbeats Test', function() {
                 });
                 self.hb.on('noClips', function() {
                     self.noClips++;
+                });
+                self.hb.on('syncStarted', function() {
+                    if (self.start === 0 && self.end > 0)
+                        self.start = moment();
+                });
+                self.hb.on('syncEnded', function() {
+                    if (self.end === 0)
+                        self.end = moment();
                 });
                 self.hb.init();
                 setTimeout(function() {
@@ -98,6 +108,17 @@ describe('Mosto Heartbeats Test', function() {
             it('-- Should have received > 1 noClips events', function() {
                 console.warn("Received " + self.noClips + " events");
                 assert.ok(self.noClips > 1);
+            });
+            it('-- Should have received syncStarted event', function() {
+                assert.ok(self.start > 0);
+            });
+            it('-- Should have received syncEnded event', function() {
+                assert.ok(self.end > 0);
+            });
+            it('-- Should wait 50 ms between end and start of sync', function() {
+                var millis = self.start - self.end;
+                console.warn("Ms " + millis);
+                assert.ok(millis >= 50);
             });
         });
 
@@ -137,6 +158,8 @@ describe('Mosto Heartbeats Test', function() {
         self.outOfSync = 0;
         self.hbErrors = 0;
         self.noClips = 0;
+        self.start = 0;
+        self.end = 0;
 
         before(function(done) {
             var config = {
@@ -165,6 +188,14 @@ describe('Mosto Heartbeats Test', function() {
             });
             self.hb.on('noClips', function() {
                 self.noClips++;
+            });
+            self.hb.on('syncStarted', function() {
+                if (self.start === 0 && self.end > 0)
+                    self.start = moment();
+            });
+            self.hb.on('syncEnded', function() {
+                if (self.end === 0)
+                    self.end = moment();
             });
             self.hb.init();
 
@@ -216,6 +247,17 @@ describe('Mosto Heartbeats Test', function() {
                     console.warn("Received " + self.noClips + " events");
                 assert.equal(self.noClips, 0);
                 done();
+            });
+            it('-- Should have received syncStarted event', function() {
+                assert.ok(self.start > 0);
+            });
+            it('-- Should have received syncEnded event', function() {
+                assert.ok(self.end > 0);
+            });
+            it('-- Should wait 50 ms between end and start of sync', function() {
+                var millis = self.start - self.end;
+                console.warn("Ms " + millis);
+                assert.ok(millis >= 50);
             });
         });
         describe('-- Make a goto in melted and wait 1.5 second', function() {
