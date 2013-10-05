@@ -49,8 +49,8 @@ describe('Mosto Heartbeats Test', function() {
             self.outOfSync = 0;
             self.hbErrors = 0;
             self.noClips = 0;
-            self.start = 0;
-            self.end = 0;
+            self.start = [];
+            self.end = [];
             before(function(done) {
                 self.hb.on('forceCheckout', function() {
                     self.ckeckouts++;
@@ -71,12 +71,10 @@ describe('Mosto Heartbeats Test', function() {
                     self.noClips++;
                 });
                 self.hb.on('syncStarted', function() {
-                    if (self.start === 0 && self.end > 0)
-                        self.start = moment();
+                    self.start.push(moment());
                 });
                 self.hb.on('syncEnded', function() {
-                    if (self.end === 0)
-                        self.end = moment();
+                    self.end.push(moment());
                 });
                 self.hb.init();
                 setTimeout(function() {
@@ -110,15 +108,28 @@ describe('Mosto Heartbeats Test', function() {
                 assert.ok(self.noClips > 1);
             });
             it('-- Should have received syncStarted event', function() {
-                assert.ok(self.start > 0);
+                //assert.ok(self.start > 0);
+                console.log('Got', self.start.length);
+                assert.ok(self.start.length > 0);
             });
             it('-- Should have received syncEnded event', function() {
-                assert.ok(self.end > 0);
+                //assert.ok(self.end > 0);
+                console.log('Got', self.end.length);
+                assert.ok(self.end.length > 0);
+            });
+            it('-- Should have received more starts than ends', function() {
+                assert.ok(self.start.length >= self.end.length);
             });
             it('-- Should wait 50 ms between end and start of sync', function() {
-                var millis = self.start - self.end;
-                console.warn("Ms " + millis);
-                assert.ok(millis >= 50);
+                var results = [];
+                var messages = [];
+                for(var i = 1 ; i < self.start.length ; i++) {
+                    var millis = self.start[i] - self.end[i-1];
+                    results.push(millis >= 50);
+                    messages.push(i + ": Ms " + millis);
+                }
+                console.warn(messages.join("|"));
+                assert.ok(_.all(results));
             });
         });
 
