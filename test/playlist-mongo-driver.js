@@ -4,6 +4,9 @@ var should = require('should');
 var mbc = require('mbc-common');
 var _ = require('underscore');
 var melted  = require('../api/Melted');
+var helpers = require('./media_helpers');
+var Media = require('mbc-common/models/Media');
+var uuid = require('node-uuid');
 
 describe('PlaylistMongoDriver', function(){
     var self = this;
@@ -21,38 +24,67 @@ describe('PlaylistMongoDriver', function(){
                     }
                 };
                 self.driver = new mongo_driver(conf);
+
                 self.db = mbc.db(conf.db);
                 self.driver.start();
                 self.from = moment();
                 self.span = 120;
                 self.to = moment((self.from.unix() + self.span * 60) * 1000); // add 2hs
 
-                var db_data = require('./playlists/db-data');
-                self.lists = db_data.lists;
-                self.scheds = db_data.scheds;
-
                 self.collections = {
                     lists: self.db.collection('lists'),
                     scheds: self.db.collection('scheds'),
+                    pieces: self.db.collection('pieces'),
                 };
 
-                var ready = _.after(self.lists.length + self.scheds.length, function(){ done() });
-
-                self.lists.forEach(function(playlist) {
-                    playlist._id = self.db.ObjectID(playlist._id);
-                    self.collections.lists.save(playlist, function(err, list) {
-                        ready();
-                    });
-                });
-                self.scheds.forEach(function(schedule, ix) {
-                    var hsix = ix - 3;
+                var medias = helpers.getMBCMedia();
+                // let's create a playlist at least 1 hour long
+                var playlist = new Media.Playlist({_id: uuid.v1()});
+                while(playlist.get('duration') < 3600000) {
+                    var media = _.randelem(medias);
+                    var piece = new Media.Piece(media.toJSON());
+                    piece.set('_id', uuid.v1());
+                    playlist.get('pieces').add(piece);
+                    playlist.update_duration_nowait(playlist.get('pieces'));
+                }
+                self.pieces = playlist.get('pieces');
+                self.lists = [playlist];
+                // program at least 4hs of schedules
+                self.scheds = [];
+                for(var i = 0 ; i < 5 ; i++) {
+                    var schedule = {
+                        _id: uuid.v1(),
+                        playlist: playlist,
+                    };
+                    var hsix = i - 3;
                     var now = self.from;
                     // schedules are from 1hs before now
                     var schtime = moment(now + (hsix * 30 * 60 * 1000)).unix();
-                    var length = schedule.end - schedule.start;
+                    var length = moment.duration(playlist.get('duration'));
                     schedule.start = schtime;
                     schedule.end = schtime + length;
-                    self.collections.scheds.save(schedule, function(err, sched){
+                    var occurrence = new Media.Occurrence(schedule);
+                    self.scheds.push(occurrence);
+                };
+
+                var ready = _.after(
+                    self.lists.length + self.pieces.length + self.scheds.length,
+                    function(){ done() });
+
+                self.pieces.forEach(function(piece) {
+                    self.collections.pieces.save(piece.toJSON(), function(err, list) {
+                        ready();
+                    });
+                });
+
+                self.lists.forEach(function(playlist) {
+                    self.collections.lists.save(playlist.toJSON(), function(err, list) {
+                        ready();
+                    });
+                });
+
+                self.scheds.forEach(function(occurrence) {
+                    self.collections.scheds.save(occurrence.toJSON(), function(err, sched){
                         ready();
                     });
                 });
