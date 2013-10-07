@@ -152,16 +152,14 @@ describe('PlaylistMongoDriver', function(){
     describe('#subscriptions', function() {
         before(function() {
             self.pubsub = mbc.pubsub();
-
+            var sched = _.randelem(self.scheds);
+            var list = sched.get('playlist');
+            var model = sched.toJSON();
+            model.start = moment().valueOf()
+            model.end = moment().add(list.get('duration'));
             self.message = {
                 backend: 'schedbackend',
-                model: {
-                    start: moment().unix(),
-                    end: moment().add(5 * 60 * 1000).unix(),
-                    _id: self.scheds[0]._id,
-                    list: self.lists[0]._id,
-                    title: 'title'
-                },
+                model: model,
                 channel: function() { return [this.backend, this.method].join('.') }
             };
         });
