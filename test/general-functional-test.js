@@ -174,7 +174,7 @@ describe.skip("Mosto functional test", function() {
 
     /* generic tests */
     self.is_synced = function(done) {
-        var result = self.melted.sendPromisedCommand('USTA U0', '202 OK').then(function(val) {
+        var result = self.melted.sendCommand('USTA U0').then(function(val) {
             var time = moment();
             var expected_media = self.get_media(time);
             console.log('[is_synced] time:', time.valueOf());
@@ -219,7 +219,7 @@ describe.skip("Mosto functional test", function() {
             });
         });
         it('should show black', function(done) {
-            var promise = self.melted.sendPromisedCommand('USTA U0', '202 OK');
+            var promise = self.melted.sendCommand('USTA U0');
             promise.then(function(result) {
                 result = result.split('\r\n')[1].split(' ');
                 var file = result[2];
@@ -305,7 +305,7 @@ describe.skip("Mosto functional test", function() {
                 });
                 it('should not break');
                 it('should be playing blank clip', function(done) {
-                    var promise = self.melted.sendPromisedCommand('USTA U0', '202 OK');
+                    var promise = self.melted.sendCommand('USTA U0');
                     promise.then(function(result) {
                         result = result.split('\r\n')[1].split(' ');
                         var file = result[2];
