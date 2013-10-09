@@ -266,7 +266,9 @@ describe("Mosto functional test", function() {
                         self.mosto = new mosto();
                         self.mosto.once('playing', function() {
                             // send pubsub messages with new playlists
-                            self.melted.connect().then(done);
+                            self.melted.connect().then(function(){
+                                done();
+                            }).done();
                         });
                         self.mosto.init();
                     });
