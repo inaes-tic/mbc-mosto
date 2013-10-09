@@ -144,8 +144,9 @@ mongo_driver.prototype.createPlaylist = function(sched, callback) {
         }
         logger.debug("LIST:" + list._id);
 
-        logger.info("Processing list:", {"id": list && list._id, "clips": list && list.pieces.length});
+        logger.info("Processing list:", {"id": list && list._id, "clips": list && list.pieces});
         self.pieces.findItems({_id:{"$in": list.pieces}}, function(err, pieces) {
+            logger.info('found', (pieces && pieces.length) || 0, 'pieces');
             pieces = _.chain(pieces).map(function(block){
                 block._id = (block._id.toHexString && block._id.toHexString()) || block._id;
                 return block;
