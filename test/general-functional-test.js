@@ -317,7 +317,7 @@ describe("Mosto functional test", function() {
                     promise.then(function(result) {
                         result = result.split('\r\n')[1].split(' ');
                         var file = result[2];
-                        file.should.include('black_id');
+                        file.should.include('BLANK');
                     }).then(done).done();
                 });
             });
