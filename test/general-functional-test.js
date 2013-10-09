@@ -181,7 +181,7 @@ describe("Mosto functional test", function() {
     self.db = mbc.db();
 
     /* generic tests */
-    self.is_synced = function(done) {
+    self.is_synced = function(time) {
         var result = self.melted.sendCommand('USTA U0').then(function(val) {
             var time = moment();
             var expected_media = self.get_media(time);
@@ -196,8 +196,7 @@ describe("Mosto functional test", function() {
             var elapsed = helper.framesToMilliseconds(frame, fps);
             var expected = (time - expected_media.start_time).valueOf();
             console.log('[is_synced] got', lines[1], 'at', frame, ':', elapsed, 'expected', expected);
-            elapsed.should.be.approximately(expected, 1000);
-            done();
+            elapsed.should.be.approximately(expected, time);
         });
         return result;
     };
