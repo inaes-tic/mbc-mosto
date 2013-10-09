@@ -283,7 +283,7 @@ describe("Mosto functional test", function() {
                 var expected_occurrence = self.get_occurrence(time);
                 var expected_media = self.get_media(time);
 
-                var result = self.melted.sendPromisedCommand('USTA U0', '202 OK');
+                var result = self.melted.sendCommand('USTA U0');
                 result.then(function(val) {
                     var lines = val.split("\r\n");
                     lines[0].should.eql('202 OK');
