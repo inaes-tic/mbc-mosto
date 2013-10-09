@@ -309,11 +309,13 @@ describe("Mosto functional test", function() {
                 before(function(done) {
                     var occurrence = self.get_occurrence();
                     self.delete_occurrence(occurrence).then(function() {
-                        setTimeout(function() {
-                            self.mosto.once('status', function(status) {
+                        self.listener.once('message', function(chan, msg) {
+                            if(chan == 'mostoStatus') {
+                                self.listener.unsubscribe('mostoStatus');
                                 done();
-                            });
-                        }, mosto_config.timer_interval);
+                            }
+                        });
+                        self.listener.subscribe('mostoStatus');
                     }).done();
                 });
                 it('should not break');
