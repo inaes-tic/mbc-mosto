@@ -71,7 +71,7 @@ describe('PlaylistMongoDriver', function(){
 
                 var ready = _.after(
                     self.lists.length + self.pieces.length + self.scheds.length,
-                    function(){ done() });
+                    function(){ setTimeout(function() {done()}, 1000) });
 
                 self.pieces.forEach(function(piece) {
                     self.collections.pieces.save(piece.toJSON(), function(err, list) {
