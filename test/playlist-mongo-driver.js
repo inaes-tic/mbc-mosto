@@ -40,6 +40,7 @@ describe('PlaylistMongoDriver', function(){
                 var medias = helpers.getMBCMedia();
                 // let's create a playlist at least 1 hour long
                 var playlist = new Media.Playlist({_id: uuid.v1()});
+                playlist.set('title', 'TestPlaylist');
                 while(playlist.get('duration') < 3600000) {
                     var media = _.randelem(medias);
                     var piece = new Media.Piece(media.toJSON());
@@ -55,6 +56,7 @@ describe('PlaylistMongoDriver', function(){
                     var schedule = {
                         _id: uuid.v1(),
                         playlist: playlist,
+                        title: playlist.get('title') + i,
                     };
                     var hsix = i - 3;
                     var now = self.from;
@@ -171,7 +173,7 @@ describe('PlaylistMongoDriver', function(){
             message.method = 'create';
 //            self.driver.setWindow(moment(), moment().add(10 * 60 * 1000));
             self.driver.on('create', function(playlist) {
-                console.log("create received!" + playlist.name );
+                console.log("create received! - " + playlist.name );
                 playlist.id.should.be.eql(message.model._id);
                 playlist.name.should.be.eql(message.model.title);
                 moment(playlist.startDate).valueOf().should.eql(message.model.start * 1000);
