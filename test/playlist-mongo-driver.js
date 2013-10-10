@@ -176,7 +176,8 @@ describe('PlaylistMongoDriver', function(){
                 console.log("create received! - " + playlist.name );
                 playlist.id.should.be.eql(message.model._id);
                 playlist.name.should.be.eql(message.model.title);
-                moment(playlist.startDate).valueOf().should.eql(message.model.start * 1000);
+//                moment(playlist.startDate).valueOf().should.eql(message.model.start * 1000);
+                playlist.start.should.eql(message.model.start);
                 done();
             });
             self.pubsub.publishJSON(message.channel(), message);
