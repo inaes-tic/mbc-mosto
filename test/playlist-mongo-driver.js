@@ -169,7 +169,7 @@ describe('PlaylistMongoDriver', function(){
             // set window from now to 10 minutes
             var message = self.message;
             message.method = 'create';
-            self.driver.setWindow(moment(), moment().add(10 * 60 * 1000));
+//            self.driver.setWindow(moment(), moment().add(10 * 60 * 1000));
             self.driver.on('create', function(playlist) {
                 console.log("create received!" + playlist.name );
                 playlist.id.should.be.eql(message.model._id);
