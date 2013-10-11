@@ -138,28 +138,11 @@ mongo_driver.prototype.createPlaylist = function(sched, callback) {
     var self = this;
     logger.debug("Creating Playlist for:", sched);
     self.lists.findById(sched.playlist, function(err, list) {
-//    self.lists.find({}, function(err, result) {
         if( err ) {
             logger.error("Error obtaining list: ", err);
             callback(err);
             return err;
         }
-//        logger.debug("LISTS -> " + result);
-//
-//        result.each(function(err, tmp) {
-//            if( err ) {
-//                logger.error("Error obtaining list: ", err);
-//                callback(err);
-//                return err;
-//            }
-//            if (tmp === null) {
-//                logger.debug("FUCKING ELEMENT IS NULL");
-//            } else {
-//                logger.debug("ELEMENT -> " + tmp._id);
-//                if (tmp._id.toString() === sched.playlist.toString()) {
-//                    logger.debug("FOUND IT!!!!");
-//                    var list = tmp;                
-//    if (list) {
         logger.debug("LIST:" + list._id);
 
         logger.info("Processing list:", {"id": list && list._id, "clips": list && list.pieces.length});
@@ -201,10 +184,6 @@ mongo_driver.prototype.createPlaylist = function(sched, callback) {
             callback(err, playlist);
         });
     });
-//                }
-//            }
-//        });
-//    });
 };
 
 exports = module.exports = function(conf) {

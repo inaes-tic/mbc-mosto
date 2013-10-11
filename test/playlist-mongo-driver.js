@@ -168,15 +168,12 @@ describe('PlaylistMongoDriver', function(){
 
         this.timeout(1000);
         it('should respond to create messages',function(done){
-            // set window from now to 10 minutes
             var message = self.message;
             message.method = 'create';
-//            self.driver.setWindow(moment(), moment().add(10 * 60 * 1000));
             self.driver.on('create', function(playlist) {
                 console.log("create received! - " + playlist.name );
                 playlist.id.should.be.eql(message.model._id);
                 playlist.name.should.be.eql(message.model.title);
-//                moment(playlist.startDate).valueOf().should.eql(message.model.start * 1000);
                 playlist.start.should.eql(message.model.start);
                 done();
             });
