@@ -239,7 +239,7 @@ describe("Mosto functional test", function() {
      ** ver que haya el play correspondiente
      ** ver que este en el frame correcto
      */
-    describe('start with playlists', function() {
+    describe.skip('start with playlists', function() {
         self.playlist_count = _.randint(5, 10, self.rand());
         before(function() {
             self.medias = helper.getMBCMedia();
