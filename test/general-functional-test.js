@@ -84,17 +84,17 @@ describe("Mosto functional test", function() {
             (function(pl, oc) {
                 console.log('saving occurrence', oc.id);
                 console.log('inserting', pl.get('pieces').length, 'pieces');
-                Q.ninvoke(piececol, 'insert', pl.get('pieces').toJSON()).then(function(obj) {
+                Q.ninvoke(piececol, 'insert', pl.get('pieces').toJSON(), {safe:true}).then(function(obj) {
                     console.log(obj.length, 'pieces inserted');
                     console.log('inserting playlist', pl.id);
-                    return Q.ninvoke(listcol, 'insert', pl.toJSON())
+                    return Q.ninvoke(listcol, 'insert', pl.toJSON(), {safe:true})
                 }).then(function(obj) {
                     obj = obj[0];
                     console.log('inserted playlist', obj._id);
                     // update self.playlists
                     pl.set(obj);
                     console.log('inserting occurrence', oc.id);
-                    return Q.ninvoke(occcol, 'insert', oc.toJSON());
+                    return Q.ninvoke(occcol, 'insert', oc.toJSON(), {safe:true});
                 }).then(function(obj) {
                     var obj = obj[0];
                     console.log('inserted occurrence', obj._id);
