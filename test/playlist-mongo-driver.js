@@ -71,22 +71,22 @@ describe('PlaylistMongoDriver', function(){
 
                 var ready = _.after(
                     self.lists.length + self.pieces.length + self.scheds.length,
-                    function(){ setTimeout(function() {done()}, 1000) });
+                    function(){ done() });
 
                 self.pieces.forEach(function(piece) {
-                    self.collections.pieces.save(piece.toJSON(), function(err, list) {
+                    self.collections.pieces.save(piece.toJSON(), {safe:true}, function(err, list) {
                         ready();
                     });
                 });
 
                 self.lists.forEach(function(playlist) {
-                    self.collections.lists.save(playlist.toJSON(), function(err, list) {
+                    self.collections.lists.save(playlist.toJSON(), {safe:true}, function(err, list) {
                         ready();
                     });
                 });
 
                 self.scheds.forEach(function(occurrence) {
-                    self.collections.scheds.save(occurrence.toJSON(), function(err, sched){
+                    self.collections.scheds.save(occurrence.toJSON(), {safe:true}, function(err, sched){
                         ready();
                     });
                 });
