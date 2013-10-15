@@ -9,6 +9,7 @@ var events = require('events');
 var util = require('util');
 var _ = require('underscore');
 var mbc = require('mbc-common');
+var Collections = mbc.config.Common.Collections;
 var logger = mbc.logger().addLogger('PUBSUB-DRIVER');
 
 var defaults = { // copied from caspa/models.App.Status
@@ -38,6 +39,7 @@ function CaspaDriver() {
     var self = this;
     this.status = _.clone(defaults);
     this.db = mbc.db();
+    this.messagesCollection = this.db.collection(Collections.Mostomessages);
     this.publisher = mbc.pubsub();
 }
 util.inherits(CaspaDriver, events.EventEmitter);
@@ -58,7 +60,7 @@ CaspaDriver.prototype.setupAll = function() {
 
 CaspaDriver.prototype.setupStatus = function(callback) {
     var self = this;
-    var col = this.db.collection('status');
+    var col = this.db.collection(Collections.Status);
     col.findOne({_id: 2}, function(err, res) {
         if( err )
             // err.. do something?
@@ -77,7 +79,7 @@ CaspaDriver.prototype.setupStatus = function(callback) {
 
 CaspaDriver.prototype.setupMessages = function(callback) {
     // I think we should assume at init there's no sticky errors?
-    this.db.collection('mostomessages').remove(callback);
+    this.messagesCollection.remove(callback);
 };
 
 CaspaDriver.prototype.setStatus = function(meltedStatus) {
