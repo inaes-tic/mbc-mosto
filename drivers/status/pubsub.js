@@ -11,6 +11,7 @@ var _ = require('underscore');
 var mbc = require('mbc-common');
 var Collections = mbc.config.Common.Collections;
 var logger = mbc.logger().addLogger('PUBSUB-DRIVER');
+var uuid = require('node-uuid');
 
 var defaults = { // copied from caspa/models.App.Status
     _id: 2,
@@ -184,8 +185,9 @@ CaspaDriver.prototype.publishMessage = function(code, description, message, stic
     var method = 'emit';
     if( sticky ) {
         // I create an id with the timestamp to be able to cancel the error afterwards
-        message.stickId = (new moment()).valueOf();
+        message._id = uuid();
         method = 'create';
+        this.messagesCollection.save(message.toJSON(), {safe:false});
     }
     this.publisher.publishJSON(["mostoMessage", method].join('.'),
                                { model: message });
@@ -193,6 +195,7 @@ CaspaDriver.prototype.publishMessage = function(code, description, message, stic
 };
 
 CaspaDriver.prototype.dropMessage = function(message) {
+    this.messagesCollection.remove({_id: message._id});
     this.publisher.publish("mostoMessage.delete", { model: message });
 };
 
