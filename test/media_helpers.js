@@ -134,36 +134,6 @@ exports.getExpectedMediaAtTime = function(media_array, time_milliseconds) {
     };
 };
 
-
-/*
- *   playlistToScheduledMedia(playlist)
- *    - playlist: the target playlist
- *
- *   Converts given playlist into ScheduledMedia array
- *
- *   NOTES:
- *    - schedule_time has a timestamp or "now" in case of snapping (not implemented here)
- *    - expected_start and expected_end holds real timestamp calculations
- */
-exports.playlistToScheduledMedia = function(playlist) {
-    var start_date = playlist.startDate;
-    var next_start = start_date;
-    var sched_media = playlist.medias.map(function(elem) {
-        var s = new ScheduledMedia();
-        s.media = elem;
-        s.schedule_time = next_start.format("DD/MM/YYYY HH:mm:ss.SSS");
-        s.schedule_duration = elem.length;
-        s.expected_start = next_start.format("DD/MM/YYYY HH:mm:ss.SSS");
-
-        // next_start equals current expected_end
-        next_start = next_start.add("milliseconds", exports.mediaLengthToMilliseconds(elem.length));
-        s.expected_end = next_start.format("DD/MM/YYYY HH:mm:ss.SSS");
-        return s;
-    });
-    return sched_media;
-};
-
-
 /*
  *   mediaLengthToMilliseconds(length)
  *    - length: media length in format HH:mm:ss:SSS
