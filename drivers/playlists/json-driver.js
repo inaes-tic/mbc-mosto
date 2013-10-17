@@ -1,8 +1,6 @@
 var fs       = require('fs'),
     mbc      = require('mbc-common'),
     config   = mbc.config.Mosto.Json,
-    Playlist = require('../../api/Playlist'),
-    Media    = require('../../api/Media'),
     watchr   = require('watchr'),
     events   = require ('events'),
     logger   = mbc.logger().addLogger('JSON-DRIVER'),
