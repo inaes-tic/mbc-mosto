@@ -4,8 +4,6 @@ var fs      = require('fs'),
     moment  = require('moment'),
     seed    = require('seed-random'),
     _       = require('underscore'),
-    ScheduledMedia   = require('../api/ScheduledMedia'),
-    Media   = require('../api/Media');
     CMedia  = require('mbc-common/models/Media');
 
 function parseXMLs(path) {
@@ -46,7 +44,7 @@ exports.getMedia = function(path) {
 
     // Populate Media
     var all_media = parsed.map(function(elem) {
-        var m = new Media();
+        var m = {};
         m.name = elem.filename;
         m.id = crypto.createHash('md5').update(m.name).digest('hex'); // Digest Name
         m.file = process.cwd() + "/" + path + elem.filename;
