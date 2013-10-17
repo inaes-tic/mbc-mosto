@@ -47,8 +47,12 @@ mosto.prototype.inTimeWindow = function(obj) {
 mosto.prototype.addPlaylist = function(playlist) {
     var self = this;
 
-    if(self.inTimeWindow(playlist))
+    logger.debug("Adding playlist " + playlist.get("id"));
+    if(self.inTimeWindow(playlist)) {
         self.playlists.addPlaylist(playlist);
+    } else {
+        logger.debug("Playlist " + playlist.get("id") + " was not in time window, discarding...");
+    }
 };
 
 mosto.prototype.initDriver = function() {
@@ -56,17 +60,23 @@ mosto.prototype.initDriver = function() {
     logger.info("Initializing playlists driver");
 
     this.pl_driver.on('create', function(playlist) {
+        logger.debug("Received create event for playlist " + playlist.get("id"));
         self.addPlaylist(playlist);
     });
 
     this.pl_driver.on('update', function(playlist) {
-        if(!self.inTimeWindow(playlist))
+        logger.debug("Received update event for playlist " + playlist.get("id"));
+        if(!self.inTimeWindow(playlist)) {
+            logger.debug("Playlist " + playlist.get("id") + " was out of time window, removing...");
             self.playlists.removePlaylist(playlist);
-        else
+        } else {
+            logger.debug("Playlist " + playlist.get("id") + " was in time window, adding...");
             self.addPlaylist(playlist);
+        }
     });
 
     this.pl_driver.on('delete', function(playlist) {
+        logger.debug("Received delete event for playlist " + playlist.get("id"));
         self.playlists.removePlaylist(playlist);
     });
 
