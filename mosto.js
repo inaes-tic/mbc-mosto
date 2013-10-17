@@ -2,10 +2,7 @@ var fs               = require('fs')
 ,   util             = require('util')
 ,   events           = require('events')
 ,   moment           = require('moment')
-,   Playlist         = require('./api/Playlist')
 ,   Melted           = require('./api/Melted')
-,   Media            = require('./api/Media')
-,   ScheduledMedia   = require('./api/ScheduledMedia')
 ,   StatusClip       = require('./api/StatusClip')
 ,   playlists_driver = require('./drivers/playlists/playlists-driver')
 ,   status_driver    = require('./drivers/status/pubsub')
@@ -44,7 +41,7 @@ util.inherits(mosto, events.EventEmitter);
 
 mosto.prototype.inTimeWindow = function(obj) {
     // expects obj.start and obj.end to exist and be moment()s
-    return (obj.end > this.timeWindow.from && obj.start < this.timeWindow.to);
+    return (obj.get("end") > this.timeWindow.from && obj.get("start") < this.timeWindow.to);
 };
 
 mosto.prototype.addPlaylist = function(playlist) {
