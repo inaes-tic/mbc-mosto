@@ -1,8 +1,7 @@
 var json_driver  = require("./json-driver"),
     mongo_driver = require("./mongo-driver"),
     mbc          = require("mbc-common"),
-    logger       = mbc.logger().addLogger('PLAYLISTS-DRIVER'),
-    test_driver  = require("./test-driver");
+    logger       = mbc.logger().addLogger('PLAYLISTS-DRIVER');
 
 exports = module.exports = function(type, config) {
     logger.info("Creating playlists driver for type [" + type + "]");
@@ -11,8 +10,6 @@ exports = module.exports = function(type, config) {
         return new json_driver(config);
     } else if (type === 'mongo') {
         return new mongo_driver(config);
-    } else if (type === 'test') {
-        return new test_driver(config);
     }
 
     /******************************************************************
