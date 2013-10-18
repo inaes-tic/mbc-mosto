@@ -75,9 +75,9 @@ mosto.prototype.initDriver = function() {
         }
     });
 
-    this.pl_driver.on('delete', function(playlist) {
-        logger.debug("Received delete event for playlist " + playlist.get("id"));
-        self.playlists.removePlaylist(playlist);
+    this.pl_driver.on('delete', function(id) {
+        logger.debug("Received delete event for playlist " + id);
+        self.playlists.removePlaylist(id);
     });
 
     self.pl_driver.start();
