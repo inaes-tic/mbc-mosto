@@ -61,9 +61,9 @@ describe('PlaylistMongoDriver', function(){
                     var hsix = i - 3;
                     var now = self.from;
                     // schedules are from 1hs before now
-                    var schtime = moment(now + (hsix * 30 * 60 * 1000)).unix();
+                    var schtime = moment(now + (hsix * 30 * 60 * 1000));
                     var length = moment.duration(playlist.get('duration'));
-                    schedule.start = schtime;
+                    schedule.start = schtime.valueOf();
                     schedule.end = schtime + length;
                     var occurrence = new Media.Occurrence(schedule);
                     self.scheds.push(occurrence);
@@ -214,8 +214,8 @@ describe('PlaylistMongoDriver', function(){
 
         it('should return only playlists within timeframe', function(done) {
             var inside = function(sched) {
-                return (sched.start <= self.to.unix() &&
-                        sched.end >= self.from.unix());
+                return (sched.get('start') <= self.to.valueOf() &&
+                        sched.get('end') >= self.from.valueOf());
             };
             var sched_id = function(sched) {
                 return sched._id;
