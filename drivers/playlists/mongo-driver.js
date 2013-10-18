@@ -99,7 +99,7 @@ mongo_driver.prototype.getPlaylists = function(window, callback) {
      */
     var self = this;
 
-    logger.debug("getPlaylists", window);
+    logger.debug("getPlaylists", "From: " + window.from.valueOf(), "To: " + window.to.valueOf());
 
     var query = {};
     query.start = { $lte: window.to.valueOf() };
