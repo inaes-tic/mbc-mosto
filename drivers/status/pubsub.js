@@ -193,6 +193,11 @@ CaspaDriver.prototype.publishMessage = function(code, description, message, stic
     return status;
 };
 
+CaspaDriver.prototype.CODES = {
+    BLANK: 201,
+    SYNC: 202,
+    MELTED_CONN: 501,
+    FILE_NOT_FOUND: 502,
 };
 
 CaspaDriver.prototype.dropMessage = function(message) {
