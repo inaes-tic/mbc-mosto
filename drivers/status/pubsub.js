@@ -9,6 +9,7 @@ var events = require('events');
 var util = require('util');
 var _ = require('underscore');
 var mbc = require('mbc-common');
+var MostoMessage = require('mbc-common/models/App').MostoMessage;
 var Collections = mbc.config.Common.Collections;
 var logger = mbc.logger().addLogger('PUBSUB-DRIVER');
 var uuid = require('node-uuid');
@@ -28,12 +29,6 @@ var defaults = { // copied from caspa/models.App.Status
     source: null,
     on_air: false,
 };
-
-function MostoMessage(value, description, message) {
-    this.value = value;
-    this.description = description;
-    this.message = message;
-}
 
 function CaspaDriver() {
     events.EventEmitter.call(this);
@@ -181,7 +176,11 @@ CaspaDriver.prototype.publish = function(channel, status) {
 };
 
 CaspaDriver.prototype.publishMessage = function(code, description, message, sticky) {
-    message = new MostoMessage(code, description, message);
+    var status = {};
+    (code !== undefined) && (status.code = code);
+    description && (status.description = description);
+    message && (status.message = message);
+    status = new MostoMessage(status);
     var method = 'emit';
     if( sticky ) {
         // I create an id with the timestamp to be able to cancel the error afterwards
@@ -190,12 +189,14 @@ CaspaDriver.prototype.publishMessage = function(code, description, message, stic
         this.messagesCollection.save(message.toJSON(), {safe:false});
     }
     this.publisher.publishJSON(["mostoMessage", method].join('.'),
-                               { model: message });
-    return message;
+                               { model: status.toJSON() });
+    return status;
+};
+
 };
 
 CaspaDriver.prototype.dropMessage = function(message) {
-    this.messagesCollection.remove({_id: message._id});
+    this.messagesCollection.remove({_id: message.get('_id')});
     this.publisher.publish("mostoMessage.delete", { model: message });
 };
 
