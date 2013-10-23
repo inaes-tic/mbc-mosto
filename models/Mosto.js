@@ -200,8 +200,8 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         logger.info("Received models: ", files);
         var m = _.clone(models);
         if( options.fix_blanks ) {
-            logger.debug("Fixing blanks");
             var now = moment();
+            logger.debug("Fixing blanks " + now);
             if( m.length <= 0 ) {
                 logger.warn("Nothing on the list! Loading all blanks");
                 m.push.apply(m, self.getBlankMedias(now, options.until));
@@ -210,6 +210,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                     /* in falcon we'd say forfirst: forlast: and default: :( */
                     if( i === 0 ) {
                         var start = get(media, 'start');
+                        logger.debug("FixingBlanks", "Clip " + get(media, 'file'), "Start " + start);
                         if( start > now ) {
                             logger.warn("Loading blanks at start of the list");
                             m.splice.apply(m, [0, 0].concat(self.getBlankMedias(now, start)));
@@ -234,7 +235,11 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         logger.debug("Taking read semaphore");
         self.take(function() {
             logger.debug("Calling super.set");
+            logger.debug("Models to set (m): " + m.length);
+            logger.debug("Models to set (self): " + self.length);
+            logger.debug("Options: " + options);
             Backbone.Collection.prototype.set.call(self, m, _.extend(options, { silent: true }));
+            logger.debug("Models: ", self.length);
             if(! options.set_melted ) {
                 logger.debug("We dont set melted, leaving read semaphore");
                 self.leave();
@@ -253,7 +258,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                     logger.debug("Playlist cleaned");
                 });
                 //                });
-
+                
                 var expected = self.getExpectedMedia();
 
                 var addClip = function(media) {
@@ -390,11 +395,13 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
 
     getExpectedMedia: function(time) {
         time = time || moment();
+        logger.debug("ExpectedMedia", "Time " + time);
         var expected = {
             media: undefined,
             frame: undefined
         };
         var media = this.find(function(media) {
+            logger.debug("ExpectedMedia", "Media.start " + media.get('start'), "Media.end " + media.get('end'));
             return media.get('start') <= time && media.get('end') >= time;
         });
         if( media ) {

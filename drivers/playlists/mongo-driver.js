@@ -1,13 +1,12 @@
 var mbc      = require('mbc-common')
 ,   config   = mbc.config.Mosto.Mongo
-,   Playlist = require('../../api/Playlist')
-,   Media    = require('../../api/Media')
 ,   mubsub   = require("mubsub")
 ,   moment   = require("moment")
 ,   async    = require('async')
 ,   events   = require ('events')
 ,   util     = require ('util')
 ,   logger   = mbc.logger().addLogger('MONGO-DRIVER')
+,   models   = require('../../models/Mosto')
 ,   _        = require('underscore');
 
 function drop_err(callback, err_handler) {
@@ -100,7 +99,7 @@ mongo_driver.prototype.getPlaylists = function(window, callback) {
      */
     var self = this;
 
-    logger.debug("getPlaylists", window);
+    logger.debug("getPlaylists", "From: " + window.from.valueOf(), "To: " + window.to.valueOf());
 
     var query = {};
     query.start = { $lte: window.to.valueOf() };
@@ -168,16 +167,16 @@ mongo_driver.prototype.createPlaylist = function(sched, callback) {
                 var file = block.file;
                 var length = moment(block.durationraw, "HH:mm:ss.SSS");
                 var fps = block.video.fps;
-                medias.push(new Media(block_id, orig_order, playlist_id, clip_name, type, file,
-                                      moment.duration({
+                medias.push({"id": block_id, "orig_order": orig_order, "playlist_id": playlist_id, "name": clip_name, "type": type, "file": file,
+                                      "length": moment.duration({
                                           hours: length.hours(),
                                           minutes: length.minutes(),
                                           seconds: length.seconds(),
                                           milliseconds: length.milliseconds(),
-                                      }), parseFloat(fps)));
+                                      }), "fps": parseFloat(fps)});
             });
 
-            var playlist = new Playlist(playlist_id, name, startDate, medias, endDate, "snap");
+            var playlist = new models.Playlist({"id": playlist_id, "name": name, "start": startDate, "end": endDate, "mode": "snap", "medias": medias});
 
             logger.debug("Created Playlist:", playlist);
 

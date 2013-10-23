@@ -4,8 +4,6 @@ var fs      = require('fs'),
     moment  = require('moment'),
     seed    = require('seed-random'),
     _       = require('underscore'),
-    ScheduledMedia   = require('../api/ScheduledMedia'),
-    Media   = require('../api/Media');
     CMedia  = require('mbc-common/models/Media');
 
 function parseXMLs(path) {
@@ -46,7 +44,7 @@ exports.getMedia = function(path) {
 
     // Populate Media
     var all_media = parsed.map(function(elem) {
-        var m = new Media();
+        var m = {};
         m.name = elem.filename;
         m.id = crypto.createHash('md5').update(m.name).digest('hex'); // Digest Name
         m.file = process.cwd() + "/" + path + elem.filename;
@@ -133,36 +131,6 @@ exports.getExpectedMediaAtTime = function(media_array, time_milliseconds) {
         frame: Math.floor(tmp_time / 1000 * 25),
     };
 };
-
-
-/*
- *   playlistToScheduledMedia(playlist)
- *    - playlist: the target playlist
- *
- *   Converts given playlist into ScheduledMedia array
- *
- *   NOTES:
- *    - schedule_time has a timestamp or "now" in case of snapping (not implemented here)
- *    - expected_start and expected_end holds real timestamp calculations
- */
-exports.playlistToScheduledMedia = function(playlist) {
-    var start_date = playlist.startDate;
-    var next_start = start_date;
-    var sched_media = playlist.medias.map(function(elem) {
-        var s = new ScheduledMedia();
-        s.media = elem;
-        s.schedule_time = next_start.format("DD/MM/YYYY HH:mm:ss.SSS");
-        s.schedule_duration = elem.length;
-        s.expected_start = next_start.format("DD/MM/YYYY HH:mm:ss.SSS");
-
-        // next_start equals current expected_end
-        next_start = next_start.add("milliseconds", exports.mediaLengthToMilliseconds(elem.length));
-        s.expected_end = next_start.format("DD/MM/YYYY HH:mm:ss.SSS");
-        return s;
-    });
-    return sched_media;
-};
-
 
 /*
  *   mediaLengthToMilliseconds(length)

@@ -61,9 +61,9 @@ describe('PlaylistMongoDriver', function(){
                     var hsix = i - 3;
                     var now = self.from;
                     // schedules are from 1hs before now
-                    var schtime = moment(now + (hsix * 30 * 60 * 1000)).unix();
+                    var schtime = moment(now + (hsix * 30 * 60 * 1000));
                     var length = moment.duration(playlist.get('duration'));
-                    schedule.start = schtime;
+                    schedule.start = schtime.valueOf();
                     schedule.end = schtime + length;
                     var occurrence = new Media.Occurrence(schedule);
                     self.scheds.push(occurrence);
@@ -172,9 +172,9 @@ describe('PlaylistMongoDriver', function(){
             message.method = 'create';
             self.driver.on('create', function(playlist) {
                 console.log("create received! - " + playlist.name );
-                playlist.id.should.be.eql(message.model._id);
-                playlist.name.should.be.eql(message.model.title);
-                playlist.start.should.eql(message.model.start);
+                playlist.get('id').should.be.eql(message.model._id);
+                playlist.get('name').should.be.eql(message.model.title);
+                playlist.get('start').should.eql(message.model.start);
                 done();
             });
             self.pubsub.publishJSON(message.channel(), message);
@@ -200,13 +200,14 @@ describe('PlaylistMongoDriver', function(){
     describe("#getPlaylists()", function() {
         it('should return playlists', function(done) {
             self.driver.getPlaylists({from: self.from, to: self.to}, function(playlists) {
+                playlists.length.should.not.be.eql(0);
                 playlists.forEach(function(playlist) {
-                    playlist.should.have.property('id');
-                    playlist.should.have.property('name');
-                    playlist.should.have.property('startDate');
-                    playlist.should.have.property('medias');
-                    playlist.should.have.property('endDate');
-                    playlist.should.have.property('loaded');
+                    playlist.get('id').should.be.ok;
+                    playlist.get('name').should.be.ok;
+                    playlist.get('start').should.be.ok;
+                    playlist.get('medias').should.be.ok;
+                    playlist.get('end').should.be.ok;
+                    playlist.get('loaded').should.not.be.ok;
                 });
                 done();
             });
@@ -214,18 +215,18 @@ describe('PlaylistMongoDriver', function(){
 
         it('should return only playlists within timeframe', function(done) {
             var inside = function(sched) {
-                return (sched.start <= self.to.unix() &&
-                        sched.end >= self.from.unix());
+                return (sched.get('start') <= self.to.valueOf() &&
+                        sched.get('end') >= self.from.valueOf());
             };
             var sched_id = function(sched) {
-                return sched._id;
+                return sched.get('_id');
             };
 
             var in_scheds = _.chain(self.scheds).filter(inside).map(sched_id).value();
             var out_scheds = _.chain(self.scheds).reject(inside).map(sched_id).value();
 
             self.driver.getPlaylists({from: self.from, to: self.to}, function(playlists) {
-                var pl_ids = _.chain(playlists).map(function(pl) { return pl.id }).value();
+                var pl_ids = _.chain(playlists).map(function(pl) { return pl.get('id') }).value();
 
                 pl_ids.forEach(function(playlist, ix) {
                     playlist.should.eql(in_scheds[ix]);

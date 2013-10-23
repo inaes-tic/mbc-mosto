@@ -2,10 +2,7 @@ var fs               = require('fs')
 ,   util             = require('util')
 ,   events           = require('events')
 ,   moment           = require('moment')
-,   Playlist         = require('./api/Playlist')
 ,   Melted           = require('./api/Melted')
-,   Media            = require('./api/Media')
-,   ScheduledMedia   = require('./api/ScheduledMedia')
 ,   StatusClip       = require('./api/StatusClip')
 ,   playlists_driver = require('./drivers/playlists/playlists-driver')
 ,   status_driver    = require('./drivers/status/pubsub')
@@ -44,14 +41,18 @@ util.inherits(mosto, events.EventEmitter);
 
 mosto.prototype.inTimeWindow = function(obj) {
     // expects obj.start and obj.end to exist and be moment()s
-    return (obj.end > this.timeWindow.from && obj.start < this.timeWindow.to);
+    return (obj.get("end") > this.timeWindow.from && obj.get("start") < this.timeWindow.to);
 };
 
 mosto.prototype.addPlaylist = function(playlist) {
     var self = this;
 
-    if(self.inTimeWindow(playlist))
+    logger.debug("Adding playlist " + playlist.get("id"));
+    if(self.inTimeWindow(playlist)) {
         self.playlists.addPlaylist(playlist);
+    } else {
+        logger.debug("Playlist " + playlist.get("id") + " was not in time window, discarding...");
+    }
 };
 
 mosto.prototype.initDriver = function() {
@@ -59,18 +60,24 @@ mosto.prototype.initDriver = function() {
     logger.info("Initializing playlists driver");
 
     this.pl_driver.on('create', function(playlist) {
+        logger.debug("Received create event for playlist " + playlist.get("id"));
         self.addPlaylist(playlist);
     });
 
     this.pl_driver.on('update', function(playlist) {
-        if(!self.inTimeWindow(playlist))
+        logger.debug("Received update event for playlist " + playlist.get("id"));
+        if(!self.inTimeWindow(playlist)) {
+            logger.debug("Playlist " + playlist.get("id") + " was out of time window, removing...");
             self.playlists.removePlaylist(playlist);
-        else
+        } else {
+            logger.debug("Playlist " + playlist.get("id") + " was in time window, adding...");
             self.addPlaylist(playlist);
+        }
     });
 
-    this.pl_driver.on('delete', function(playlist) {
-        self.playlists.removePlaylist(playlist);
+    this.pl_driver.on('delete', function(id) {
+        logger.debug("Received delete event for playlist " + id);
+        self.playlists.removePlaylist(id);
     });
 
     self.pl_driver.start();
