@@ -175,7 +175,7 @@ CaspaDriver.prototype.publish = function(channel, status) {
     this.publisher.publishJSON(channel, status);
 };
 
-CaspaDriver.prototype.publishMessage = function(code, description, message, sticky) {
+CaspaDriver.prototype.publishMessage = function(code, message, description, sticky) {
     var status = {};
     (code !== undefined) && (status.code = code);
     description && (status.description = description);
