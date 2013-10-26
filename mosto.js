@@ -89,6 +89,10 @@ mosto.prototype.initDriver = function() {
         self.playlists.removePlaylist(id);
     });
 
+    this.pl_driver.on('does-not-exist', function(filename) {
+        self.status_driver.publishMessage(self.status_driver.CODES.FILE_NOT_FOUND, filename + 'does not exist');
+    });
+
     self.pl_driver.start();
 };
 
