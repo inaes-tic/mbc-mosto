@@ -181,6 +181,9 @@ mosto.prototype.initHeartbeats = function() {
         self.emit('playing');
     });
 
+    self.on('playing', function() {
+        self.status_driver.publishMessage(self.status_driver.CODES.PLAY);
+    });
     self.heartbeats.on('outOfSync', function() {
         self.status_driver.publishMessage(self.status_driver.CODES.SYNC);
     });
