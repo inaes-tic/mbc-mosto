@@ -7,7 +7,9 @@ var mbc      = require('mbc-common')
 ,   util     = require ('util')
 ,   logger   = mbc.logger().addLogger('MONGO-DRIVER')
 ,   models   = require('../../models/Mosto')
-,   _        = require('underscore');
+,   _        = require('underscore')
+,   fs       = require('fs')
+;
 
 function drop_err(callback, err_handler) {
     return function(err,v) {
@@ -159,6 +161,10 @@ mongo_driver.prototype.createPlaylist = function(sched, callback) {
 
             var medias = [];
             pieces.forEach(function(block, order) {
+                if(!fs.existsSync(block.file)) {
+                    self.emit('does-not-exist', block.file);
+                    return;
+                }
                 var block_id = (block._id.toHexString && block._id.toHexString()) || block._id;
                 var orig_order = order;
                 var clip_name = block.name;
