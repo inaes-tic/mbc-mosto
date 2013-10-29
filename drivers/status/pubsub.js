@@ -175,17 +175,19 @@ CaspaDriver.prototype.publish = function(channel, status) {
     this.publisher.publishJSON(channel, status);
 };
 
-CaspaDriver.prototype.publishMessage = function(code, message, description, sticky) {
+/*
+  Publishes a message through redis. If the message code is considered an
+  ongoing error (such as mosto connectivity errors), it's saved to the database
+*/
+CaspaDriver.prototype.publishMessage = function(code, message, description) {
     var status = {};
     (code !== undefined) && (status.code = code);
     description && (status.description = description);
     message && (status.message = message);
     status = new MostoMessage(status);
-    var method = 'emit';
-    if( sticky ) {
-        // I create an id with the timestamp to be able to cancel the error afterwards
-        message._id = uuid();
-        method = 'create';
+    var method = 'create';
+    if(status.get('status') == 'failing') {
+        message.set('_id', uuid());
         this.messagesCollection.save(message.toJSON(), {safe:false});
     }
     this.publisher.publishJSON(["mostoMessage", method].join('.'),
@@ -201,9 +203,19 @@ CaspaDriver.prototype.CODES = {
     FILE_NOT_FOUND: 502,
 };
 
+/*
+  updates the model in the database setting status='fixed' and returns a
+  promise that resolves once the object is updated in the database, and the
+  signal is published through redis
+*/
 CaspaDriver.prototype.dropMessage = function(message) {
-    this.messagesCollection.remove({_id: message.get('_id')});
-    this.publisher.publish("mostoMessage.delete", { model: message });
+    message.set('status', 'fixed');
+    var mobj = message.toJSON();
+    return Q.ninvoke(this.messagesCollection, 'findById', mobj._id).then(function() {
+        return Q.ninvoke(this.messagesCollection, 'update', {_id: mobj._id}, mobj);
+    }).then(function() {
+        this.publisher.publish("mostoMessage.update", { model: mobj });
+    });
 };
 
 exports = module.exports = function() {
