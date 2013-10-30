@@ -223,8 +223,10 @@ melted.prototype.sendClip = function(clip, command) {
             logger.debug(self.uuid + " - File ready: " + xmlFile);
         }),
     ]).then(function(){
+        logger.debug("Succeded in writing file " + xmlFile);
         deferred.resolve(self._sendCommand(command.replace("{xmlFile}", xmlFile)));
     }, function(err){
+        logger.error("Error writing file " + xmlFile, err);
         deferred.reject(err);
     }).thenResolve();
 
