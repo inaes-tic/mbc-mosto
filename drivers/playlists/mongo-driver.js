@@ -162,7 +162,7 @@ mongo_driver.prototype.createPlaylist = function(sched, callback) {
             var medias = [];
             pieces.forEach(function(block, order) {
                 if(!fs.existsSync(block.file)) {
-                    self.emit('does-not-exist', block.file);
+                    self.emit('file-not-found', block.file);
                     return;
                 }
                 var block_id = (block._id.toHexString && block._id.toHexString()) || block._id;
