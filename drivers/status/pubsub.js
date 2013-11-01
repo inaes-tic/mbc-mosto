@@ -208,6 +208,7 @@ CaspaDriver.prototype.CODES = {
 */
 CaspaDriver.prototype.dropMessage = function(message) {
     message.set('status', 'fixed');
+    message.set('end', moment().valueOf());
     var mobj = message.toJSON();
     return Q.ninvoke(this.messagesCollection, 'findById', mobj._id).then(function() {
         return Q.ninvoke(this.messagesCollection, 'update', {_id: mobj._id}, mobj);
