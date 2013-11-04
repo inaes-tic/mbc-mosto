@@ -186,8 +186,8 @@ CaspaDriver.prototype.publishMessage = function(code, message, description) {
     message && (status.message = message);
     status = new MostoMessage(status);
     var method = 'create';
-    message.set('_id', uuid());
-    this.messagesCollection.save(message.toJSON(), {safe:false});
+    status.set('_id', uuid());
+    this.messagesCollection.save(status.toJSON(), {safe:false});
     this.publisher.publishJSON(["mostoMessage", method].join('.'),
                                { model: status.toJSON() });
     return status;
