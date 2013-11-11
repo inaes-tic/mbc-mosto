@@ -229,6 +229,11 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                             m.push.apply(m, self.getBlankMedias(get(media, 'end'), options.until));
                         }
                     }
+                    if( get(media, 'broken') ) {
+                        /* finally, if this is a "file not found" clip, replace it by blanks */
+                        logger.warn("Clip is missing. Replacing by blanks");
+                        m.splice.apply(m, [i, 1].concat(self.getBlankMedias(get(media, 'start'), get(media, 'end'))));
+                    }
                 });
             }
         }
@@ -259,7 +264,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                     logger.debug("Playlist cleaned");});
                 });
                 //                });
-                
+
                 var expected = self.getExpectedMedia();
 
                 var addClip = function(media) {
