@@ -25,11 +25,13 @@ function heartbeats(customConfig) {
     var defaults = {
         gc_interval: 1000 * 60 * 60,
         sync_interval: 50,
-        min_scheduled: 1000 * 60 * 60 * 4,
+        min_scheduled_hours: 4,
         checkout_interval: undefined,
         mvcp_server: "melted"
     };
     this.config = customConfig || config || defaults;
+    // these are ms
+    this.config.min_scheduled = this.config.min_scheduled || this.config.min_scheduled_hours * 60 * 60 *1000;
 
     if (this.config.checkout_interval === undefined)
         this.config.checkout_interval = this.config.min_scheduled / 4;
