@@ -38,9 +38,16 @@ function mosto(customConfig) {
 
 util.inherits(mosto, events.EventEmitter);
 
+mosto.prototype.getTimeWindow = function(from, to) {
+    return {
+        from: from || moment(),
+        to: to || moment().add(config.min_scheduled_hours, 'hours'),
+    };
+};
+
 mosto.prototype.inTimeWindow = function(obj) {
     // expects obj.start and obj.end to exist and be moment()s
-    var timeWindow = {from: moment(), to: moment().add(4, 'hours')};
+    var timeWindow = this.getTimeWindow();
     logger.debug("TimeWindow: " + timeWindow.from + " - " + timeWindow.to);
     logger.debug("Playlist (id " + obj.get("id") + "): " + obj.get("start") + " - " + obj.get("end"));
     return (obj.get("end") > timeWindow.from && obj.get("start") < timeWindow.to);
@@ -166,7 +173,7 @@ mosto.prototype.initHeartbeats = function() {
     });
 
     self.heartbeats.on("noClips", function() {
-        var window = {from: moment(), to: moment().add(4, 'hours')};
+        var window = this.getTimeWindow();
         self.fetchPlaylists(window);
     });
 
@@ -182,7 +189,7 @@ mosto.prototype.fetchPlaylists = function(window) {
     var self = this;
     if (!window) {
         logger.error("No time window specified, making one up");
-        window = {from: moment(), to: moment().add(4, 'hours')};
+        window = this.getTimeWindow();
     }
     self.pl_driver.getPlaylists(window, function(playlists) {
         playlists.forEach(function(playlist) {
