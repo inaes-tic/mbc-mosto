@@ -25,11 +25,13 @@ function heartbeats(customConfig) {
     var defaults = {
         gc_interval: 1000 * 60 * 60,
         sync_interval: 50,
-        min_scheduled: 1000 * 60 * 60 * 4,
+        min_scheduled_hours: 4,
         checkout_interval: undefined,
         mvcp_server: "melted"
     };
     this.config = customConfig || config || defaults;
+    // these are ms
+    this.config.min_scheduled = this.config.min_scheduled || this.config.min_scheduled_hours * 60 * 60 *1000;
 
     if (this.config.checkout_interval === undefined)
         this.config.checkout_interval = this.config.min_scheduled / 4;
@@ -111,9 +113,9 @@ heartbeats.prototype.checkSchedules =  function() {
     var cleanMedias = self.melted_medias.where({blank: false});
     var last = cleanMedias[cleanMedias.length - 1];
     if (last) {
-        var scheduled =  last.get('end') - moment();
-        if (scheduled < self.config.min_scheduled) {
-            self.emit("forceCheckout", {from: last.get('end'), to: last.get('end') + scheduled});
+        var to = moment() + self.config.min_scheduled;
+        if (last.get('end') < to) {
+            self.emit("forceCheckout", {from: last.get('end'), to: to});
             logger.debug("Sent forceCheckout event!");
         }
     } else {

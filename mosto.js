@@ -23,7 +23,6 @@ function mosto(customConfig) {
     this.server         = undefined;
     this.pl_driver      = undefined;
     this.status_driver  = undefined;
-    this.timeWindow     = undefined;
 
     /* MODULES */
     this.heartbeats = undefined;
@@ -39,9 +38,19 @@ function mosto(customConfig) {
 
 util.inherits(mosto, events.EventEmitter);
 
+mosto.prototype.getTimeWindow = function(from, to) {
+    return {
+        from: from || moment(),
+        to: to || moment().add(config.min_scheduled_hours, 'hours'),
+    };
+};
+
 mosto.prototype.inTimeWindow = function(obj) {
     // expects obj.start and obj.end to exist and be moment()s
-    return (obj.get("end") > this.timeWindow.from && obj.get("start") < this.timeWindow.to);
+    var timeWindow = this.getTimeWindow();
+    logger.debug("TimeWindow: " + timeWindow.from + " - " + timeWindow.to);
+    logger.debug("Playlist (id " + obj.get("id") + "): " + obj.get("start") + " - " + obj.get("end"));
+    return (obj.get("end") > timeWindow.from && obj.get("start") < timeWindow.to);
 };
 
 mosto.prototype.addPlaylist = function(playlist) {
@@ -160,13 +169,11 @@ mosto.prototype.initHeartbeats = function() {
     self.on('status', self.status_driver.setStatus.bind(self.status_driver));
 
     self.heartbeats.on("forceCheckout", function(window) {
-        self.timeWindow = window;
         self.fetchPlaylists(window);
     });
 
     self.heartbeats.on("noClips", function() {
-        var window = {from: moment(), to: moment().add(4, 'hours')};
-        self.timeWindow = window;
+        var window = this.getTimeWindow();
         self.fetchPlaylists(window);
     });
 
@@ -180,8 +187,10 @@ mosto.prototype.initHeartbeats = function() {
 mosto.prototype.fetchPlaylists = function(window) {
     //TODO: Hacer siempre el playlists.save para forzar que meta mas blank clips si hace falta
     var self = this;
-    if (!window)
-        window = self.timeWindow;
+    if (!window) {
+        logger.error("No time window specified, making one up");
+        window = this.getTimeWindow();
+    }
     self.pl_driver.getPlaylists(window, function(playlists) {
         playlists.forEach(function(playlist) {
             self.playlists.get("playlists").add(playlist, {merge: true});
@@ -219,7 +228,6 @@ mosto.prototype.init = function(melted, callback) {
         self.status_driver = new status_driver();
         self.playlists     = models.Playlists();
         self.heartbeats    = new heartbeats();
-        self.timeWindow    = {from: moment(), to: moment().add(4, 'hours')};
 
         self.initDriver();
         self.initHeartbeats();

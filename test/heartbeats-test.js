@@ -142,7 +142,7 @@ describe('Mosto Heartbeats Test', function() {
             var config = {
                 gc_interval: 5000,
                 sync_interval: 50,
-                min_scheduled: 1000 * 60 * 60 * 4,
+                min_scheduled_hours: 4,
                 checkout_interval: 900,
                 mvcp_server: "melted"
             };
@@ -173,7 +173,7 @@ describe('Mosto Heartbeats Test', function() {
             var pl = createPlaylist(mediamodels);
 
             playlists().addPlaylist(pl);
-            
+
             Mosto.Playlists().get('melted_medias').initMvcpServer().then(function() {
                 Mosto.Playlists().get('melted_medias').write.take(function() {
                     Mosto.Playlists().get('melted_medias').write.leave();
