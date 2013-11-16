@@ -9,10 +9,11 @@ var events = require('events');
 var util = require('util');
 var _ = require('underscore');
 var mbc = require('mbc-common');
-var MostoMessage = require('mbc-common/models/App').MostoMessage;
+var Models = require('mbc-common/models/App')
 var Collections = mbc.config.Common.Collections;
 var logger = mbc.logger().addLogger('PUBSUB-DRIVER');
 var uuid = require('node-uuid');
+var Q = require('q');
 
 var defaults = { // copied from caspa/models.App.Status
     _id: 2,
@@ -76,6 +77,17 @@ CaspaDriver.prototype.setupStatus = function(callback) {
 CaspaDriver.prototype.setupMessages = function(callback) {
     // I think we should assume at init there's no sticky errors?
     this.messagesCollection.remove(callback);
+    this.activeMessages = new Models.MessagesCollection();
+    this.activeMessages.on('add', function(message) {
+        if(message.get('status') != 'failing') {
+            this.remove(message);
+        }
+    });
+    this.activeMessages.on('change:status', function(message, value) {
+        if(value != 'failing') {
+            this.remove(message);
+        }
+    });
 };
 
 CaspaDriver.prototype.setStatus = function(meltedStatus) {
