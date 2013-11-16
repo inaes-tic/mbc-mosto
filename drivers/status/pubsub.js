@@ -75,8 +75,16 @@ CaspaDriver.prototype.setupStatus = function(callback) {
 };
 
 CaspaDriver.prototype.setupMessages = function(callback) {
+
     // I think we should assume at init there's no sticky errors?
-    this.messagesCollection.remove(callback);
+    Q.denodeify(this.messagesCollection.findItems)({status: "failing"}).then(function(messages) {
+        messages.forEach(function(message) {
+            message.status = 'fixed';
+            message.end = moment().valueOf();
+        });
+        return Q.denodeify(this.messagesCollection.save)(messages)
+    }).then(callback);
+
     this.activeMessages = new Models.MessagesCollection();
     this.activeMessages.on('add', function(message) {
         if(message.get('status') != 'failing') {
