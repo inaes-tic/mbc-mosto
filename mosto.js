@@ -100,6 +100,13 @@ mosto.prototype.initDriver = function() {
         }
     });
 
+    this.playlists.on('melted-disconnected:melted_medias', function() {
+        self.status_driver.publishMessage(self.status_driver.CODES.MELTED_CONN, "Connection with melted lost", "playlists");
+    });
+    this.playlists.on('melted-connected:melted_medias', function() {
+        self.status_driver.dropMessage(self.status_driver.CODES.MELTED_CONN, 'playlists');
+    });
+
     self.pl_driver.start();
 };
 
@@ -197,6 +204,13 @@ mosto.prototype.initHeartbeats = function() {
     });
     self.heartbeats.on('outOfSync', function() {
         self.status_driver.publishMessage(self.status_driver.CODES.SYNC);
+    });
+
+    self.heartbeats.on('melted-disconnected', function() {
+        self.status_driver.publishMessage(self.status_driver.CODES.MELTED_CONN, "Connection with melted lost", "heartbeats");
+    });
+    self.heartbeats.on('melted-connected', function() {
+        self.status_driver.dropMessage(self.status_driver.CODES.MELTED_CONN, 'heartbeats');
     });
 
     self.heartbeats.init();

@@ -55,6 +55,12 @@ heartbeats.prototype.startMvcpServer = function(callback) {
     var result = self.server.initServer();
     result.then(function() {
         logger.info("MVCP server started");
+        self.server.on('reconnect', function(had_error) {
+            self.emit('melted-disconnected');
+        });
+        self.server.on('connected', function() {
+            self.emit('melted-connected');
+        });
         if (callback !== undefined) {
             callback();
         }
