@@ -191,15 +191,24 @@ CaspaDriver.prototype.publish = function(channel, status) {
   Publishes a message through redis. If the message code is considered an
   ongoing error (such as mosto connectivity errors), it's saved to the database
 */
-CaspaDriver.prototype.publishMessage = function(code, message, description) {
+CaspaDriver.prototype.publishMessage = function(code, message, description, reference) {
     var status = {};
     (code !== undefined) && (status.code = code);
     description && (status.description = description);
     message && (status.message = message);
-    status = new MostoMessage(status);
+    reference && (status.reference = reference);
+
+    var existing = this.activeMessages.findWhere(status);
+    if(existing) {
+        // don't publish the same message twice
+        return existing;
+    }
+
+    status = new Models.MostoMessage(status);
     var method = 'create';
     status.set('_id', uuid());
     this.messagesCollection.save(status.toJSON(), {safe:false});
+    this.activeMessages.add(status);
     this.publisher.publishJSON(["mostoMessage", method].join('.'),
                                { model: status.toJSON() });
     return status;
