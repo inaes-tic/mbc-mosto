@@ -101,7 +101,7 @@ mosto.prototype.initDriver = function() {
     });
 
     this.playlists.on('melted-disconnected:melted_medias', function() {
-        self.status_driver.publishMessage(self.status_driver.CODES.MELTED_CONN, "Connection with melted lost", "playlists");
+        self.status_driver.publishMessage(self.status_driver.CODES.MELTED_CONN, "Connection with melted lost", undefined, "playlists");
     });
     this.playlists.on('melted-connected:melted_medias', function() {
         self.status_driver.dropMessage(self.status_driver.CODES.MELTED_CONN, 'playlists');
@@ -207,7 +207,7 @@ mosto.prototype.initHeartbeats = function() {
     });
 
     self.heartbeats.on('melted-disconnected', function() {
-        self.status_driver.publishMessage(self.status_driver.CODES.MELTED_CONN, "Connection with melted lost", "heartbeats");
+        self.status_driver.publishMessage(self.status_driver.CODES.MELTED_CONN, "Connection with melted lost", undefined, "heartbeats");
     });
     self.heartbeats.on('melted-connected', function() {
         self.status_driver.dropMessage(self.status_driver.CODES.MELTED_CONN, 'heartbeats');

@@ -14,6 +14,7 @@ var Collections = mbc.config.Common.Collections;
 var logger = mbc.logger().addLogger('PUBSUB-DRIVER');
 var uuid = require('node-uuid');
 var Q = require('q');
+var assert = require('assert');
 
 var defaults = { // copied from caspa/models.App.Status
     _id: 2,
@@ -236,17 +237,18 @@ CaspaDriver.prototype.CODES = {
   signal is published through redis
 */
 CaspaDriver.prototype.dropMessage = function(code, reference) {
-    message = this.activeMessages.findWhere({ code: code, reference: reference });
-    if(!this.activeMessages)
+    var self = this;
+    var message = this.activeMessages.findWhere({ code: code, reference: reference });
+    if(!message)
         return Q.resolve(false);
     message.set('status', 'fixed');
     assert(!this.activeMessages.get(message));
     message.set('end', moment().valueOf());
     var mobj = message.toJSON();
     return Q.ninvoke(this.messagesCollection, 'findById', mobj._id).then(function() {
-        return Q.ninvoke(this.messagesCollection, 'update', {_id: mobj._id}, mobj);
+        return Q.ninvoke(self.messagesCollection, 'update', {_id: mobj._id}, mobj);
     }).then(function() {
-        this.publisher.publish("mostoMessage.update", { model: mobj });
+        self.publisher.publishJSON("mostoMessage.update", { model: mobj });
     }).then(function() {
         return true;
     });
