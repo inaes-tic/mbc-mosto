@@ -227,14 +227,20 @@ CaspaDriver.prototype.CODES = {
   promise that resolves once the object is updated in the database, and the
   signal is published through redis
 */
-CaspaDriver.prototype.dropMessage = function(message) {
+CaspaDriver.prototype.dropMessage = function(code, reference) {
+    message = this.activeMessages.findWhere({ code: code, reference: reference });
+    if(!this.activeMessages)
+        return Q.resolve(false);
     message.set('status', 'fixed');
+    assert(!this.activeMessages.get(message));
     message.set('end', moment().valueOf());
     var mobj = message.toJSON();
     return Q.ninvoke(this.messagesCollection, 'findById', mobj._id).then(function() {
         return Q.ninvoke(this.messagesCollection, 'update', {_id: mobj._id}, mobj);
     }).then(function() {
         this.publisher.publish("mostoMessage.update", { model: mobj });
+    }).then(function() {
+        return true;
     });
 };
 

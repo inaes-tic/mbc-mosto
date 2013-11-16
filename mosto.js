@@ -90,7 +90,14 @@ mosto.prototype.initDriver = function() {
     });
 
     this.pl_driver.on('file-not-found', function(media) {
-        self.status_driver.publishMessage(self.status_driver.CODES.FILE_NOT_FOUND, JSON.stringify(media));
+        var error = self.status_driver.publishMessage(self.status_driver.CODES.FILE_NOT_FOUND, JSON.stringify(media), undefined, media.file);
+    });
+
+    this.playlists.on('remove:playlists', function(model) {
+        if(model.get('broken')) {
+            // a broken file was removed, drop messages regarding it
+            self.status_driver.dropMessage(self.status_driver.CODES.FILE_NOT_FOUND, model.get('broken'));
+        }
     });
 
     self.pl_driver.start();
