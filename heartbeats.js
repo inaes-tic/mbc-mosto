@@ -87,7 +87,9 @@ heartbeats.prototype.scheduleGc = function() {
 
 heartbeats.prototype.scheduleSync = function() {
     var self = this;
+    logger.info("scheduleSync called for %d milliseconds", self.config.sync_interval);
     setTimeout(function() {
+        logger.info("scheduleSync timeout fired");
         self.melted_medias.take(self.syncMelted.bind(self));
     }, self.config.sync_interval);
 };
