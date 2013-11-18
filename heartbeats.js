@@ -191,7 +191,7 @@ heartbeats.prototype.syncMelted = function() {
             var meltedClip = meltedStatus.currentClip;
             if (!meltedClip) {
                 logger.info("[syncMelted] There's no clip playing");
-                result = result.then(self.fixMelted(expected));
+                result = result.then(self.fixMelted.bind(self, expected));
             } else if (expected.media.get("id").toString() !== meltedClip.id.toString()) {
                 logger.info("[syncMelted] Expected and playing medias aren't the same");
                 var index = expected.media.get('actual_order');
@@ -218,22 +218,22 @@ heartbeats.prototype.syncMelted = function() {
                 logger.debug("frames phase: %d", frames);
                 if (frames > expected.media.get('fps')) {
                     logger.info("[syncMelted] I'm over 1 second off");
-                    result = result.then(self.fixMelted(expected));
+                    result = result.then(self.fixMelted.bind(self, expected));
                 }
             } else {
                 logger.info("[syncMelted Expected and playing medias are the same");
                 if (Math.abs(meltedClip.currentFrame - expected.frame) > expected.media.get('fps')) {
                     logger.info("[syncMelted] I'm over 1 second off")
-                    result = result.then(self.fixMelted(expected));
+                    result = result.then(self.fixMelted.bind(self, expected));
                 }
             }
             if (meltedStatus.status !== "playing") {
                 logger.info("[syncMelted] need to start playing");
-                result = result.then(self.startPlaying()).then(self.sendStatus());
+                result = result.then(self.startPlaying.bind(self)).then(self.sendStatus.bind(self));
             } else {
-                result = result.then(self.sendStatus());
+                result = result.then(self.sendStatus.bind(self));
             }
-            result = result.then(self.sendSyncEnded("Success"));
+            result = result.then(self.sendSyncEnded.bind(self, "Success"));
             return result;
         } else {
             self.handleNoMedias();
