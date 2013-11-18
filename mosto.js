@@ -93,11 +93,14 @@ mosto.prototype.initDriver = function() {
         var error = self.status_driver.publishMessage(self.status_driver.CODES.FILE_NOT_FOUND, JSON.stringify(media), undefined, media.file);
     });
 
-    this.playlists.on('remove:playlists', function(model) {
-        if(model.get('broken')) {
-            // a broken file was removed, drop messages regarding it
-            self.status_driver.dropMessage(self.status_driver.CODES.FILE_NOT_FOUND, model.get('broken'));
-        }
+    this.playlists.on('remove:playlists', function(playlist) {
+        var broken = playlist.get('medias').filter(function(m) { return m.get("broken") });
+        broken.forEach(function(model) {
+            if(model.get('broken')) {
+                // a broken file was removed, drop messages regarding it
+                self.status_driver.dropMessage(self.status_driver.CODES.FILE_NOT_FOUND, model.get('broken'));
+            }
+        });
     });
 
     this.playlists.on('melted-disconnected:melted_medias', function() {
