@@ -273,13 +273,20 @@ describe('Mosto Heartbeats Test', function() {
         });
         describe('-- Make a goto in melted and wait 1.5 second', function() {
             before(function(done) {
+                // I assume current and expected are the same
+                var current = Mosto.Playlists().get('melted_medias').getExpectedMedia();
+                var frame = current.frame + 500;
+                if(frame > current.media.get('out'))
+                    frame = "500 " + current.get('actual_order');
+                else
+                    frame = '' + frame;
                 self.checkouts = 0;
                 self.clipStatus = 0;
                 self.startPlaying = 0;
                 self.outOfSync = 0;
                 self.hbErrors = 0;
                 self.noClips = 0;
-                exec("echo 'goto u0 500' | nc localhost 5250", function (error, stdout, stderr) {
+                exec("echo 'goto u0 " + frame + "' | nc localhost 5250", function (error, stdout, stderr) {
                     setTimeout(function() {
                         done();
                     }, 1500);

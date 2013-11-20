@@ -250,6 +250,7 @@ heartbeats.prototype.syncMelted = function() {
 };
 
 heartbeats.prototype.sendSyncEnded = function(result, error) {
+    logger.debug("sending sync ended");
     this.emit("syncEnded", result, error);
 };
 
