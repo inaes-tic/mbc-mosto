@@ -125,7 +125,7 @@ describe('Mosto Heartbeats Test', function() {
                 var messages = [];
                 for(var i = 1 ; i < self.start.length ; i++) {
                     var millis = self.start[i] - self.end[i-1];
-                    results.push(millis >= 50);
+                    results.push(millis >= 48);
                     messages.push(i + ": Ms " + millis);
                 }
                 console.warn(messages.join("|"));
@@ -268,7 +268,7 @@ describe('Mosto Heartbeats Test', function() {
             it('-- Should wait 50 ms between end and start of sync', function() {
                 var millis = self.start - self.end;
                 console.warn("Ms " + millis);
-                assert.ok(millis >= 50);
+                assert.ok(millis >= 48);
             });
         });
         describe('-- Make a goto in melted and wait 1.5 second', function() {
