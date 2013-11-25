@@ -19,13 +19,14 @@ MELT_TIME_FILTER=-filter dynamictext:"\#frame\#/\#out\#" halign=centre valign=mi
                          geometry=0%/43:100%x100%:100 pad=1
 
 export NODE_CONFIG_DIR ?= $(PWD)/node_modules/mbc-common/config
+LOG_LEVEL ?= info
 
 .PHONY: test
 
 all: test serve
 
 serve: melted-check mosto.js server.js
-	@LOG_LEVEL=info ${NODE} server.js
+	@LOG_LEVEL=${LOG_LEVEL} ${NODE} server.js
 
 debug: melted-check mosto.js server.js
 	${NODE} --debug-brk server.js
