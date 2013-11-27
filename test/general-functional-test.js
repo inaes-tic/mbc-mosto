@@ -170,7 +170,11 @@ describe.skip("Mosto functional test", function() {
 
     self.publisher = mbc.pubsub();
     self.listener = mbc.pubsub();
-    self.db = mbc.db();
+    self.db = mbc.db({
+        dbName: 'mediatestdb',
+        dbHost: 'localhost',
+        dbPort: 27017
+    });
 
     /* generic tests */
     self.is_synced = function(done) {
