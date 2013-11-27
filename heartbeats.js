@@ -87,7 +87,9 @@ heartbeats.prototype.scheduleGc = function() {
 
 heartbeats.prototype.scheduleSync = function() {
     var self = this;
+    logger.info("scheduleSync called for %d milliseconds", self.config.sync_interval);
     setTimeout(function() {
+        logger.info("scheduleSync timeout fired");
         self.melted_medias.take(self.syncMelted.bind(self));
     }, self.config.sync_interval);
 };
@@ -177,6 +179,7 @@ heartbeats.prototype.syncMelted = function() {
         return;
     }
     logger.info("[syncMelted] Start Sync");
+    self.emit("syncStarted");
     self.server.getServerStatus().then(function(meltedStatus) {
         logger.info("[syncMelted] Got status");
         logger.debug('status: "%s"', JSON.stringify(meltedStatus));
@@ -188,7 +191,7 @@ heartbeats.prototype.syncMelted = function() {
             var meltedClip = meltedStatus.currentClip;
             if (!meltedClip) {
                 logger.info("[syncMelted] There's no clip playing");
-                result = result.then(self.fixMelted(expected));
+                result = result.then(self.fixMelted.bind(self, expected));
             } else if (expected.media.get("id").toString() !== meltedClip.id.toString()) {
                 logger.info("[syncMelted] Expected and playing medias aren't the same");
                 var index = expected.media.get('actual_order');
@@ -215,30 +218,40 @@ heartbeats.prototype.syncMelted = function() {
                 logger.debug("frames phase: %d", frames);
                 if (frames > expected.media.get('fps')) {
                     logger.info("[syncMelted] I'm over 1 second off");
-                    result = result.then(self.fixMelted(expected));
+                    result = result.then(self.fixMelted.bind(self, expected));
                 }
             } else {
                 logger.info("[syncMelted Expected and playing medias are the same");
                 if (Math.abs(meltedClip.currentFrame - expected.frame) > expected.media.get('fps')) {
                     logger.info("[syncMelted] I'm over 1 second off")
-                    result = result.then(self.fixMelted(expected));
+                    result = result.then(self.fixMelted.bind(self, expected));
                 }
             }
             if (meltedStatus.status !== "playing") {
                 logger.info("[syncMelted] need to start playing");
-                result = result.then(self.startPlaying()).then(self.sendStatus());
+                result = result.then(self.startPlaying.bind(self)).then(self.sendStatus.bind(self));
             } else {
-                result = result.then(self.sendStatus());
+                result = result.then(self.sendStatus.bind(self));
             }
+            result = result.then(self.sendSyncEnded.bind(self, "Success"));
             return result;
         } else {
             self.handleNoMedias();
+            self.sendSyncEnded("Success");
         }
-    }).fail(self.handleError.bind(self)).fin(function() {
+    }).fail(function(err) {
+        self.handleError(err);
+        self.sendSyncEnded("Failed", err);
+    }).fin(function() {
         self.scheduleSync();
         self.melted_medias.leave();
         logger.info("Finish Sync");
     });
+};
+
+heartbeats.prototype.sendSyncEnded = function(result, error) {
+    logger.debug("sending sync ended");
+    this.emit("syncEnded", result, error);
 };
 
 heartbeats.prototype.startPlaying = function() {

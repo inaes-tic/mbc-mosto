@@ -49,6 +49,8 @@ describe('Mosto Heartbeats Test', function() {
             self.outOfSync = 0;
             self.hbErrors = 0;
             self.noClips = 0;
+            self.start = [];
+            self.end = [];
             before(function(done) {
                 self.hb.on('forceCheckout', function() {
                     self.ckeckouts++;
@@ -67,6 +69,12 @@ describe('Mosto Heartbeats Test', function() {
                 });
                 self.hb.on('noClips', function() {
                     self.noClips++;
+                });
+                self.hb.on('syncStarted', function() {
+                    self.start.push(moment());
+                });
+                self.hb.on('syncEnded', function() {
+                    self.end.push(moment());
                 });
                 self.hb.init();
                 setTimeout(function() {
@@ -98,6 +106,30 @@ describe('Mosto Heartbeats Test', function() {
             it('-- Should have received > 1 noClips events', function() {
                 console.warn("Received " + self.noClips + " events");
                 assert.ok(self.noClips > 1);
+            });
+            it('-- Should have received syncStarted event', function() {
+                //assert.ok(self.start > 0);
+                console.log('Got', self.start.length);
+                assert.ok(self.start.length > 0);
+            });
+            it('-- Should have received syncEnded event', function() {
+                //assert.ok(self.end > 0);
+                console.log('Got', self.end.length);
+                assert.ok(self.end.length > 0);
+            });
+            it('-- Should have received more starts than ends', function() {
+                assert.ok(self.start.length >= self.end.length);
+            });
+            it('-- Should wait 50 ms between end and start of sync', function() {
+                var results = [];
+                var messages = [];
+                for(var i = 1 ; i < self.start.length ; i++) {
+                    var millis = self.start[i] - self.end[i-1];
+                    results.push(millis >= 48);
+                    messages.push(i + ": Ms " + millis);
+                }
+                console.warn(messages.join("|"));
+                assert.ok(_.all(results));
             });
         });
 
@@ -137,6 +169,8 @@ describe('Mosto Heartbeats Test', function() {
         self.outOfSync = 0;
         self.hbErrors = 0;
         self.noClips = 0;
+        self.start = 0;
+        self.end = 0;
 
         before(function(done) {
             var config = {
@@ -165,6 +199,14 @@ describe('Mosto Heartbeats Test', function() {
             });
             self.hb.on('noClips', function() {
                 self.noClips++;
+            });
+            self.hb.on('syncStarted', function() {
+                if (self.start === 0 && self.end > 0)
+                    self.start = moment();
+            });
+            self.hb.on('syncEnded', function() {
+                if (self.end === 0)
+                    self.end = moment();
             });
             self.hb.init();
 
@@ -217,16 +259,34 @@ describe('Mosto Heartbeats Test', function() {
                 assert.equal(self.noClips, 0);
                 done();
             });
+            it('-- Should have received syncStarted event', function() {
+                assert.ok(self.start > 0);
+            });
+            it('-- Should have received syncEnded event', function() {
+                assert.ok(self.end > 0);
+            });
+            it('-- Should wait 50 ms between end and start of sync', function() {
+                var millis = self.start - self.end;
+                console.warn("Ms " + millis);
+                assert.ok(millis >= 48);
+            });
         });
         describe('-- Make a goto in melted and wait 1.5 second', function() {
             before(function(done) {
+                // I assume current and expected are the same
+                var current = Mosto.Playlists().get('melted_medias').getExpectedMedia();
+                var frame = current.frame + 500;
+                if(frame > current.media.get('out'))
+                    frame = "500 " + current.get('actual_order');
+                else
+                    frame = '' + frame;
                 self.checkouts = 0;
                 self.clipStatus = 0;
                 self.startPlaying = 0;
                 self.outOfSync = 0;
                 self.hbErrors = 0;
                 self.noClips = 0;
-                exec("echo 'goto u0 500' | nc localhost 5250", function (error, stdout, stderr) {
+                exec("echo 'goto u0 " + frame + "' | nc localhost 5250", function (error, stdout, stderr) {
                     setTimeout(function() {
                         done();
                     }, 1500);

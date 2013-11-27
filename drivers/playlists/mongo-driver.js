@@ -118,7 +118,7 @@ mongo_driver.prototype.getPlaylists = function(window, callback) {
                     logger.error("Error processing playlists: ", err);
                     return self.emit('md-error', err);
                 } else {
-                    logger.debug("Playlists obtained: ", playlists);
+                    logger.debug("%d Playlists obtained", playlists.length);
                 }
                 if( callback )
                     callback(playlists);
@@ -178,7 +178,7 @@ mongo_driver.prototype.createPlaylist = function(sched, callback) {
 
             var playlist = new models.Playlist({"id": playlist_id, "name": name, "start": startDate, "end": endDate, "mode": "snap", "medias": medias});
 
-            logger.debug("Created Playlist:", playlist);
+            logger.debug("Created Playlist. name: %s, id: %s, length: %d", playlist.get('name'), playlist.get('id'), playlist.get('medias').length);
 
             callback(err, playlist);
         });
