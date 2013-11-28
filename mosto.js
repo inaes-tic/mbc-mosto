@@ -298,7 +298,7 @@ mosto.prototype.finish = function(callback) {
                 setTimeout( function() {
                     logger.debug("[finish] calling callback");
                     if (callback) callback();
-                }, 1000 );
+                }, 5000 );
             });
         });
     });
