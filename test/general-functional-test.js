@@ -323,10 +323,12 @@ describe("Mosto functional test", function() {
                 before(function(done) {
                     var occurrence = self.get_occurrence();
                     self.delete_occurrence(occurrence).then(function() {
-                        self.listener.once('message', function(chan, msg) {
+                        self.listener.on('JSONmessage', function(chan, msg) {
                             if(chan == 'mostoStatus') {
-                                self.listener.unsubscribe('mostoStatus');
-                                done();
+                                if (msg.piece.current._id.indexOf('BLANK') > -1) {
+                                    self.listener.unsubscribe('mostoStatus');
+                                    done();
+                                }
                             }
                         });
                         self.listener.subscribe('mostoStatus');
