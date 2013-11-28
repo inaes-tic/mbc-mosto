@@ -226,6 +226,7 @@ mosto.prototype.init = function(melted, callback) {
      * linkear heartbeat con status driver
      */
     function startall() {
+        logger.info("Starting modules...");
         self.pl_driver     = new playlists_driver(self.config.playlist_server, self.mongoConfig);
         self.status_driver = new status_driver(self.mongoConfig);
         self.playlists     = models.Playlists();
@@ -257,9 +258,11 @@ mosto.prototype.scheduleMeltedCheck = function() {
 };
 
 mosto.prototype.checkMelted = function(callback, forceLoad) {
+    logger.debug("Checking melted...");
     var self = this;
     Melted.is_running(function(running) {
         if (!running) {
+            logger.error("Melted was not running!");
             Melted.start(function(pid) {
                 Melted.setup(undefined, undefined, function(result) {
                     if (forceLoad)
