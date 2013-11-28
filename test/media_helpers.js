@@ -91,6 +91,32 @@ exports.getMBCMedia = function(path) {
 
 
 /*
+ *   getJSONMedia(path)
+ *    - path: optional path
+ *
+ *   Scans given path (or default) getting media files and returns JSON objects array
+ */
+exports.getJSONMedia = function(path) {
+    if (path === undefined) {
+        path = "test/videos/"; // TODO FIXME XXX: ugly hardcoded -> should be in config?
+    }
+
+    var parsed = parseXMLs(path);
+    var medias = parsed.map(function(elem) {
+        var params = {};
+        params.name = elem.filename;
+        params._id = crypto.createHash('md5').update(params.name).digest('hex');
+        params.file = process.cwd() + '/' + path + elem.filename;
+        params.fps = parseInt(elem.data.mlt.profile[0]["$"].frame_rate_num, 10);
+        var frames = parseInt(elem.data.mlt.producer[0]["$"].out, 10);
+        var duration = moment("0:0:0.0", "HH:mm:ss.SSS").add(exports.framesToMilliseconds(frames, params.fps));
+        params.durationraw = duration.format("HH:mm:ss.SSS");
+        return params;
+    });
+    return medias;
+};
+
+/*
  *   getTotalMediaLength(media_array)
  *    - media_array: an array of Media objects
  *
