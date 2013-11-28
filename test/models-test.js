@@ -1,8 +1,8 @@
 var Mosto   = require('../models/Mosto')
 ,   should  = require('should')
 ,   mvcp    = require('../drivers/mvcp/mvcp-driver')
-,   melted  = require('../api/Melted')
 ,   helpers = require('./media_helpers')
+,   test    = require('./test_helper.js')
 ,   _       = require('underscore')
 ,   moment  = require('moment')
 ;
@@ -31,24 +31,19 @@ describe('models.Mosto', function() {
 
     describe('MeltedCollection', function(){
         before(function(done) {
-            // restart melted
-            melted.take(function() {
-                melted.stop(function() {
-                    melted.start(function() {
-                        melted.setup(undefined, undefined, function() {
-                            self.server.initServer().fin(function() {
-                                done();
-                            });
-                        });
+            test.take(function() {
+                test.init(function() {
+                    self.server.initServer().fin(function() {
+                        done();
                     });
                 });
             });
         });
 
         after(function(done) {
-            self.playlists().get('melted_medias').stopMvcpServer().fin(self.server.stopServer).fin(function() {
-                melted.stop(function() {
-                    melted.leave();
+            self.server.stopServer().fin(function() {
+                test.finish(function() {
+                    test.leave();
                     done();
                 });
             });
