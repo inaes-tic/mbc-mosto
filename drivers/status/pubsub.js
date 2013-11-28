@@ -33,11 +33,11 @@ function MostoMessage(value, description, message) {
     this.message = message;
 }
 
-function CaspaDriver() {
+function CaspaDriver(conf) {
     events.EventEmitter.call(this);
     var self = this;
     this.status = _.clone(defaults);
-    this.db = mbc.db();
+    this.db = mbc.db(conf && conf.db);
     this.publisher = mbc.pubsub();
 }
 util.inherits(CaspaDriver, events.EventEmitter);
@@ -194,8 +194,8 @@ CaspaDriver.prototype.dropMessage = function(message) {
     this.publisher.publish("mostoMessage.delete", { model: message });
 };
 
-exports = module.exports = function() {
-    var driver = new CaspaDriver();
+exports = module.exports = function(conf) {
+    var driver = new CaspaDriver(conf);
     driver.setupAll();
 
     return driver;
