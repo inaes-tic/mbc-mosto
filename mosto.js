@@ -9,6 +9,7 @@ var fs               = require('fs')
 ,   utils            = require('./utils')
 ,   mbc              = require('mbc-common')
 ,   config           = mbc.config.Mosto.General
+,   mongoConfig      = mbc.config.Mosto.Mongo
 ,   _                = require('underscore')
 ,   heartbeats       = require('./heartbeats')
 ,   models           = require('./models/Mosto')
@@ -16,10 +17,11 @@ var fs               = require('fs')
 ;
 //TODO: Chequear window, se esta construyendo de formas distintas
 //INCLUSO EN EL DRIVER MISMO SE USA DE FORMAS DISTINTAS!!!
-function mosto(customConfig) {
+function mosto(customConfig, customMongoConfig) {
 
     /** CONFIGURATION */
     this.config         = customConfig || config;
+    this.mongoConfig    = customMongoConfig || mongoConfig;
     this.server         = undefined;
     this.pl_driver      = undefined;
     this.status_driver  = undefined;
@@ -224,8 +226,8 @@ mosto.prototype.init = function(melted, callback) {
      * linkear heartbeat con status driver
      */
     function startall() {
-        self.pl_driver     = new playlists_driver(self.config.playlist_server);
-        self.status_driver = new status_driver();
+        self.pl_driver     = new playlists_driver(self.config.playlist_server, self.mongoConfig);
+        self.status_driver = new status_driver(self.mongoConfig);
         self.playlists     = models.Playlists();
         self.heartbeats    = new heartbeats();
 
@@ -299,8 +301,8 @@ mosto.prototype.finish = function(callback) {
     });
 };
 
-exports = module.exports = function(customConfig) {
-    var mosto_server = new mosto(customConfig);
+exports = module.exports = function(customConfig, customMongoConfig) {
+    var mosto_server = new mosto(customConfig, customMongoConfig);
     return mosto_server;
 };
 /*
