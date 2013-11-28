@@ -6,6 +6,7 @@ var melted = require('melted-node');
 var _      = require('underscore');
 var seed   = require('seed-random');
 var mbc    = require('mbc-common');
+var melted_log = mbc.logger().addLogger('MELTED-NODE');
 var Media  = require('mbc-common/models/Media');
 var Q      = require('q');
 var moment = require('moment');
