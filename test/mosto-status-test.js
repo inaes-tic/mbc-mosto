@@ -1,6 +1,6 @@
 var assert = require("assert"),
 mosto  = require('../mosto'),
-melted  = require('../api/Melted');
+test   = require('./test_helper.js');
 
 //TODO: This test should be rewritten after @fabriciocosta merges his part with more usefull data!
 describe('Mosto status', function() {
@@ -9,20 +9,17 @@ describe('Mosto status', function() {
     var rec = -1;
 
     before(function(done) {
-        melted.take(function() {
-            melted.stop(function(){
-                melted.start(function() {
-                    melted.setup(undefined, undefined, function() {
-                        done();
-                    });
-                });
-            });
+        test.take(function() {
+            test.init(done);
         });
     });
 
     after(function(done) {
         mosto_server.finish(function() {
-            melted.stop(done);
+            test.finish(function() {
+                test.leave();
+                done();
+            });
         });
     });
 
@@ -34,7 +31,7 @@ describe('Mosto status', function() {
                 rec++;
                 done();
             });
-            mosto_server.init(melted);
+            mosto_server.init();
         });
         it('--should have received 1 status', function() {
             assert.equal(rec, 0);
