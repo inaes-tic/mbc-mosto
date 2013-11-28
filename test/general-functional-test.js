@@ -10,6 +10,7 @@ var Media  = require('mbc-common/models/Media');
 var Q      = require('q');
 var moment = require('moment');
 var helper = require('./media_helpers.js');
+var test   = require('./test_helper.js');
 var uuid   = require('node-uuid');
 var mosto_config = require('mbc-common').config.Mosto.General;
 
@@ -205,11 +206,20 @@ describe("Mosto functional test", function() {
         return result;
     };
 
-    before(function() {
-        self.melted = melted();
+    before(function(done) {
+        test.take(function() {
+            test.init(function() {
+                self.melted = melted(undefined, undefined, melted_log);
+                done();
+            });
+        });
     });
-    after(function() {
-        delete self.melted;
+    after(function(done) {
+        test.finish(function() {
+            delete self.melted;
+            test.leave();
+            done();
+        });
     });
     describe('start without playlists', function() {
         before(function(done) {
