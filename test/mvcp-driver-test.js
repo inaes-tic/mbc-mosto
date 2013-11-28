@@ -4,6 +4,8 @@ var _           = require('underscore');
 var mvcp_server = require('../drivers/mvcp/mvcp-driver');
 var melted      = require('../api/Melted');
 var helpers     = require('./media_helpers');
+var test        = require('./test_helper.js');
+
 
 function getMedia(id, orig_order, playlist_id, name, type, file, length, fps) {
     var media = {};
@@ -25,18 +27,16 @@ describe('start mvcp-driver test', function(done) {
     this.timeout(15000);
 
     before(function(done) {
-        // Make sure we start with a fresh melted
-        melted.take(function() {
-            melted.stop(function(){
+        test.take(function() {
+            test.init(function(){
                 done();
             });
         });
     });
     after(function(done) {
-        // and leave it "clean" after we leave
-        melted.stop(function() {
-            melted.leave();
-            done()
+        test.finish(function() {
+            test.leave();
+            done();
         });
     });
 
