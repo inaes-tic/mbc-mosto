@@ -1,7 +1,6 @@
 var spawn = require('child_process').spawn;
 var exec = require('child_process').exec;
 var net = require('net');
-var semaphore = require('semaphore')(1);
 var mbc = require('mbc-common');
 var conf = mbc.config.Mosto.Melted;
 var melted_bin_path = conf.root + '/melted/BUILD/bin/melted';
@@ -209,26 +208,3 @@ exports.setup = function(root, output, callback) {
     })
 };
 
-/**
- * take
- *
- * Take melted and not leave execution to other melted taked.
- *
- * @callback: callback function to process while take melted.
- *
- */
-exports.take = function() {
-    logger.info('take');
-    return semaphore.take.apply(this, arguments);
-};
-
-/**
- * leave
- *
- * Leave execution to other melted taked.
- *
- */
-exports.leave = function() {
-    logger.info('leave');
-    return semaphore.leave.apply(this, arguments);
-};
