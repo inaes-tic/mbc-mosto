@@ -243,12 +243,10 @@ mosto.prototype.init = function(melted, callback) {
         self.checkMelted(startall);
     };
 
-    if (melted !== undefined) {
+    if (melted !== undefined) 
         Melted = melted;
-        check_and_start();
-    }
-    else
-        Melted.take(check_and_start);
+
+    check_and_start();
 
 };
 
@@ -293,8 +291,6 @@ mosto.prototype.finish = function(callback) {
             Melted.stop(function(pid) {
                 logger.debug("[finish] melted stopped");
                 setTimeout( function() {
-                    logger.debug("[finish] leaving Melted lock");
-                    Melted.leave();
                     logger.debug("[finish] calling callback");
                     if (callback) callback();
                 }, 1000 );
