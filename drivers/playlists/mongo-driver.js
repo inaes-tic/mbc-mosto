@@ -27,6 +27,7 @@ util.inherits (mongo_driver, events.EventEmitter);
 
 mongo_driver.prototype.start = function() {
     var self = this;
+    logger.info("Opening db connection", this.conf);
     var db = mbc.db(this.conf && this.conf.db);
     self.channel = mbc.pubsub();
 
