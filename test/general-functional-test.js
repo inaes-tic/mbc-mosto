@@ -180,11 +180,14 @@ describe("Mosto functional test", function() {
 
     self.publisher = mbc.pubsub();
     self.listener = mbc.pubsub();
-    self.db = mbc.db({
-        dbName: 'mediatestdb',
-        dbHost: 'localhost',
-        dbPort: 27017
-    });
+    self.mongoConf = {
+        db: {
+            dbName: 'mediatestdb',
+            dbHost: 'localhost',
+            dbPort: 27017
+        }
+    };
+    self.db = mbc.db(self.mongoConf.db);
 
     /* generic tests */
     self.is_synced = function(time) {
@@ -225,7 +228,7 @@ describe("Mosto functional test", function() {
     describe('start without playlists', function() {
         before(function(done) {
             self.db.dropDatabase(function(err, success) {
-                self.mosto = new mosto();
+                self.mosto = new mosto(undefined, self.mongoConf);
                 self.mosto.once('playing', function() {
                     done();
                 });
@@ -277,7 +280,7 @@ describe("Mosto functional test", function() {
                     var setup = self.setup_playlists(moment(
                         moment() + _.randint(0, -30000)));
                     setup.then(function() {
-                        self.mosto = new mosto();
+                        self.mosto = new mosto(undefined, self.mongoConf);
                         self.mosto.once('playing', function() {
                             // send pubsub messages with new playlists
                             self.melted.connect().then(function(){
@@ -361,7 +364,7 @@ describe("Mosto functional test", function() {
                     var setup = self.setup_playlists(moment(
                         moment() - 5 * 60 * 1000));
                     setup.then(function() {
-                        self.mosto = new mosto();
+                        self.mosto = new mosto(undefined, self.mongoConf);
                         self.mosto.once('playing', function() {
                             // send pubsub messages with new playlists
                             done();
