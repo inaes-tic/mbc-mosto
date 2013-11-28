@@ -3,8 +3,8 @@ var mongo_driver = require('../drivers/playlists/mongo-driver');
 var should = require('should');
 var mbc = require('mbc-common');
 var _ = require('underscore');
-var melted  = require('../api/Melted');
 var helpers = require('./media_helpers');
+var test    = require('./test_helper.js')
 var Media = require('mbc-common/models/Media');
 var uuid = require('node-uuid');
 
@@ -12,8 +12,8 @@ describe('PlaylistMongoDriver', function(){
     var self = this;
 
     before(function(done) {
-        melted.take(function() {
-            melted.stop(function(pid){
+        test.take(function() {
+            test.init(function(pid){
 
                 // setup mongo driver
                 var conf = {
@@ -101,8 +101,10 @@ describe('PlaylistMongoDriver', function(){
                 self.collections[col].drop();
             }
         }
-        melted.leave();
-        done();
+        test.finish(function() {
+            test.leave();
+            done();
+        });
     });
 
     describe('#subscriptions', function() {
