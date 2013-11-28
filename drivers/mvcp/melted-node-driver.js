@@ -10,6 +10,7 @@ var melted_node = require('melted-node')
 ,   logger      = mbc.logger().addLogger('MELTED-NODE-DRIVER')
 ,   melted_log  = mbc.logger().addLogger('MELTED-NODE')
 ,   uuid        = require('node-uuid')
+,   _           = require('underscore')
 ,   events      = require('events')
 ,   util        = require('util')
 ;
@@ -177,25 +178,29 @@ melted.prototype.stopServer = function() {
     return this.mlt.disconnect();
 };
 
-melted.prototype.sendClip = function(clip, command) {
+melted.prototype.sendPlaylist = function(clips, command, clipInfo) {
     var self = this;
     var xml = new melted_xml();
+    var videos = {};
+    clipInfo = clipInfo || clips[0];
 
-    var type     = clip.type;
-    var file     = clip.file;
-    var filename = utils.getXmlFileNameFromClip(clip);
+    var filename = utils.getXmlFileNameFromClip(clipInfo);
 
     //            var filters = self.config.types[type].filters;
 
     logger.debug(this.uuid + " - Generating file " + filename);
-
-    logger.debug(this.uuid + " - Adding media [" + file + "] to file " + filename);
-    var video = new melted_xml.Producer.Video({ source: file, startFrame: clip.in, length: clip.length });
-    xml.push(video);
-
     logger.debug(this.uuid + " - Creating playlist xml object for file " + filename);
     var pl = new melted_xml.Playlist;
-    pl.entry({producer: video});
+    _.forEach(clips, function(clip) {
+        var type     = clip.type;
+        var file     = clip.file;
+
+        logger.debug(this.uuid + " - Adding media [" + file + "] to file " + filename);
+        var video = new melted_xml.Producer.Video({ source: file, startFrame: clip.in, length: clip.length });
+        xml.push(video);
+
+        pl.entry({producer: video});
+    });
     xml.push(pl);
 
     logger.debug(this.uuid + " - Creating track xml object for file " + filename);
@@ -246,6 +251,10 @@ melted.prototype.sendClip = function(clip, command) {
     return deferred.promise;
 };
 
+melted.prototype.sendClip = function(clip, command) {
+    return this.sendPlaylist([clip], command);
+};
+
 melted.prototype.loadClip = function(clip) {
     //Load clip removing the whole playlist and starting playback
     return this.sendClip(clip, "LOAD U0 {xmlFile}");
@@ -253,6 +262,9 @@ melted.prototype.loadClip = function(clip) {
 melted.prototype.appendClip = function(clip) {
     //Appends clip to the end of the playlist
     return this.sendClip(clip, "APND UO {xmlFile}");
+};
+melted.prototype.appendPlaylist = function(clips) {
+    return this.sendPlaylist(clips, "APND U0 {xmlFile}");
 };
 melted.prototype.insertClip = function(clip, index) {
     //Insert clip at specified index
