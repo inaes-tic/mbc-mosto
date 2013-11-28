@@ -1,6 +1,6 @@
 var assert      = require("assert"),
-    melted      = require('../api/Melted'),
     helpers     = require('./media_helpers'), 
+    test        = require('./test_helper.js');
     Mosto       = require('../models/Mosto'),
     _           = require('underscore'),
     moment      = require('moment'),
@@ -10,18 +10,14 @@ var assert      = require("assert"),
 
 describe('Mosto Heartbeats Test', function() {
     before(function(done) {
-        melted.take(function() {
-            melted.stop(function(){
-                melted.start(function(pid) {
-                    melted.setup(undefined, undefined, function(has_err) {
-                        Mosto.Playlists().get('playlists').reset();
-                        Mosto.Playlists().save();
-                        Mosto.Playlists().get('melted_medias').initMvcpServer().then(function() {
-                            Mosto.Playlists().get('melted_medias').write.take(function() {
-                                Mosto.Playlists().get('melted_medias').write.leave();
-                                done();
-                            });
-                        });
+        test.take(function() {
+            test.init(function() {
+                Mosto.Playlists().get('playlists').reset();
+                Mosto.Playlists().save();
+                Mosto.Playlists().get('melted_medias').initMvcpServer().then(function() {
+                    Mosto.Playlists().get('melted_medias').write.take(function() {
+                        Mosto.Playlists().get('melted_medias').write.leave();
+                        done();
                     });
                 });
             });
@@ -136,9 +132,9 @@ describe('Mosto Heartbeats Test', function() {
         after(function(done) {
             this.timeout(15000);
             self.hb.stop().then(function() {
-                Mosto.Playlists().get('melted_medias').stopMvcpServer().then(function() {
+//                Mosto.Playlists().get('melted_medias').stopMvcpServer().then(function() {
                     done();
-                });
+//                });
             });
         });
     });
@@ -216,12 +212,12 @@ describe('Mosto Heartbeats Test', function() {
 
             playlists().addPlaylist(pl);
 
-            Mosto.Playlists().get('melted_medias').initMvcpServer().then(function() {
-                Mosto.Playlists().get('melted_medias').write.take(function() {
-                    Mosto.Playlists().get('melted_medias').write.leave();
+//            Mosto.Playlists().get('melted_medias').initMvcpServer().then(function() {
+//                Mosto.Playlists().get('melted_medias').write.take(function() {
+//                    Mosto.Playlists().get('melted_medias').write.leave();
                     done();
-                });
-            });
+//                });
+//            });
         });
 
         describe('-- Starting playback and wait 3 seconds', function() {
@@ -387,12 +383,10 @@ describe('Mosto Heartbeats Test', function() {
         });
     });
 
-    describe('#leave melted', function() {
-        it('-- leave melted', function(done) {
-            melted.stop(function(pid) {
-                melted.leave();
-                done();
-            });
+    after(function(done) {
+        test.finish(function() {
+            test.leave();
+            done();
         });
     });
 
