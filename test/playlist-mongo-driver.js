@@ -137,6 +137,7 @@ describe('PlaylistMongoDriver', function(){
                 playlist.id.should.be.eql(message.model._id);
                 playlist.get('name').should.be.eql(message.model.title);
                 moment(playlist.get('start')).valueOf().should.eql(message.model.start);
+                self.driver.removeAllListeners('create');
                 done();
             });
             self.pubsub.publishJSON(message.channel(), message);
@@ -145,6 +146,7 @@ describe('PlaylistMongoDriver', function(){
             var message = self.message;
             message.method = 'update';
             self.driver.on('update', function(playlist) {
+                self.driver.removeAllListeners('update');
                 done();
             });
             self.pubsub.publishJSON(message.channel(), message);
@@ -154,6 +156,7 @@ describe('PlaylistMongoDriver', function(){
             message.method = 'delete';
             self.driver.on('delete', function(id) {
                 id.should.be.eql(message.model._id);
+                self.driver.removeAllListeners('delete');
                 done();
             });
             self.pubsub.publishJSON(message.channel(), message);
