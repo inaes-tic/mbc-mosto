@@ -553,12 +553,12 @@ Mosto.LoadedPlaylists = Backbone.Model.extend({
         this.get('melted_medias').on('all', bubbleEvents(this, 'melted_medias'));
     },
 
-    save: function() {
+    save: function(options) {
         // set fires add, remove, change and sort
         var mm = this.get('melted_medias');
         var pl = this.get('playlists');
         mm.write.take(function() {
-            mm.set(pl.getMedias());
+            mm.set(pl.getMedias(), options);
         });
     },
 
