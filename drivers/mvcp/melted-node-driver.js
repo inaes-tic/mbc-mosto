@@ -196,7 +196,10 @@ melted.prototype.sendPlaylist = function(clips, command, clipInfo) {
         var file     = clip.file;
 
         logger.debug(this.uuid + " - Adding media [" + file + "] to file " + filename);
-        var video = new melted_xml.Producer.Video({ source: file, startFrame: clip.in, length: clip.length });
+        if(!videos[file]) {
+            videos[file] = new melted_xml.Producer.Video({ source: file, startFrame: clip.in, length: clip.length });
+        }
+        var video = videos[file];
         xml.push(video);
 
         pl.entry({producer: video});
