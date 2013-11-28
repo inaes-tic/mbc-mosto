@@ -1,5 +1,4 @@
 var mbc      = require('mbc-common')
-,   config   = mbc.config.Mosto.Mongo
 ,   mubsub   = require("mubsub")
 ,   moment   = require("moment")
 ,   async    = require('async')
