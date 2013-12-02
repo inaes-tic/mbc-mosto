@@ -3,8 +3,8 @@ var mongo_driver = require('../drivers/playlists/mongo-driver');
 var should = require('should');
 var mbc = require('mbc-common');
 var _ = require('underscore');
-var melted  = require('../api/Melted');
 var helpers = require('./media_helpers');
+var test    = require('./test_helper.js')
 var Media = require('mbc-common/models/Media');
 var uuid = require('node-uuid');
 
@@ -12,8 +12,8 @@ describe('PlaylistMongoDriver', function(){
     var self = this;
 
     before(function(done) {
-        melted.take(function() {
-            melted.stop(function(pid){
+        test.take(function() {
+            test.init(function(pid){
 
                 // setup mongo driver
                 var conf = {
@@ -26,69 +26,75 @@ describe('PlaylistMongoDriver', function(){
                 self.driver = new mongo_driver(conf);
 
                 self.db = mbc.db(conf.db);
-                self.driver.start();
-                self.from = moment();
-                self.span = 120;
-                self.to = moment((self.from.unix() + self.span * 60) * 1000); // add 2hs
+                self.db.dropDatabase(function(err, success) {
+                    self.driver.start();
+                    self.from = moment();
+                    self.span = 120;
+                    self.to = moment((self.from.unix() + self.span * 60) * 1000); // add 2hs
 
-                self.collections = {
-                    lists: self.db.collection('lists'),
-                    scheds: self.db.collection('scheds'),
-                    pieces: self.db.collection('pieces'),
-                };
-
-                var medias = helpers.getMBCMedia();
-                // let's create a playlist at least 1 hour long
-                var playlist = new Media.Playlist({_id: uuid.v1()});
-                playlist.set('title', 'TestPlaylist');
-                while(playlist.get('duration') < 3600000) {
-                    var media = _.randelem(medias);
-                    var piece = new Media.Piece(media.toJSON());
-                    piece.set('_id', uuid.v1());
-                    playlist.get('pieces').add(piece);
-                    playlist.update_duration_nowait(playlist.get('pieces'));
-                }
-                self.pieces = playlist.get('pieces');
-                self.lists = [playlist];
-                // program at least 4hs of schedules
-                self.scheds = [];
-                for(var i = 0 ; i < 5 ; i++) {
-                    var schedule = {
-                        _id: uuid.v1(),
-                        playlist: playlist,
-                        title: playlist.get('title') + i,
+                    self.collections = {
+                        lists: self.db.collection('lists'),
+                        scheds: self.db.collection('scheds'),
+                        pieces: self.db.collection('pieces'),
                     };
-                    var hsix = i - 3;
-                    var now = self.from;
-                    // schedules are from 1hs before now
-                    var schtime = moment(now + (hsix * 30 * 60 * 1000));
-                    var length = moment.duration(playlist.get('duration'));
-                    schedule.start = schtime.valueOf();
-                    schedule.end = schtime + length;
-                    var occurrence = new Media.Occurrence(schedule);
-                    self.scheds.push(occurrence);
-                };
 
-                var ready = _.after(
-                    self.lists.length + self.pieces.length + self.scheds.length,
-                    function(){ done() });
+                    var medias = helpers.getJSONMedia();
+                    // let's create a playlist at least 1 hour long
+                    var playlist = new Media.Playlist({_id: uuid.v1(), title: 'Name'});
+                    while(playlist.get('duration') < 3600000) {
+                        var m = _.randelem(medias);
+                        var piece = new Media.Piece();
+                        piece.set('_id', uuid.v1());
+                        piece.set('name', m.name);
+                        piece.set('file', m.file);
+                        piece.set('fps', m.fps);
+                        piece.set('durationraw', m.durationraw);
+                        playlist.get('pieces').add(piece);
+                        playlist.update_duration_nowait(playlist.get('pieces'));
+                    }
+                    self.pieces = playlist.get('pieces');
+                    self.lists = [playlist];
+                    // program at least 4hs of schedules
+                    self.scheds = [];
+                    for(var i = 0 ; i < 5 ; i++) {
+                        var schedule = {
+                            _id: uuid.v1(),
+                            playlist: playlist,
+                            title: playlist.get('title') + i,
+                        };
+                        var hsix = i - 3;
+                        var now = self.from;
+                        // schedules are from 1hs before now
+                        var schtime = moment(now + (hsix * 30 * 60 * 1000)).valueOf();
+                        var length = moment.duration(playlist.get('duration'));
+                        schedule.start = schtime;
+                        schedule.end = schtime + length;
+                        var occurrence = new Media.Occurrence(schedule);
+                        self.scheds.push(occurrence);
+                    };
 
-                self.pieces.forEach(function(piece) {
-                    self.collections.pieces.save(piece.toJSON(), {safe:true}, function(err, list) {
-                        ready();
+                    var ready = _.after(
+                        self.lists.length + self.pieces.length + self.scheds.length,
+                        function(){ done() });
+
+                    self.pieces.forEach(function(piece) {
+                        self.collections.pieces.save(piece.toJSON(), {safe:true}, function(err, list) {
+                            ready();
+                        });
                     });
-                });
 
-                self.lists.forEach(function(playlist) {
-                    self.collections.lists.save(playlist.toJSON(), {safe:true}, function(err, list) {
-                        ready();
+                    self.lists.forEach(function(playlist) {
+                        self.collections.lists.save(playlist.toJSON(), {safe:true}, function(err, list) {
+                            ready();
+                        });
                     });
-                });
 
-                self.scheds.forEach(function(occurrence) {
-                    self.collections.scheds.save(occurrence.toJSON(), {safe:true}, function(err, sched){
-                        ready();
+                    self.scheds.forEach(function(occurrence) {
+                        self.collections.scheds.save(occurrence.toJSON(), {safe:true}, function(err, sched){
+                            ready();
+                        });
                     });
+                    
                 });
             });
         });
@@ -102,52 +108,9 @@ describe('PlaylistMongoDriver', function(){
                 self.collections[col].drop();
             }
         }
-        melted.leave();
-        done();
-    });
-
-    describe.skip('#getWindow()', function() {
-        beforeEach(function(){
-            self.driver.window = undefined;
-        });
-        it('should exist', function() {
-            self.driver.should.have.property('getWindow');
-            self.driver.getWindow.should.be.a('function');
-        });
-        it('should accept two parameters and save them in window = {from, to}', function() {
-            var window = self.driver.getWindow(self.from, self.to);
-            window.from.valueOf().should.equal(self.from.valueOf());
-            window.to.valueOf().should.equal(self.to.valueOf());
-        });
-        it('should accept an object with {from, to}', function() {
-            var window = self.driver.getWindow({from: self.from, to: self.to});
-            window.from.valueOf().should.equal(self.from.valueOf());
-            window.to.valueOf().should.equal(self.to.valueOf());
-        });
-        it('should accept an object with {from, timeSpan}', function() {
-            var window = self.driver.getWindow({from: self.from, timeSpan: self.span});
-            window.from.valueOf().should.equal(self.from.valueOf());
-            var to = moment(self.from.valueOf());
-            to.add(self.span * 60 * 1000);
-            console.log('popop', window.to.valueOf(), to.valueOf())
-            window.to.valueOf().should.equal(to.valueOf());
-        });
-        it('should accept only a "to" object and assume "from" is now', function() {
-            var window = self.driver.getWindow({to: self.to});
-            window.should.have.property('from');
-            window.from.valueOf().should.approximately((new moment()).valueOf(), 10);
-        });
-        it('should accept no parameters, and use the config file from defaults', function(){
-            var window = self.driver.getWindow();
-            var config = require('mbc-common').config.Mosto.Mongo;
-            window.timeSpan.should.equal(config.load_time * 60 * 1000);
-            window.from.valueOf().should.approximately(moment().valueOf(), 10);
-            window.to.diff(window.from).valueOf().should.equal(window.timeSpan.valueOf());
-        });
-        it('should accept dates and transform them to moments', function() {
-            var window = self.driver.getWindow(new Date(), new Date());
-            moment.isMoment(window.from).should.be.ok;
-            moment.isMoment(window.to).should.be.ok;
+        test.finish(function() {
+            test.leave();
+            done();
         });
     });
 
@@ -158,7 +121,7 @@ describe('PlaylistMongoDriver', function(){
             var list = sched.get('playlist');
             var model = sched.toJSON();
             model.start = moment().valueOf()
-            model.end = moment().add(list.get('duration'));
+            model.end = moment().add(list.get('duration')).valueOf();
             self.message = {
                 backend: 'schedbackend',
                 model: model,
@@ -171,10 +134,10 @@ describe('PlaylistMongoDriver', function(){
             var message = self.message;
             message.method = 'create';
             self.driver.on('create', function(playlist) {
-                console.log("create received! - " + playlist.name );
-                playlist.get('id').should.be.eql(message.model._id);
+                playlist.id.should.be.eql(message.model._id);
                 playlist.get('name').should.be.eql(message.model.title);
-                playlist.get('start').should.eql(message.model.start);
+                moment(playlist.get('start')).valueOf().should.eql(message.model.start);
+                self.driver.removeAllListeners('create');
                 done();
             });
             self.pubsub.publishJSON(message.channel(), message);
@@ -183,6 +146,7 @@ describe('PlaylistMongoDriver', function(){
             var message = self.message;
             message.method = 'update';
             self.driver.on('update', function(playlist) {
+                self.driver.removeAllListeners('update');
                 done();
             });
             self.pubsub.publishJSON(message.channel(), message);
@@ -192,6 +156,7 @@ describe('PlaylistMongoDriver', function(){
             message.method = 'delete';
             self.driver.on('delete', function(id) {
                 id.should.be.eql(message.model._id);
+                self.driver.removeAllListeners('delete');
                 done();
             });
             self.pubsub.publishJSON(message.channel(), message);
@@ -201,13 +166,15 @@ describe('PlaylistMongoDriver', function(){
         it('should return playlists', function(done) {
             self.driver.getPlaylists({from: self.from, to: self.to}, function(playlists) {
                 playlists.length.should.not.be.eql(0);
-                playlists.forEach(function(playlist) {
-                    playlist.get('id').should.be.ok;
-                    playlist.get('name').should.be.ok;
-                    playlist.get('start').should.be.ok;
-                    playlist.get('medias').should.be.ok;
-                    playlist.get('end').should.be.ok;
-                    playlist.get('loaded').should.not.be.ok;
+                playlists.forEach(function(pl) {
+                    var playlist = pl.toJSON();
+                    playlist.should.have.property('id');
+                    playlist.should.have.property('name');
+                    playlist.should.have.property('start');
+                    playlist.should.have.property('medias');
+                    playlist.should.have.property('end');
+                    playlist.should.have.property('loaded');
+                    playlist.should.have.property('mode');
                 });
                 done();
             });
@@ -215,18 +182,15 @@ describe('PlaylistMongoDriver', function(){
 
         it('should return only playlists within timeframe', function(done) {
             var inside = function(sched) {
-                return (sched.get('start') <= self.to.valueOf() &&
-                        sched.get('end') >= self.from.valueOf());
-            };
-            var sched_id = function(sched) {
-                return sched.get('_id');
+                return (sched.get('start') <= self.to &&
+                        sched.get('end') >= self.from);
             };
 
-            var in_scheds = _.chain(self.scheds).filter(inside).map(sched_id).value();
-            var out_scheds = _.chain(self.scheds).reject(inside).map(sched_id).value();
+            var in_scheds = _.chain(self.scheds).filter(inside).pluck('id').value();
+            var out_scheds = _.chain(self.scheds).reject(inside).pluck('id').value();
 
             self.driver.getPlaylists({from: self.from, to: self.to}, function(playlists) {
-                var pl_ids = _.chain(playlists).map(function(pl) { return pl.get('id') }).value();
+                var pl_ids = _.chain(playlists).pluck('id').value();
 
                 pl_ids.forEach(function(playlist, ix) {
                     playlist.should.eql(in_scheds[ix]);

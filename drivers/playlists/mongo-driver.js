@@ -1,5 +1,4 @@
 var mbc      = require('mbc-common')
-,   config   = mbc.config.Mosto.Mongo
 ,   mubsub   = require("mubsub")
 ,   moment   = require("moment")
 ,   async    = require('async')
@@ -28,6 +27,7 @@ util.inherits (mongo_driver, events.EventEmitter);
 
 mongo_driver.prototype.start = function() {
     var self = this;
+    logger.info("Opening db connection", this.conf);
     var db = mbc.db(this.conf && this.conf.db);
     self.channel = mbc.pubsub();
 
@@ -144,8 +144,9 @@ mongo_driver.prototype.createPlaylist = function(sched, callback) {
         }
         logger.debug("LIST:" + list._id);
 
-        logger.info("Processing list:", {"id": list && list._id, "clips": list && list.pieces.length});
+        logger.info("Processing list:", {"id": list && list._id, "clips": list && list.pieces});
         self.pieces.findItems({_id:{"$in": list.pieces}}, function(err, pieces) {
+            logger.info('found', (pieces && pieces.length) || 0, 'pieces');
             pieces = _.chain(pieces).map(function(block){
                 block._id = (block._id.toHexString && block._id.toHexString()) || block._id;
                 return block;

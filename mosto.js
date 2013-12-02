@@ -9,6 +9,7 @@ var fs               = require('fs')
 ,   utils            = require('./utils')
 ,   mbc              = require('mbc-common')
 ,   config           = mbc.config.Mosto.General
+,   mongoConfig      = mbc.config.Mosto.Mongo
 ,   _                = require('underscore')
 ,   heartbeats       = require('./heartbeats')
 ,   models           = require('./models/Mosto')
@@ -16,10 +17,11 @@ var fs               = require('fs')
 ;
 //TODO: Chequear window, se esta construyendo de formas distintas
 //INCLUSO EN EL DRIVER MISMO SE USA DE FORMAS DISTINTAS!!!
-function mosto(customConfig) {
+function mosto(customConfig, customMongoConfig) {
 
     /** CONFIGURATION */
     this.config         = customConfig || config;
+    this.mongoConfig    = customMongoConfig || mongoConfig;
     this.server         = undefined;
     this.pl_driver      = undefined;
     this.status_driver  = undefined;
@@ -224,8 +226,9 @@ mosto.prototype.init = function(melted, callback) {
      * linkear heartbeat con status driver
      */
     function startall() {
-        self.pl_driver     = new playlists_driver(self.config.playlist_server);
-        self.status_driver = new status_driver();
+        logger.info("Starting modules...");
+        self.pl_driver     = new playlists_driver(self.config.playlist_server, self.mongoConfig);
+        self.status_driver = new status_driver(self.mongoConfig);
         self.playlists     = models.Playlists();
         self.heartbeats    = new heartbeats();
 
@@ -243,23 +246,24 @@ mosto.prototype.init = function(melted, callback) {
         self.checkMelted(startall);
     };
 
-    if (melted !== undefined) {
+    if (melted !== undefined) 
         Melted = melted;
-        check_and_start();
-    }
-    else
-        Melted.take(check_and_start);
+
+    check_and_start();
 
 };
 
 mosto.prototype.scheduleMeltedCheck = function() {
-    this.meltedInterval = setTimeout(this.checkMelted.bind(this, this.scheduleMeltedCheck.bind(this), true), 100);
+    this.meltedInterval = setTimeout(this.checkMelted.bind(this, this.scheduleMeltedCheck.bind(this), true), 500);
+    logger.debug("Melted Timeout id:", this.meltedInterval);
 };
 
 mosto.prototype.checkMelted = function(callback, forceLoad) {
+    logger.debug("Checking melted...");
     var self = this;
     Melted.is_running(function(running) {
         if (!running) {
+            logger.error("Melted was not running!");
             Melted.start(function(pid) {
                 Melted.setup(undefined, undefined, function(result) {
                     if (forceLoad)
@@ -278,24 +282,33 @@ mosto.prototype.checkMelted = function(callback, forceLoad) {
 mosto.prototype.finish = function(callback) {
     var self = this;
     logger.info("mbc-mosto: [INFO] Finish mbc-mosto... ");
-    if (self.restartMelted)
+    if (self.restartMelted) {
+        logger.debug("Clearing Melted Timeout id:", self.meltedInterval);
         clearTimeout(self.meltedInterval);
+    }
     this.stopDriver();
     this.playlists.get("melted_medias").write.take(function() {
-        self.playlists.get("melted_medias").stopMvcpServer().fin(self.stopHeartbeats).fin(function() {
+        logger.debug("[finish] stop melted_medias mvcp server");
+        self.playlists.get("melted_medias").stopMvcpServer().fin(function() {
+            logger.debug("[finish] stop heartbeats");
+            return self.stopHeartbeats();
+        }).fin(function() {
+            logger.debug("[finish] leave melted_medias write lock")
             self.playlists.get("melted_medias").write.leave();
+            logger.debug("[finish] stop Melted");
             Melted.stop(function(pid) {
+                logger.debug("[finish] melted stopped");
                 setTimeout( function() {
-                    Melted.leave();
+                    logger.debug("[finish] calling callback");
                     if (callback) callback();
-                }, 1000 );
+                }, 7000 );
             });
         });
     });
 };
 
-exports = module.exports = function(customConfig) {
-    var mosto_server = new mosto(customConfig);
+exports = module.exports = function(customConfig, customMongoConfig) {
+    var mosto_server = new mosto(customConfig, customMongoConfig);
     return mosto_server;
 };
 /*

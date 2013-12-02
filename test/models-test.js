@@ -1,13 +1,13 @@
 var Mosto   = require('../models/Mosto')
 ,   should  = require('should')
 ,   mvcp    = require('../drivers/mvcp/mvcp-driver')
-,   melted  = require('../api/Melted')
 ,   helpers = require('./media_helpers')
+,   test    = require('./test_helper.js')
 ,   _       = require('underscore')
 ,   moment  = require('moment')
 ;
 
-describe.skip('models.Mosto', function() {
+describe('models.Mosto', function() {
     var self = this;
     self.playlists = Mosto.Playlists;
     self.medias = helpers.getMedia();
@@ -15,7 +15,7 @@ describe.skip('models.Mosto', function() {
     self.server = new mvcp('melted');
 
     self.createPlaylist = function(medias, start) {
-        var duration = _.reduce(medias, function(acc, m) { 
+        var duration = _.reduce(medias, function(acc, m) {
             return acc + m.get('length') * m.get('fps');
         }, 0);
         start = start || moment();
@@ -31,24 +31,19 @@ describe.skip('models.Mosto', function() {
 
     describe('MeltedCollection', function(){
         before(function(done) {
-            // restart melted
-            melted.take(function() {
-                melted.stop(function() {
-                    melted.start(function() {
-                        melted.setup(undefined, undefined, function() {
-                            self.server.initServer().fin(function() {
-                                done();
-                            });
-                        });
+            test.take(function() {
+                test.init(function() {
+                    self.server.initServer().fin(function() {
+                        done();
                     });
                 });
             });
         });
 
         after(function(done) {
-            self.playlists().get('melted_medias').stopMvcpServer().fin(self.server.stopServer).fin(function() {
-                melted.stop(function() {
-                    melted.leave();
+            self.server.stopServer().fin(function() {
+                test.finish(function() {
+                    test.leave();
                     done();
                 });
             });
@@ -58,8 +53,8 @@ describe.skip('models.Mosto', function() {
             before(function(done) {
                 self.mlt_media = self.playlists().get('melted_medias');
                 self.pls = self.playlists().get('playlists');
-                self.mediamodels = _.map(self.medias, function(media, ix) { 
-                    return new Mosto.Media(_.extend(media, {playlist_order: ix})); 
+                self.mediamodels = _.map(self.medias, function(media, ix) {
+                    return new Mosto.Media(_.extend(media, {playlist_order: ix}));
                 });
                 done();
             });
@@ -107,7 +102,7 @@ describe.skip('models.Mosto', function() {
                     self.playlists().save();
                     self.mlt_media.write.take(function() {
                         self.mlt_media.write.leave();
-                        done();                        
+                        done();
                     });
                 });
                 afterEach(function(done) {

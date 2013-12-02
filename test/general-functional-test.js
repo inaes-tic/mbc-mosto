@@ -6,14 +6,16 @@ var melted = require('melted-node');
 var _      = require('underscore');
 var seed   = require('seed-random');
 var mbc    = require('mbc-common');
+var melted_log = mbc.logger().addLogger('MELTED-NODE');
 var Media  = require('mbc-common/models/Media');
 var Q      = require('q');
 var moment = require('moment');
 var helper = require('./media_helpers.js');
+var test   = require('./test_helper.js');
 var uuid   = require('node-uuid');
 var mosto_config = require('mbc-common').config.Mosto.General;
 
-describe.skip("Mosto functional test", function() {
+describe("Mosto functional test", function() {
     /*
      * arrancar sin playlists
      ** ver negro
@@ -26,12 +28,14 @@ describe.skip("Mosto functional test", function() {
 
     self.create_playlist = function(medias) {
         medias = medias || [];
-        var mediamodels = [];
-        medias.forEach(function(media) {
-            mediamodels.push( new Media.Piece(media.toJSON()) );
-        });
-        return new Media.List({
-            models: mediamodels
+        console.log('create playlist with', medias.length, 'pieces');
+        return new Media.Playlist({
+            _id: uuid.v1(),
+            pieces: _.map(medias, function(m) {
+                var piece = m.toJSON();
+                piece._id = uuid.v1();
+                return new Media.Piece(piece);
+            }),
         });
     };
 
@@ -50,15 +54,18 @@ describe.skip("Mosto functional test", function() {
         });
         var occcol = self.db.collection('scheds');
         var listcol = self.db.collection('lists');
+        var piececol = self.db.collection('pieces');
         var log = [];
         for( var i = 0 ; i < self.playlists.length ; i++ ) {
             var playlist = self.playlists[i];
-            var occurrence = {
-                start: timewalk.unix()
-            };
+            var occurrence = new Media.Occurrence({
+                playlist: playlist,
+                start: timewalk.valueOf(),
+                _id: uuid.v1(),
+            });
             log.push(i+':');
-            log.push('occurrence.start: ' + occurrence.start);
-            var medias = playlist.get('collection');
+            log.push('occurrence.start: ' + occurrence.get('start'));
+            var medias = playlist.get('pieces');
             for( var j = 0 ; j < medias.length ; j++ ) {
                 var media = medias.at(j);
                 media.start_time = timewalk.valueOf();
@@ -69,32 +76,35 @@ describe.skip("Mosto functional test", function() {
                 media.end_time = timewalk.valueOf();
                 log.push('media ' + j + ' end     : ' + media.end_time);
             }
-            occurrence.end = timewalk.unix();
-            log.push('occurrence.end  : ' + occurrence.end);
-            var playlist_json = _.omit(playlist.toJSON(), 'collection');
-            playlist_json.models = _.invoke(playlist_json.models, 'toJSON');
-            playlist_json._id = uuid.v4();
+            occurrence.set('end', timewalk.valueOf());
+            log.push('occurrence.end  : ' + occurrence.get('end'));
             log.forEach(function(l) {
                 console.log('[setup_playlists]:', l) ;
             });
-            console.log('[setup_playlists] final:', playlist_json);
+            console.log('[setup_playlists] final:', playlist.toJSON());
             // I need to wrap this in order to keep the `playlist` variable
             (function(pl, oc) {
-                listcol.insert(playlist_json, function(err, obj) {
+                console.log('saving occurrence', oc.id);
+                console.log('inserting', pl.get('pieces').length, 'pieces');
+                Q.ninvoke(piececol, 'insert', pl.get('pieces').toJSON(), {safe:true}).then(function(obj) {
+                    console.log(obj.length, 'pieces inserted');
+                    console.log('inserting playlist', pl.id);
+                    return Q.ninvoke(listcol, 'insert', pl.toJSON(), {safe:true})
+                }).then(function(obj) {
                     obj = obj[0];
+                    console.log('inserted playlist', obj._id);
                     // update self.playlists
-                    _.extend(pl, obj);
-                    occurrence = new Media.Occurrence({
-                        list: obj._id,
-                        start: oc.start,
-                        end: oc.end,
-                        _id: oc.start.toString(),
-                    });
-                    occcol.insert(occurrence.toJSON(), function(err, obj) {
-                        var obj = obj[0];
-                        self.occurrences.push(obj);
-                        done();
-                    });
+                    pl.set(obj);
+                    console.log('inserting occurrence', oc.id);
+                    return Q.ninvoke(occcol, 'insert', oc.toJSON(), {safe:true});
+                }).then(function(obj) {
+                    var obj = obj[0];
+                    console.log('inserted occurrence', obj._id);
+                    self.occurrences.push(obj);
+                    done();
+                }).fail(function(err) {
+                    console.log('ERROR ERROR', err);
+                    throw new Error(err);
                 });
             })(playlist, occurrence);
         }
@@ -147,7 +157,7 @@ describe.skip("Mosto functional test", function() {
     self.get_occurrence = function(time) {
         time = time || moment();
         return _.find(self.occurrences, function(pl) {
-            return pl.start <= time.unix() && pl.end >= time.unix();
+            return pl.start <= time.valueOf() && pl.end >= time.valueOf();
         });
     };
 
@@ -155,7 +165,7 @@ describe.skip("Mosto functional test", function() {
         time = time || moment();
         var occurrence = self.get_occurrence(time);
         return _.find(self.playlists, function(pl) {
-            return pl._id === occurrence.list;
+            return pl.id === occurrence.playlist;
         });
     };
 
@@ -163,22 +173,25 @@ describe.skip("Mosto functional test", function() {
         time = time || moment();
         var playlist = self.get_playlist(time);
 
-        return _.find(playlist.get('models'), function(me) {
+        return playlist.get('pieces').find(function(me) {
             return me.start_time <= time && me.end_time >= time;
         });
     };
 
     self.publisher = mbc.pubsub();
     self.listener = mbc.pubsub();
-    self.db = mbc.db({
-        dbName: 'mediatestdb',
-        dbHost: 'localhost',
-        dbPort: 27017
-    });
+    self.mongoConf = {
+        db: {
+            dbName: 'mediatestdb',
+            dbHost: 'localhost',
+            dbPort: 27017
+        }
+    };
+    self.db = mbc.db(self.mongoConf.db);
 
     /* generic tests */
-    self.is_synced = function(done) {
-        var result = self.melted.sendPromisedCommand('USTA U0', '202 OK').then(function(val) {
+    self.is_synced = function(time) {
+        var result = self.melted.sendCommand('USTA U0').then(function(val) {
             var time = moment();
             var expected_media = self.get_media(time);
             console.log('[is_synced] time:', time.valueOf());
@@ -192,22 +205,30 @@ describe.skip("Mosto functional test", function() {
             var elapsed = helper.framesToMilliseconds(frame, fps);
             var expected = (time - expected_media.start_time).valueOf();
             console.log('[is_synced] got', lines[1], 'at', frame, ':', elapsed, 'expected', expected);
-            elapsed.should.be.approximately(expected, 1000);
-            done();
+            elapsed.should.be.approximately(expected, time);
         });
         return result;
     };
 
-    before(function() {
-        self.melted = melted();
+    before(function(done) {
+        test.take(function() {
+            test.init(function() {
+                self.melted = melted(undefined, undefined, melted_log);
+                done();
+            });
+        });
     });
-    after(function() {
-        delete self.melted;
+    after(function(done) {
+        test.finish(function() {
+            delete self.melted;
+            test.leave();
+            done();
+        });
     });
     describe('start without playlists', function() {
         before(function(done) {
             self.db.dropDatabase(function(err, success) {
-                self.mosto = new mosto();
+                self.mosto = new mosto(undefined, self.mongoConf);
                 self.mosto.once('playing', function() {
                     done();
                 });
@@ -223,11 +244,11 @@ describe.skip("Mosto functional test", function() {
             });
         });
         it('should show black', function(done) {
-            var promise = self.melted.sendPromisedCommand('USTA U0', '202 OK');
+            var promise = self.melted.sendCommand('USTA U0');
             promise.then(function(result) {
                 result = result.split('\r\n')[1].split(' ');
                 var file = result[2];
-                file.should.include('black_id');
+                file.should.include('BLANK');
             }).then(done).done();
         });
     });
@@ -259,10 +280,12 @@ describe.skip("Mosto functional test", function() {
                     var setup = self.setup_playlists(moment(
                         moment() + _.randint(0, -30000)));
                     setup.then(function() {
-                        self.mosto = new mosto();
+                        self.mosto = new mosto(undefined, self.mongoConf);
                         self.mosto.once('playing', function() {
                             // send pubsub messages with new playlists
-                            self.melted.connect().then(done);
+                            self.melted.connect().then(function(){
+                                done();
+                            }).done();
                         });
                         self.mosto.init();
                     });
@@ -279,7 +302,7 @@ describe.skip("Mosto functional test", function() {
                 var expected_occurrence = self.get_occurrence(time);
                 var expected_media = self.get_media(time);
 
-                var result = self.melted.sendPromisedCommand('USTA U0', '202 OK');
+                var result = self.melted.sendCommand('USTA U0');
                 result.then(function(val) {
                     var lines = val.split("\r\n");
                     lines[0].should.eql('202 OK');
@@ -300,20 +323,24 @@ describe.skip("Mosto functional test", function() {
                 before(function(done) {
                     var occurrence = self.get_occurrence();
                     self.delete_occurrence(occurrence).then(function() {
-                        setTimeout(function() {
-                            self.mosto.once('status', function(status) {
-                                done();
-                            });
-                        }, mosto_config.timer_interval);
+                        self.listener.on('JSONmessage', function(chan, msg) {
+                            if(chan == 'mostoStatus') {
+                                if (msg.piece.current._id.indexOf('BLANK') > -1) {
+                                    self.listener.unsubscribe('mostoStatus');
+                                    done();
+                                }
+                            }
+                        });
+                        self.listener.subscribe('mostoStatus');
                     }).done();
                 });
                 it('should not break');
                 it('should be playing blank clip', function(done) {
-                    var promise = self.melted.sendPromisedCommand('USTA U0', '202 OK');
+                    var promise = self.melted.sendCommand('USTA U0');
                     promise.then(function(result) {
                         result = result.split('\r\n')[1].split(' ');
                         var file = result[2];
-                        file.should.include('black_id');
+                        file.should.include('BLANK');
                     }).then(done).done();
                 });
             });
@@ -339,7 +366,7 @@ describe.skip("Mosto functional test", function() {
                     var setup = self.setup_playlists(moment(
                         moment() - 5 * 60 * 1000));
                     setup.then(function() {
-                        self.mosto = new mosto();
+                        self.mosto = new mosto(undefined, self.mongoConf);
                         self.mosto.once('playing', function() {
                             // send pubsub messages with new playlists
                             done();
