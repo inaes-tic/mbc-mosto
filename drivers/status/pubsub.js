@@ -9,7 +9,12 @@ var events = require('events');
 var util = require('util');
 var _ = require('underscore');
 var mbc = require('mbc-common');
+var Models = require('mbc-common/models/App')
+var Collections = mbc.config.Common.Collections;
 var logger = mbc.logger().addLogger('PUBSUB-DRIVER');
+var uuid = require('node-uuid');
+var Q = require('q');
+var assert = require('assert');
 
 var defaults = { // copied from caspa/models.App.Status
     _id: 2,
@@ -27,17 +32,12 @@ var defaults = { // copied from caspa/models.App.Status
     on_air: false,
 };
 
-function MostoMessage(value, description, message) {
-    this.value = value;
-    this.description = description;
-    this.message = message;
-}
-
 function CaspaDriver() {
     events.EventEmitter.call(this);
     var self = this;
     this.status = _.clone(defaults);
     this.db = mbc.db();
+    this.messagesCollection = this.db.collection(Collections.Mostomessages);
     this.publisher = mbc.pubsub();
 }
 util.inherits(CaspaDriver, events.EventEmitter);
@@ -58,7 +58,7 @@ CaspaDriver.prototype.setupAll = function() {
 
 CaspaDriver.prototype.setupStatus = function(callback) {
     var self = this;
-    var col = this.db.collection('status');
+    var col = this.db.collection(Collections.Status);
     col.findOne({_id: 2}, function(err, res) {
         if( err )
             // err.. do something?
@@ -76,8 +76,27 @@ CaspaDriver.prototype.setupStatus = function(callback) {
 };
 
 CaspaDriver.prototype.setupMessages = function(callback) {
+
     // I think we should assume at init there's no sticky errors?
-    this.db.collection('mostomessages').remove(callback);
+    Q.denodeify(this.messagesCollection.findItems)({status: "failing"}).then(function(messages) {
+        messages.forEach(function(message) {
+            message.status = 'fixed';
+            message.end = moment().valueOf();
+        });
+        return Q.denodeify(this.messagesCollection.save)(messages)
+    }).then(callback);
+
+    this.activeMessages = new Models.MessagesCollection();
+    this.activeMessages.on('add', function(message) {
+        if(message.get('status') != 'failing') {
+            this.remove(message);
+        }
+    });
+    this.activeMessages.on('change:status', function(message, value) {
+        if(value != 'failing') {
+            this.remove(message);
+        }
+    });
 };
 
 CaspaDriver.prototype.setStatus = function(meltedStatus) {
@@ -177,21 +196,62 @@ CaspaDriver.prototype.publish = function(channel, status) {
     this.publisher.publishJSON(channel, status);
 };
 
-CaspaDriver.prototype.publishMessage = function(code, description, message, sticky) {
-    message = new MostoMessage(code, description, message);
-    var method = 'emit';
-    if( sticky ) {
-        // I create an id with the timestamp to be able to cancel the error afterwards
-        message.stickId = (new moment()).valueOf();
-        method = 'create';
+/*
+  Publishes a message through redis. If the message code is considered an
+  ongoing error (such as mosto connectivity errors), it's saved to the database
+*/
+CaspaDriver.prototype.publishMessage = function(code, message, description, reference) {
+    var status = {};
+    (code !== undefined) && (status.code = code);
+    description && (status.description = description);
+    message && (status.message = message);
+    reference && (status.reference = reference);
+
+    var existing = this.activeMessages.findWhere(status);
+    if(existing) {
+        // don't publish the same message twice
+        return existing;
     }
+
+    status = new Models.MostoMessage(status);
+    var method = 'create';
+    status.set('_id', uuid());
+    this.messagesCollection.save(status.toJSON(), {safe:false});
+    this.activeMessages.add(status);
     this.publisher.publishJSON(["mostoMessage", method].join('.'),
-                               { model: message });
-    return message;
+                               { model: status.toJSON() });
+    return status;
 };
 
-CaspaDriver.prototype.dropMessage = function(message) {
-    this.publisher.publish("mostoMessage.delete", { model: message });
+CaspaDriver.prototype.CODES = {
+    BLANK: 201,
+    SYNC: 202,
+    PLAY: 203,
+    MELTED_CONN: 501,
+    FILE_NOT_FOUND: 502,
+};
+
+/*
+  updates the model in the database setting status='fixed' and returns a
+  promise that resolves once the object is updated in the database, and the
+  signal is published through redis
+*/
+CaspaDriver.prototype.dropMessage = function(code, reference) {
+    var self = this;
+    var message = this.activeMessages.findWhere({ code: code, reference: reference });
+    if(!message)
+        return Q.resolve(false);
+    message.set('status', 'fixed');
+    assert(!this.activeMessages.get(message));
+    message.set('end', moment().valueOf());
+    var mobj = message.toJSON();
+    return Q.ninvoke(this.messagesCollection, 'findById', mobj._id).then(function() {
+        return Q.ninvoke(self.messagesCollection, 'update', {_id: mobj._id}, mobj);
+    }).then(function() {
+        self.publisher.publishJSON("mostoMessage.update", { model: mobj });
+    }).then(function() {
+        return true;
+    });
 };
 
 exports = module.exports = function() {
