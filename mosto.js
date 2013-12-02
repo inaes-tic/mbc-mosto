@@ -254,7 +254,8 @@ mosto.prototype.init = function(melted, callback) {
 };
 
 mosto.prototype.scheduleMeltedCheck = function() {
-    this.meltedInterval = setTimeout(this.checkMelted.bind(this, this.scheduleMeltedCheck.bind(this), true), 100);
+    this.meltedInterval = setTimeout(this.checkMelted.bind(this, this.scheduleMeltedCheck.bind(this), true), 500);
+    logger.debug("Melted Timeout id:", this.meltedInterval);
 };
 
 mosto.prototype.checkMelted = function(callback, forceLoad) {
@@ -281,8 +282,10 @@ mosto.prototype.checkMelted = function(callback, forceLoad) {
 mosto.prototype.finish = function(callback) {
     var self = this;
     logger.info("mbc-mosto: [INFO] Finish mbc-mosto... ");
-    if (self.restartMelted)
+    if (self.restartMelted) {
+        logger.debug("Clearing Melted Timeout id:", self.meltedInterval);
         clearTimeout(self.meltedInterval);
+    }
     this.stopDriver();
     this.playlists.get("melted_medias").write.take(function() {
         logger.debug("[finish] stop melted_medias mvcp server");
