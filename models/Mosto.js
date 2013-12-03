@@ -100,6 +100,69 @@ Mosto.BlankClip = {
     length: 15000
 };
 
+Mosto.BlankMedia = Mosto.Media.extend({
+    defaults: Mosto.BlankClip,
+    initialize: function() {
+        Mosto.Media.prototype.initialize.apply(this, arguments);
+        // create a list of media models
+        this.mediaList = _.map(
+            this.getBlankMedias(this.get('start'), this.get('end')),
+            function(m) { return new Mosto.Media(m) });
+    },
+    toJSON: function() {
+        // return this.mediaList instead of this
+        return _.map(this.mediaList, function(m) { return m.toJSON() });
+    },
+    getBlankMedias: function(from, to) {
+        /* returns a list of consecutive blank medias to put between from and to */
+        var ret = [];
+        /*
+          var blanks = this.filter(function(media) {
+          //TODO: There is the posibility that media is not initialized.  See get func from set
+          return (media.get('blank') &&
+          (media.get('start') < to &&
+          media.get('end') > from));
+          });
+          var current = this.getExpectedMedia().media;
+          var cur_ix = blanks.indexOf(current);
+          if( cur_ix > 0 ) {
+          /*
+          I need to split the process in two:
+          1) before current.start, adjust
+          2) adjust current.end if possible, and then extend
+        */
+        /*
+          ret.push.apply(ret, this.getBlankMedias(from, current.get('start')));
+          // see if we can extend current
+          if( current.get('out') < Mosto.BlankClip.out ) {
+          current.set('out', Mosto.BlankClip.out );
+          }
+          ret.push(current);
+          var end = moment(current.get('start')).add(
+          moment.duration(current.get('length') / current.get('fps'), 'seconds'));
+          current.set('end', end);
+          ret.push.apply(ret, this.getBlankMedias(end, to));
+          return ret;
+          }
+        */
+        /* if current is not in the list, I just create a bunch of BlankClips to fill
+           in the range */
+        var timewalk = moment(from);
+        var maxLength = moment.duration(Mosto.BlankClip.length / Mosto.BlankClip.fps, 'seconds');
+        while( timewalk < to ) {
+            var clip = _.clone(Mosto.BlankClip);
+            clip.id = 'BLANK-' + uuid.v4();
+            clip.start = moment(timewalk);
+            clip.end = moment(timewalk.add(Math.min(to - timewalk, maxLength)));
+            clip.length = moment.duration(clip.end - clip.start);
+            // make sure clip.out gets calculated from length
+            delete clip.out;
+            ret.push(clip);
+        }
+        return ret;
+    },
+});
+
 Mosto.MediaCollection = Backbone.Collection.extend({
     /* this is a playlist's list of clips, it sorts by playlist_order */
     model: Mosto.Media,
@@ -144,51 +207,6 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
         return this.driver.stopServer();
     },
 
-    getBlankMedias: function(from, to) {
-        /* returns a list of consecutive blank medias to put between from and to */
-        var ret = [];
-        var blanks = this.filter(function(media) {
-            //TODO: There is the posibility that media is not initialized.  See get func from set
-            return (media.get('blank') &&
-                    (media.get('start') < to &&
-                     media.get('end') > from));
-        });
-        var current = this.getExpectedMedia().media;
-        var cur_ix = blanks.indexOf(current);
-        if( cur_ix > 0 ) {
-            /* I need to split the process in two:
-               1) before current.start, adjust
-               2) adjust current.end if possible, and then extend
-            */
-            ret.push.apply(ret, this.getBlankMedias(from, current.get('start')));
-            // see if we can extend current
-            if( current.get('out') < Mosto.BlankClip.out ) {
-                current.set('out', Mosto.BlankClip.out );
-            }
-            ret.push(current);
-            var end = moment(current.get('start')).add(
-                moment.duration(current.get('length') / current.get('fps'), 'seconds'));
-            current.set('end', end);
-            ret.push.apply(ret, this.getBlankMedias(end, to));
-            return ret;
-        }
-        /* if current is not in the list, I just create a bunch of BlankClips to fill
-           in the range */
-        var timewalk = moment(from);
-        var maxLength = moment.duration(Mosto.BlankClip.length / Mosto.BlankClip.fps, 'seconds');
-        while( timewalk < to ) {
-            var clip = _.clone(Mosto.BlankClip);
-            clip.id = 'BLANK-' + uuid.v4();
-            clip.start = moment(timewalk);
-            clip.end = moment(timewalk.add(Math.min(to - timewalk, maxLength)));
-            clip.length = moment.duration(clip.end - clip.start);
-            // make sure clip.out gets calculated from length
-            delete clip.out;
-            ret.push(clip);
-        }
-        return ret;
-    },
-
     set: function(models, options) {
         var self = this;
         //TODO: BE CAREFULL WITH ACTUAL_ORDER, ITS MAKING TESTS FAIL!!!
@@ -211,7 +229,8 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
             logger.debug("Fixing blanks " + now);
             if( m.length <= 0 ) {
                 logger.warn("Nothing on the list! Loading all blanks");
-                m.push.apply(m, self.getBlankMedias(now, options.until));
+                //m.push.apply(m, self.getBlankMedias(now, options.until));
+                m.push(new Mosto.BlankMedia({start: now, end: options.until}));
             } else {
                 models.forEach(function(media, i) {
                     /* in falcon we'd say forfirst: forlast: and default: :( */
@@ -220,26 +239,30 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                         logger.debug("FixingBlanks", "Clip " + get(media, 'file'), "Start " + start);
                         if( start > now ) {
                             logger.warn("Loading blanks at start of the list");
-                            m.splice.apply(m, [0, 0].concat(self.getBlankMedias(now, start)));
+                            //m.splice.apply(m, [0, 0].concat(self.getBlankMedias(now, start)));
+                            m.splice(0, 0, new Mosto.BlankMedia({start: now, end: start}));
                         }
                     } else {
                         var prev = models[i-1];
                         if( get(media, 'start') > get(prev, 'end') ) {
                             logger.warn("Loading blanks at the middle of the list");
-                            m.splice.apply(m, [i, 0].concat(self.getBlankMedias(get(prev, 'end'), get(media, 'start'))));
+                            //m.splice.apply(m, [i, 0].concat(self.getBlankMedias(get(prev, 'end'), get(media, 'start'))));
+                            m.splice(i, 0, new Mosto.BlankMedia({start: get(prev, 'end'), end: get(media, 'start')}));
                         }
                     }
                     if( i === (models.length - 1) ) {
                         /* for the last one, make sure it lasts at least until options.until */
                         if( get(media, 'end') < options.until ) {
                             logger.warn("Loading blanks at end of the list");
-                            m.push.apply(m, self.getBlankMedias(get(media, 'end'), options.until));
+                            //m.push.apply(m, self.getBlankMedias(get(media, 'end'), options.until));
+                            m.push(new Mosto.BlankMedia({start: get(media, 'end'), end: options.until}));
                         }
                     }
                     if( get(media, 'broken') ) {
                         /* finally, if this is a "file not found" clip, replace it by blanks */
                         logger.warn("Clip is missing. Replacing by blanks");
-                        m.splice.apply(m, [i, 1].concat(self.getBlankMedias(get(media, 'start'), get(media, 'end'))));
+                        //m.splice.apply(m, [i, 1].concat(self.getBlankMedias(get(media, 'start'), get(media, 'end'))));
+                        m.splice.apply(i, 1, new Mosto.BlankMedia({start: get(media, 'start'), end: get(media, 'end')}));
                     }
                 });
             }
@@ -277,7 +300,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                 var addClip = function(media) {
                     //return ret.then(function() {
                     logger.info("Adding media: " + media.get('file'));
-                    return self.driver.appendClip(media.toJSON());
+                    return self.driver.append(media.toJSON());
                     //});
                 };
 

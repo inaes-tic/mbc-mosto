@@ -269,6 +269,12 @@ melted.prototype.appendClip = function(clip) {
 melted.prototype.appendPlaylist = function(clips) {
     return this.sendPlaylist(clips, "APND U0 {xmlFile}");
 };
+melted.prototype.append = function(data) {
+    if(data instanceof Array)
+        return this.appendPlaylist(data);
+    else
+        return this.appendClip(data);
+};
 melted.prototype.insertClip = function(clip, index) {
     //Insert clip at specified index
     return this.sendClip(clip, "INSERT UO {xmlFile} " + index);
