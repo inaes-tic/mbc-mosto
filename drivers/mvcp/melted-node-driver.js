@@ -266,12 +266,12 @@ melted.prototype.appendClip = function(clip) {
     //Appends clip to the end of the playlist
     return this.sendClip(clip, "APND UO {xmlFile}");
 };
-melted.prototype.appendPlaylist = function(clips) {
-    return this.sendPlaylist(clips, "APND U0 {xmlFile}");
+melted.prototype.appendPlaylist = function(clips, clipInfo) {
+    return this.sendPlaylist(clips, "APND U0 {xmlFile}", clipInfo);
 };
-melted.prototype.append = function(data) {
+melted.prototype.append = function(data, clipInfo) {
     if(data instanceof Array)
-        return this.appendPlaylist(data);
+        return this.appendPlaylist(data, clipInfo);
     else
         return this.appendClip(data);
 };

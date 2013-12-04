@@ -300,7 +300,7 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
                 var addClip = function(media) {
                     //return ret.then(function() {
                     logger.info("Adding media: " + media.get('file'));
-                    return self.driver.append(media.toJSON());
+                    return self.driver.append(media.toJSON(), media.attributes);
                     //});
                 };
 
