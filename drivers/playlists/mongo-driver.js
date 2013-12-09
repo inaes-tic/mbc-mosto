@@ -1,5 +1,6 @@
 var mbc      = require('mbc-common')
 ,   config   = mbc.config.Mosto.Mongo
+,   data     = mbc.config.Data
 ,   mubsub   = require("mubsub")
 ,   moment   = require("moment")
 ,   async    = require('async')
@@ -33,9 +34,9 @@ mongo_driver.prototype.start = function() {
 
     logger.info("Starting mongo playlists driver");
 
-    self.scheds = db.collection('scheds');
-    self.lists = db.collection('lists');
-    self.pieces = db.collection('pieces');
+    self.scheds = db.collection(data.Scheds.collection_db);
+    self.lists = db.collection(data.Lists.collection_db);
+    self.pieces = db.collection(data.Pieces.collection_db);
 
     self.channel.on('JSONmessage', function(chan, msg) {
         var handler = self.pubsub_handler[chan];
