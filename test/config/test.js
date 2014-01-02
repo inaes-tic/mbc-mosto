@@ -16,6 +16,10 @@ module.exports = {
             uploads: path.join(cwd, 'public', 'uploads', 'incoming'),
             screenshots: path.join(cwd, 'public','sc'),
             scrape : path.join(cwd, 'videos'),
+            logs :  path.join(cwd, 'logs'),
+        },
+        Playout: {
+            horizontal: '0',
         },
         Others: {
             timezone: 'UTC',
@@ -70,6 +74,70 @@ module.exports = {
             host: "localhost",
             port: 6379,
             password: "",
+        },
+        Collections: {
+            Medias: 'medias',
+            Pieces: 'pieces',
+            Lists:  'lists',
+            Scheds: 'scheds',
+            Transforms: 'transforms',
+            Status: 'status',
+            Mostomessages: 'mostomessages',
+        }
+    },
+    Search: {
+        Medias: {
+            fulltext: [ 'name', 'title', 'stat.name' ],
+            facets:  [
+                'durationsec',
+                'video.resolution.w',
+                'video.resolution.h',
+                'video.fps',
+                'video.bitrate',
+                'video.container',
+                'video.codec',
+                'audio.codec'
+            ],
+            criteria: {},
+            max_facets: 100
+        },
+        Lists: {
+            fulltext: [ 'name' ],
+            facets: [
+                'duration',
+            ],
+            criteria: { ids_in: '{ "_id": { "$in": [%value%] } }', },
+            max_facets: 100
+        },
+        Scheds: {
+            fulltext: [ 'title' ],
+            facets: [],
+            criteria: { in_window: '{ "end": { "$gt": %value% }, "start": { "$lt" : %value% } }' },
+            max_facets: 100
+        },
+        Pieces: {
+            fulltext: [],
+            facets: [],
+            criteria: { ids_in: '{ "_id": { "$in": [%value%] } }', },
+            max_facets: 100
+        },
+        Transforms: {
+            fulltext: [],
+            facets: [],
+            criteria: {},
+            max_facets: 100
+        },
+        Status: {
+            fulltext: [],
+            facets: [],
+            criteria: {},
+            max_facets: 100
+        },
+        Mostomessages: {
+            fulltext: [],
+            facets: [],
+            criteria: {},
+            max_facets: 100
         },
     }
 }
