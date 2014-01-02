@@ -164,7 +164,7 @@ mongo_driver.prototype.createPlaylist = function(sched, callback) {
                 var orig_order = order;
                 var clip_name = block.name;
                 // TODO: don't know what goes in type
-                var type = "default";
+                var type = block.type;
                 var file = block.file;
                 var length = moment(block.durationraw, "HH:mm:ss.SSS");
                 var fps = block.video.fps;
