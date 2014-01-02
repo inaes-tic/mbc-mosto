@@ -29,7 +29,7 @@ Mosto.Media = Backbone.Model.extend({
         // playlist_order: undefined,
         // actual_order: undefined,
         name: '',
-        type: 'default',
+        type: 'video',
         // file: undefined,
         // length: undefined,
         // fps: undefined,
