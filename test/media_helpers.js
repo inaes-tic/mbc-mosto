@@ -50,7 +50,7 @@ exports.getMedia = function(path) {
         m.file = process.cwd() + "/" + path + elem.filename;
         m.fps = parseInt(elem.data["mlt"]["profile"][0]["$"]["frame_rate_num"], 10);
         m.playlist_id = "generated";
-        m.type = "xml";
+        m.type = "video";
 
         // Milliseconds = Frames / FPS * 1000
         var ms_length = parseInt(elem.data["mlt"]["producer"][0]["$"]["out"], 10) / m.fps * 1000;
@@ -84,6 +84,7 @@ exports.getMBCMedia = function(path) {
         var frames = parseInt(elem.data.mlt.producer[0]["$"].out, 10);
         var duration = moment("0:0:0.0", "HH:mm:ss.SSS").add(exports.framesToMilliseconds(frames, params.fps));
         params.durationraw = duration.format("HH:mm:ss.SSS");
+        params.type = 'video';
         return new CMedia.Model(params);
     });
     return medias;
