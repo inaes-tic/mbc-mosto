@@ -1,3 +1,14 @@
+/* XXX: I need the patched models for status driver.
+ * Not putting this there so everything is on one place.
+ */
+var mbc           = require('mbc-common')
+,   db            = mbc.db()
+,   backends_conf = require('./backends')(db)
+,   iobackends    = new mbc.iobackends(db, backends_conf)
+;
+iobackends.patchBackbone();
+
+//
 var fs               = require('fs')
 ,   util             = require('util')
 ,   events           = require('events')
@@ -7,13 +18,13 @@ var fs               = require('fs')
 ,   playlists_driver = require('./drivers/playlists/playlists-driver')
 ,   status_driver    = require('./drivers/status/pubsub')
 ,   utils            = require('./utils')
-,   mbc              = require('mbc-common')
 ,   config           = mbc.config.Mosto.General
 ,   _                = require('underscore')
 ,   heartbeats       = require('./heartbeats')
 ,   models           = require('./models/Mosto')
 ,   logger           = mbc.logger().addLogger('CORE')
 ;
+
 //TODO: Chequear window, se esta construyendo de formas distintas
 //INCLUSO EN EL DRIVER MISMO SE USA DE FORMAS DISTINTAS!!!
 function mosto(customConfig) {
