@@ -130,6 +130,13 @@ Mosto.MeltedCollection = Backbone.Collection.extend({
     },
 
     initMvcpServer: function() {
+        var self = this;
+        this.driver.on('reconnect', function(had_error) {
+            self.trigger('melted-disconnected');
+        });
+        this.driver.on('connected', function() {
+            self.trigger('melted-connected');
+        });
         return this.driver.initServer();
     },
 
