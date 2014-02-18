@@ -128,7 +128,7 @@ melted.prototype.getServerStatus = function() {
         }
         var err = new Error(self.uuid + " - Error getting server status in response object: " + response)
         throw (err);
-    }).fail(function() {
+    }).fail(function(error) {
         var err = new Error(self.uuid + " - Error getting server status: " + error);
         logger.error(err.message);
         throw err;
