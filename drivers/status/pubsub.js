@@ -206,8 +206,11 @@ CaspaDriver.prototype.publishMessage = function(code, message, description, refe
         return existing;
     }
 
+
     status._id = uuid.v4();
+    status._tmpid = true;
     status = MostoMessagesCollection.create(status);
+    status.save();
     return status;
 };
 
