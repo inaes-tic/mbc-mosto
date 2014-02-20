@@ -115,7 +115,8 @@ CaspaDriver.prototype.setStatus = function(meltedStatus) {
         if (clip===undefined) return { name: '', _id: '' };
         return {
             name: clip.name,
-            _id: clip._id
+            _id: clip._id,
+            length: clip.totalFrames,
         }
     }
 
@@ -155,7 +156,7 @@ CaspaDriver.prototype.setStatus = function(meltedStatus) {
     logger.debug("Status builded. doing last calculations");
 
     if (status.piece.current)
-        status.piece.current.progress = (meltedStatus.position / status.piece.current.length) * 100 + "%";
+        status.piece.current.progress = (meltedStatus.position / status.piece.current.length) * 100;
 
     var prevStatus = _.clone(this.status);
 
