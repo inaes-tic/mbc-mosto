@@ -3,8 +3,7 @@ var fs      = require('fs'),
     crypto  = require('crypto'),
     moment  = require('moment'),
     seed    = require('seed-random'),
-    _       = require('underscore'),
-    CMedia  = require('mbc-common/models/Media');
+    _       = require('underscore');
 
 function parseXMLs(path) {
     if (path === undefined) {
@@ -70,6 +69,11 @@ exports.getMedia = function(path) {
  *   Scans given path (or default) getting media files and returns mbc-common.models.Media objects array
  */
 exports.getMBCMedia = function(path) {
+    /* XXX: Keep it here as otherwise it can be loaded before Backbone is
+     * patched leading to all sorts of fun
+     */
+    var CMedia  = require('mbc-common/models/Media');
+
     if (path === undefined) {
         path = "test/videos/"; // TODO FIXME XXX: ugly hardcoded -> should be in config?
     }
