@@ -39,10 +39,11 @@ function mosto(customConfig) {
 util.inherits(mosto, events.EventEmitter);
 
 mosto.prototype.getTimeWindow = function(from, to) {
-    return {
+    var window = {
         from: from || moment(),
-        to: to || moment().add(config.min_scheduled_hours, 'hours'),
+        to: to || moment().add('hours', config.min_scheduled_hours),
     };
+    return window;
 };
 
 mosto.prototype.inTimeWindow = function(obj) {
