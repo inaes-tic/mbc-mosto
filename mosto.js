@@ -173,7 +173,7 @@ mosto.prototype.initHeartbeats = function() {
     });
 
     self.heartbeats.on("noClips", function() {
-        var window = this.getTimeWindow();
+        var window = self.getTimeWindow();
         self.fetchPlaylists(window);
     });
 
