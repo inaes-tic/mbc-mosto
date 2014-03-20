@@ -8,3 +8,5 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get build-dep -qq melt
   - sudo apt-get install -qq ffmpeg melt libmlt-dev libmlt++-dev
+  - sudo apt-get install libavahi-compat-libdnssd-dev
+  - sudo apt-get build-dep libavahi-compat-libdnssd-dev
