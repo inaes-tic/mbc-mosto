@@ -96,8 +96,8 @@ Mosto.BlankClip = {
     file: config.blank,
     fps: config.fps,
     in: 0,
-    out: 14999,
-    length: 15000
+    out: config.blank_length - 1,
+    length: config.blank_length
 };
 
 Mosto.MediaCollection = Backbone.Collection.extend({
