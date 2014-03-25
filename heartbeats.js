@@ -224,7 +224,7 @@ heartbeats.prototype.syncMelted = function() {
                 logger.info("[syncMelted Expected and playing medias are the same");
                 if (Math.abs(meltedClip.currentFrame - expected.frame) > expected.media.get('fps')) {
                     logger.info("[syncMelted] I'm over 1 second off")
-                    result = result.then(self.fixMelted.bind(self, expected));
+                    result = result.then(self.fixMelted.bind(self, expected, expected.media.get('live')));
                 }
             }
             if (meltedStatus.status !== "playing") {
@@ -267,10 +267,12 @@ heartbeats.prototype.handleNoMedias = function() {
     logger.error("No medias loaded!");
 };
 
-heartbeats.prototype.fixMelted = function(expected) {
+heartbeats.prototype.fixMelted = function(expected, live) {
     var self = this;
-    logger.warn("Melted is out of sync!");
+    logger.warn("Melted is out of sync! (Live: %s)", live ? true : false);
     self.emit("outOfSync", expected);
+    if (live)
+        return;
     return self.server.goto(expected.media.get('actual_order'), expected.frame);
 };
 
