@@ -32,11 +32,44 @@ function mosto(customConfig) {
     this.meltedInterval = undefined;
     /* TODO: This should be in config */
     this.restartMelted = true;
+    
+    /* OUT OF SYNC TIMEOUT */
+    this.outOfSyncTimeout = 5; /* seconds */
+    this.outOfSyncTolerance = 5;
+    this.outOfSyncCount = 0;
+    this.outOfSyncStarted = false;
 
     events.EventEmitter.call(this);
 }
 
 util.inherits(mosto, events.EventEmitter);
+
+mosto.prototype.checkSyncTimeout = function() {
+    logger.debug("Checking sync timeout");
+    var now = moment().valueOf();
+    if (this.outOfSyncStarted) {
+        logger.debug("Sync timeout already started");
+        var limit = this.outOfSyncStarted + (this.outOfSyncTimeout * 1000);
+        if (now >= limit) {
+            logger.debug("Sync timeout exceeded limit, reseting counters");
+            this.outOfSyncCount = 0;
+            this.outOfSyncStarted = false;
+        } else {
+            this.outOfSyncCount++;
+            logger.debug("Sync timeout #%d received", this.outOfSyncCount);
+            if (this.outOfSyncCount === this.outOfSyncTolerance) {
+                logger.debug("Sync timeout tolerance reached, reloading playlists");
+                this.playlists.save();
+                this.outOfSyncCount = 0;
+                this.outOfSyncStarted = false;
+            }
+        }
+    } else {
+        logger.debug("Starting sync timeout check");
+        this.outOfSyncCount++;
+        this.outOfSyncStarted = moment().valueOf();
+    }
+};
 
 mosto.prototype.getTimeWindow = function(from, to) {
     var window = {
@@ -180,6 +213,11 @@ mosto.prototype.initHeartbeats = function() {
 
     self.heartbeats.on('startPlaying', function() {
         self.emit('playing');
+    });
+
+    self.heartbeats.on('outOfSync', function(expected) {
+        if (!expected.media.get('live'))
+            self.checkSyncTimeout();
     });
 
     self.heartbeats.init();
