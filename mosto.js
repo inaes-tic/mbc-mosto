@@ -245,17 +245,20 @@ mosto.prototype.init = function(melted, callback) {
     function startall() {
         self.pl_driver     = new playlists_driver(self.config.playlist_server);
         self.status_driver = new status_driver();
-        self.playlists     = models.Playlists();
-        self.heartbeats    = new heartbeats();
 
-        self.initDriver();
-        self.initHeartbeats();
+        self.status_driver.initialized.then(function() {
+            self.playlists     = models.Playlists();
+            self.heartbeats    = new heartbeats();
 
-        self.fetchPlaylists({from: moment(), to: moment().add(4, 'hours')});
-        if (self.restartMelted)
-            self.meltedInterval = setTimeout(self.checkMelted.bind(self, self.scheduleMeltedCheck.bind(self), true), 5000);
-        self.emit('started', 'Mosto has started');
-        if (callback) callback();
+            self.initDriver();
+            self.initHeartbeats();
+
+            self.fetchPlaylists({from: moment(), to: moment().add(4, 'hours')});
+            if (self.restartMelted)
+                self.meltedInterval = setTimeout(self.checkMelted.bind(self, self.scheduleMeltedCheck.bind(self), true), 5000);
+            self.emit('started', 'Mosto has started');
+            if (callback) callback();
+        });
     }
 
     function check_and_start() {
