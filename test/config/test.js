@@ -40,6 +40,7 @@ module.exports = {
             reload_timer_diff: 20000,
             playlist_server: "mongo",
             mvcp_server: "melted",
+            blank_length: 15000
         },
         Melted: {
             bin: "melted",
