@@ -6,11 +6,16 @@
  * creating constants in and handling db collections in mbc-common
  ***************************************************************************/
 var events = require('events');
+var uuid = require('node-uuid');
+var Q = require('q');
 var util = require('util');
 var _ = require('underscore');
 var mbc = require('mbc-common');
 var logger = mbc.logger().addLogger('PUBSUB-DRIVER');
+var App = require("mbc-common/models/App");
 
+//XXX: keep this as it is here or make a deep copy later.
+// _.clone() is shallow.
 var defaults = { // copied from caspa/models.App.Status
     _id: 2,
     piece: {
@@ -27,20 +32,38 @@ var defaults = { // copied from caspa/models.App.Status
     on_air: false,
 };
 
-function MostoMessage(value, description, message) {
-    this.value = value;
-    this.description = description;
-    this.message = message;
-}
+var Status = new App.Status();
+Status.bindBackend();
+Status.save();
+
+var ProgressStatus = new App.ProgressStatus();
+ProgressStatus.bindBackend();
+ProgressStatus.save();
+
+var MostoMessagesCollection = new App.MostoMessagesCollection();
+MostoMessagesCollection.bindBackend();
+
 
 function CaspaDriver() {
     events.EventEmitter.call(this);
     var self = this;
     this.status = _.clone(defaults);
     this.db = mbc.db();
-    this.publisher = mbc.pubsub();
+    this._initialized = Q.defer();
+    this.initialized = this._initialized.promise;
 }
 util.inherits(CaspaDriver, events.EventEmitter);
+
+CaspaDriver.prototype.CODES = {
+    FORCE_CHECKOUT: 101,
+    BLANK: 201,
+    SYNC: 202,
+    PLAY: 203,
+    MELTED_NO_CLIPS: 204,
+    MELTED_CONN: 501,
+    FILE_NOT_FOUND: 502,
+    MELTED_SYNC_ERROR: 503,
+};
 
 CaspaDriver.prototype.setupAll = function() {
     var self = this;
@@ -50,6 +73,7 @@ CaspaDriver.prototype.setupAll = function() {
     ];
     var sendReady = _.after(setups.length, function() {
         self.emit('ready');
+        self._initialized.resolve(true);
     });
     setups.forEach(function(setup){
         setup(sendReady);
@@ -57,27 +81,18 @@ CaspaDriver.prototype.setupAll = function() {
 };
 
 CaspaDriver.prototype.setupStatus = function(callback) {
-    var self = this;
-    var col = this.db.collection('status');
-    col.findOne({_id: 2}, function(err, res) {
-        if( err )
-            // err.. do something?
-            return;
-        if( !res ) {
-            // the status doesn't exist, create it
-            col.save(self.status, function(err, itm) {
-                callback();
-            });
-        } else {
-            // res existed, just signal as ready
-            callback();
-        }
-    });
+    callback();
 };
 
 CaspaDriver.prototype.setupMessages = function(callback) {
-    // I think we should assume at init there's no sticky errors?
-    this.db.collection('mostomessages').remove(callback);
+    MostoMessagesCollection.fetch({
+        success: function() {
+            callback();
+        },
+        error: function() {
+            callback();
+        }
+    });
 };
 
 CaspaDriver.prototype.setStatus = function(meltedStatus) {
@@ -155,43 +170,72 @@ CaspaDriver.prototype.setStatus = function(meltedStatus) {
                  status.show[val]._id == prevStatus.show[val]._id );
     }) ) {
         logger.debug("No changes, try to send statusclip");
-        return this.setProgressStatus({
+        ProgressStatus.set({
             progress: meltedStatus.position,
             length: meltedStatus.clip.current.length,
         });
+        return ProgressStatus.save();
     }
 
     logger.debug("Finally publish status");
-    this.publish("mostoStatus", status);
+    Status.set(status);
+    return Status.save();
 };
 
-CaspaDriver.prototype.setProgressStatus = function(statusPiece) {
-    if (statusPiece)
-        this.publish("mostoStatus.progress", {
-            currentFrame: statusPiece.progress,
-            totalFrames: statusPiece.length,
-        });
-}
+/*
+  Publishes a message through redis using our iobackends and also saves it
+  to mongo.
+*/
+CaspaDriver.prototype.publishMessage = function(code, message, description, reference) {
+    var status = {};
+    (code !== undefined) && (status.code = code);
+    description && (status.description = description);
+    message && (status.message = message);
+    reference && (status.reference = reference);
 
-CaspaDriver.prototype.publish = function(channel, status) {
-    this.publisher.publishJSON(channel, status);
-};
-
-CaspaDriver.prototype.publishMessage = function(code, description, message, sticky) {
-    message = new MostoMessage(code, description, message);
-    var method = 'emit';
-    if( sticky ) {
-        // I create an id with the timestamp to be able to cancel the error afterwards
-        message.stickId = (new moment()).valueOf();
-        method = 'create';
+    var existing = MostoMessagesCollection.findWhere(status);
+    if(existing) {
+        // don't publish the same message twice
+        existing.reopen();
+        existing.save();
+        return existing;
     }
-    this.publisher.publishJSON(["mostoMessage", method].join('.'),
-                               { model: message });
-    return message;
+
+
+    status._id = uuid.v4();
+    status._tmpid = true;
+    status = MostoMessagesCollection.create(status);
+    status.save();
+    return status;
 };
 
-CaspaDriver.prototype.dropMessage = function(message) {
-    this.publisher.publish("mostoMessage.delete", { model: message });
+/*
+  updates the model in the database setting status='fixed' and returns a
+  promise that resolves once the object is updated in the database, and the
+  signal is published through redis
+*/
+CaspaDriver.prototype.dropMessage = function(code, reference) {
+    var self = this;
+    var message = MostoMessagesCollection.findWhere({ code: code, reference: reference });
+
+    if(!message) {
+        return Q.resolve(false);
+    }
+
+    message.resolve();
+    message.unset('_tmpid');
+
+    var defer = Q.defer();
+    message.save({
+        success: function(model, response, options) {
+            defer.resolve(true);
+        },
+        error: function(model, response, options) {
+            defer.reject(response);
+        }
+    });
+
+    return defer;
 };
 
 exports = module.exports = function() {

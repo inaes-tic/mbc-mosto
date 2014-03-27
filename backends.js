@@ -22,6 +22,7 @@ module.exports = function (db, test_db) {
         },
         mostomessages: {
             redis: true,
+            use:   [middleware.tmpId],
             mongo: {
                 db: db,
                 collection: collections.Mostomessages,
