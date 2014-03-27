@@ -172,8 +172,8 @@ CaspaDriver.prototype.setStatus = function(meltedStatus) {
     }) ) {
         logger.debug("No changes, try to send statusclip");
         ProgressStatus.set({
-            progress: meltedStatus.position,
-            length: meltedStatus.clip.current.length,
+            currentFrame: meltedStatus.position,
+            totalFrames: meltedStatus.clip.current.length,
         });
         return ProgressStatus.save();
     }
