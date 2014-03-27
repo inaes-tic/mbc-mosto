@@ -3,12 +3,19 @@
  */
 var mbc           = require('mbc-common')
 ,   db            = mbc.db()
-,   backends_conf = require('./backends')(db)
+,   test_db       = undefined
+;
+
+if (process.env.NODE_ENV == 'test') {
+    test_db = mbc.db( mbc.config.Common.TestingDB );
+}
+
+var backends_conf = require('./backends')(db, test_db)
 ,   iobackends    = new mbc.iobackends(db, backends_conf)
 ;
+
 iobackends.patchBackbone();
 
-//
 var fs               = require('fs')
 ,   util             = require('util')
 ,   events           = require('events')
