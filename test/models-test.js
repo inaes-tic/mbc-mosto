@@ -1,5 +1,4 @@
-var Mosto   = require('../models/Mosto')
-,   should  = require('should')
+var should  = require('should')
 ,   mvcp    = require('../drivers/mvcp/mvcp-driver')
 ,   melted  = require('../api/Melted')
 ,   helpers = require('./media_helpers')
@@ -8,7 +7,13 @@ var Mosto   = require('../models/Mosto')
 ;
 
 describe.skip('models.Mosto', function() {
+    /* XXX: Keep it here as otherwise it can be loaded before Backbone is
+     * patched leading to all sorts of fun
+     */
+    var Mosto   = require('../models/Mosto')
+
     var self = this;
+
     self.playlists = Mosto.Playlists;
     self.medias = helpers.getMedia();
     this.timeout(15000);
