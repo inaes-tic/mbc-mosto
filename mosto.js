@@ -108,6 +108,17 @@ mosto.prototype.initDriver = function() {
         self.playlists.removePlaylist(id);
     });
 
+    this.pl_driver.on('file-not-found', function(media) {
+        var error = self.status_driver.publishMessage(self.status_driver.CODES.FILE_NOT_FOUND, JSON.stringify(media), undefined, media.file);
+    });
+
+    this.playlists.on('melted-disconnected:melted_medias', function() {
+        self.status_driver.publishMessage(self.status_driver.CODES.MELTED_CONN, "Connection with melted lost", undefined, "");
+    });
+    this.playlists.on('melted-connected:melted_medias', function() {
+        self.status_driver.dropMessage(self.status_driver.CODES.MELTED_CONN, '');
+    });
+
     self.pl_driver.start();
 };
 
@@ -198,6 +209,37 @@ mosto.prototype.initHeartbeats = function() {
 
     self.heartbeats.on('startPlaying', function() {
         self.emit('playing');
+    });
+
+    self.on('playing', function() {
+        self.status_driver.publishMessage(self.status_driver.CODES.PLAY);
+    });
+    self.heartbeats.on('outOfSync', function() {
+        self.status_driver.publishMessage(self.status_driver.CODES.SYNC);
+    });
+
+    self.heartbeats.on('melted-disconnected', function() {
+        self.status_driver.publishMessage(self.status_driver.CODES.MELTED_CONN, "Connection with melted lost", undefined, "");
+    });
+    self.heartbeats.on('melted-connected', function() {
+        self.status_driver.dropMessage(self.status_driver.CODES.MELTED_CONN, '');
+    });
+
+    self.heartbeats.on('syncEnded', function(result, error) {
+        if (result == 'Failed') {
+            self.status_driver.publishMessage(self.status_driver.CODES.MELTED_SYNC_ERROR, '', JSON.stringify(error), 'heartbeats');
+        } else {
+            // hbError also lands here, as we only emit it (for now?) when meltedSync fails.
+            self.status_driver.dropMessage(self.status_driver.CODES.MELTED_SYNC_ERROR, 'heartbeats');
+        }
+    });
+
+    self.heartbeats.on('noClips', function(result, error) {
+        self.status_driver.publishMessage(self.status_driver.CODES.MELTED_NO_CLIPS);
+    });
+
+    self.heartbeats.on('forceCheckout', function(result, error) {
+        self.status_driver.publishMessage(self.status_driver.CODES.FORCE_CHECKOUT);
     });
 
     self.heartbeats.init();
