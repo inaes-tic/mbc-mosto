@@ -34,8 +34,9 @@ function mosto(customConfig) {
     this.restartMelted = true;
     
     /* OUT OF SYNC TIMEOUT */
+    this.checkOutOfSyncTimeout = true;
     this.outOfSyncTimeout = 5; /* seconds */
-    this.outOfSyncTolerance = 5;
+    this.outOfSyncTolerance = 5; /* times */
     this.outOfSyncCount = 0;
     this.outOfSyncStarted = false;
 
@@ -46,6 +47,10 @@ util.inherits(mosto, events.EventEmitter);
 
 mosto.prototype.checkSyncTimeout = function() {
     logger.debug("Checking sync timeout");
+    if (!this.checkOutOfSyncTimeout) {
+        logger.debug("Reloading playlists, aborting check...");
+        return;
+    }
     var now = moment().valueOf();
     if (this.outOfSyncStarted) {
         logger.debug("Sync timeout already started");
@@ -59,9 +64,15 @@ mosto.prototype.checkSyncTimeout = function() {
             logger.debug("Sync timeout #%d received", this.outOfSyncCount);
             if (this.outOfSyncCount === this.outOfSyncTolerance) {
                 logger.debug("Sync timeout tolerance reached, reloading playlists");
+                this.checkOutOfSyncTimeout = false;
                 this.playlists.save();
-                this.outOfSyncCount = 0;
-                this.outOfSyncStarted = false;
+                var self = this;
+                this.playlists.get("melted_medias").write.take(function() {
+                    self.outOfSyncCount = 0;
+                    self.outOfSyncStarted = false;
+                    self.checkOutOfSyncTimeout = true;
+                    self.playlists.get("melted_medias").write.leave();
+                });
             }
         }
     } else {
