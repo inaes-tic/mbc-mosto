@@ -1,3 +1,21 @@
+/* XXX: I need the patched models for status driver.
+ * Not putting this there so everything is on one place.
+ */
+var mbc           = require('mbc-common')
+,   db            = mbc.db()
+,   test_db       = undefined
+;
+
+if (process.env.NODE_ENV == 'test') {
+    test_db = mbc.db( mbc.config.Common.TestingDB );
+}
+
+var backends_conf = require('./backends')(db, test_db)
+,   iobackends    = new mbc.iobackends(db, backends_conf)
+;
+
+iobackends.patchBackbone();
+
 var fs               = require('fs')
 ,   util             = require('util')
 ,   events           = require('events')
@@ -7,13 +25,13 @@ var fs               = require('fs')
 ,   playlists_driver = require('./drivers/playlists/playlists-driver')
 ,   status_driver    = require('./drivers/status/pubsub')
 ,   utils            = require('./utils')
-,   mbc              = require('mbc-common')
 ,   config           = mbc.config.Mosto.General
 ,   _                = require('underscore')
 ,   heartbeats       = require('./heartbeats')
 ,   models           = require('./models/Mosto')
 ,   logger           = mbc.logger().addLogger('CORE')
 ;
+
 //TODO: Chequear window, se esta construyendo de formas distintas
 //INCLUSO EN EL DRIVER MISMO SE USA DE FORMAS DISTINTAS!!!
 function mosto(customConfig) {
@@ -88,6 +106,17 @@ mosto.prototype.initDriver = function() {
     this.pl_driver.on('delete', function(id) {
         logger.debug("Received delete event for playlist " + id);
         self.playlists.removePlaylist(id);
+    });
+
+    this.pl_driver.on('file-not-found', function(media) {
+        var error = self.status_driver.publishMessage(self.status_driver.CODES.FILE_NOT_FOUND, JSON.stringify(media), undefined, media.file);
+    });
+
+    this.playlists.on('melted-disconnected:melted_medias', function() {
+        self.status_driver.publishMessage(self.status_driver.CODES.MELTED_CONN, "Connection with melted lost", undefined, "");
+    });
+    this.playlists.on('melted-connected:melted_medias', function() {
+        self.status_driver.dropMessage(self.status_driver.CODES.MELTED_CONN, '');
     });
 
     self.pl_driver.start();
@@ -182,6 +211,37 @@ mosto.prototype.initHeartbeats = function() {
         self.emit('playing');
     });
 
+    self.on('playing', function() {
+        self.status_driver.publishMessage(self.status_driver.CODES.PLAY);
+    });
+    self.heartbeats.on('outOfSync', function() {
+        self.status_driver.publishMessage(self.status_driver.CODES.SYNC);
+    });
+
+    self.heartbeats.on('melted-disconnected', function() {
+        self.status_driver.publishMessage(self.status_driver.CODES.MELTED_CONN, "Connection with melted lost", undefined, "");
+    });
+    self.heartbeats.on('melted-connected', function() {
+        self.status_driver.dropMessage(self.status_driver.CODES.MELTED_CONN, '');
+    });
+
+    self.heartbeats.on('syncEnded', function(result, error) {
+        if (result == 'Failed') {
+            self.status_driver.publishMessage(self.status_driver.CODES.MELTED_SYNC_ERROR, '', JSON.stringify(error), 'heartbeats');
+        } else {
+            // hbError also lands here, as we only emit it (for now?) when meltedSync fails.
+            self.status_driver.dropMessage(self.status_driver.CODES.MELTED_SYNC_ERROR, 'heartbeats');
+        }
+    });
+
+    self.heartbeats.on('noClips', function(result, error) {
+        self.status_driver.publishMessage(self.status_driver.CODES.MELTED_NO_CLIPS);
+    });
+
+    self.heartbeats.on('forceCheckout', function(result, error) {
+        self.status_driver.publishMessage(self.status_driver.CODES.FORCE_CHECKOUT);
+    });
+
     self.heartbeats.init();
 };
 
@@ -227,17 +287,20 @@ mosto.prototype.init = function(melted, callback) {
     function startall() {
         self.pl_driver     = new playlists_driver(self.config.playlist_server);
         self.status_driver = new status_driver();
-        self.playlists     = models.Playlists();
-        self.heartbeats    = new heartbeats();
 
-        self.initDriver();
-        self.initHeartbeats();
+        self.status_driver.initialized.then(function() {
+            self.playlists     = models.Playlists();
+            self.heartbeats    = new heartbeats();
 
-        self.fetchPlaylists({from: moment(), to: moment().add(4, 'hours')});
-        if (self.restartMelted)
-            self.meltedInterval = setTimeout(self.checkMelted.bind(self, self.scheduleMeltedCheck.bind(self), true), 5000);
-        self.emit('started', 'Mosto has started');
-        if (callback) callback();
+            self.initDriver();
+            self.initHeartbeats();
+
+            self.fetchPlaylists({from: moment(), to: moment().add(4, 'hours')});
+            if (self.restartMelted)
+                self.meltedInterval = setTimeout(self.checkMelted.bind(self, self.scheduleMeltedCheck.bind(self), true), 5000);
+            self.emit('started', 'Mosto has started');
+            if (callback) callback();
+        });
     }
 
     function check_and_start() {

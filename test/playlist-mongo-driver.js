@@ -5,10 +5,13 @@ var mbc = require('mbc-common');
 var _ = require('underscore');
 var melted  = require('../api/Melted');
 var helpers = require('./media_helpers');
-var Media = require('mbc-common/models/Media');
 var uuid = require('node-uuid');
 
 describe('PlaylistMongoDriver', function(){
+    /* XXX: Keep it here as otherwise it can be loaded before Backbone is
+     * patched leading to all sorts of fun
+     */
+    var Media  = require('mbc-common/models/Media');
     var self = this;
 
     before(function(done) {

@@ -30,12 +30,13 @@
         "mbc-common"  : "git://github.com/inaes-tic/mbc-common.git",
         "node-mlt"    : "git://github.com/inaes-tic/node-mlt.git#0.0.1",
         "semaphore"   : "1.0.x",
-        "backbone"    : "1.x.x", 
+        "backbone"    : "1.x.x",
+        "backbone.io" : "git://github.com/inaes-tic/backbone.io",
         "winston"     : "0.7.x",
         "istanbul"    : "0.1.43"
     },
     "devDependencies": {
-        "mocha"       : "1.7.x",
+        "mocha"       : "1.17.x",
         "should"      : "1.2.x",
         "seed-random" : "1.0.1",
         "xml2js"      : "0.2.7",

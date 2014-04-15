@@ -1,0 +1,791 @@
+{
+    "type" : "object",
+    "title" : "",
+    "description" : "",
+    "properties" : {
+        "Hidden" : {
+            "type" : "array",
+            "title" : "Hidden properties.",
+            "description" : "configuration keys that should not be displayed to the user"
+        },
+        "Caspa" : {
+            "type" : "object",
+            "title" : "General UI Caspa config",
+            "description" : "bits and pieces of the HTML5 UI",
+            "properties" : {
+                "Branding" : {
+                    "type" : "object",
+                    "title" : "Branding",
+                    "description" : "Application Info",
+                    "properties" : {
+                        "name" : {
+                            "type": "string",
+                            "title": "Name",
+                            "description" : "An application name"
+                        },
+                        "description" : {
+                            "type": "string",
+                            "title": "Description",
+                            "description" : "Description for Application"
+                        }
+                    }
+                },
+                "Dirs" : {
+                    "type" : "object",
+                    "title" : "Directories",
+                    "description" : "All directories configurables in app",
+                    "properties" : {
+                        "pub" : {
+                            "type": "string",
+                            "title": "Pub",
+                            "description" : "Public directory"
+                        },
+                        "views" : {
+                            "type": "string",
+                            "title": "Views",
+                            "description" : ""
+                        },
+                        "styles" : {
+                            "type": "string",
+                            "title": "Styles",
+                            "description" : "Css - Styling Stuff"
+                        },
+                        "models" : {
+                            "type": "string",
+                            "title": "Models",
+                            "description" : "Models "
+                        },
+                        "vendor" : {
+                            "type": "string",
+                            "title": "Vendor",
+                            "description" : "Third party libraries"
+                        },
+                        "uploads" : {
+                            "type": "string",
+                            "title": "Uploads",
+                            "description" : "File upload directory"
+                        },
+                        "screenshots" : {
+                            "type": "string",
+                            "title": "Screenshots",
+                            "description" : ""
+                        },
+                        "scrape" : {
+                            "type": "string",
+                            "title": "Scrape",
+                            "description" : ""
+                        },
+                        "logs" : {
+                            "type": "string",
+                            "title": "Logs",
+                            "description" : "Logging directory"
+                        }
+                    }
+                },
+                "Playout": {
+                    "type" : "object",
+                    "title": "Playout View",
+                    "description" : "Look and Feel of the Playout View",
+                    "properties" : {
+                        "horizontal" : {
+                            "type" : "string",
+                            "widget": "switch",
+                            "title": "Horizontal Playout View",
+                            "description" : "Should the Playout View use the horizontal Layout",
+                            "enum": [ "0", "1" ]
+                        }
+                    }
+                },
+                "Others" : {
+                    "type" : "object",
+                    "title" : "Locale",
+                    "description" : "Localization and TimeZone",
+                    "properties" : {
+                        "timezone" : {
+                            "type": "string",
+                            "title": "Timezone",
+                            "description" : "The Timezone of this playout instalation"
+                        }
+                    }
+                }
+            }
+        },
+        "Mosto" : {
+            "type" : "object",
+            "title" : "General Mosto config",
+            "description" : "configure the playlist juggler",
+            "properties" : {
+                "Branding" : {
+                    "type" : "object",
+                    "title" : "Branding",
+                    "description" : "Application Info",
+                    "properties" : {
+                        "name" : {
+                            "type": "string",
+                            "title": "Name",
+                            "description" : ""
+                        },
+                        "description" : {
+                            "type": "string",
+                            "title": "Description",
+                            "description" : ""
+                        }
+                    }
+                },
+                "General" : {
+                    "type" : "object",
+                    "title" : "General",
+                    "description" : "Mosto General Configuration",
+                    "properties" : {
+                        "fps" : {
+                            "type": "number",
+                            "title": "Frames per second",
+                            "description" : "Default fps if it cant be obtained from clip"
+                        },
+                        "resolution" : {
+                            "type": "string",
+                            "title": "Resolution",
+                            "description" : "Default resolution"
+                        },
+                        "playout_mode" : {
+                            "type": "string",
+                            "title": "Playout Mode",
+                            "description" : "direct or snap"
+                        },
+                        "min_scheduled_hours" : {
+                            "type": "string",
+                            "widget": "spinner",
+                            "title": "Mininum Hours Scheduled",
+                            "description" : "Minimum amount of hours to be scheduled"
+                        },
+                        "timer_interval" : {
+                            "type": "integer",
+                            "title": "Time interval",
+                            "description" : ""
+                        },
+                        "blank" : {
+                            "type": "string",
+                            "title": "Blank Clip",
+                            "description" : "Clip to play if nothing scheduled"
+                        },
+                        "blank_length" : {
+                            "type": "integer",
+                            "title": "Blank Clip length (frames)",
+                            "description" : ""
+                        },
+                        "reload_timer_diff" : {
+                            "type": "integer",
+                            "title": "Reload time difference",
+                            "description" : ""
+                        },
+                        "playlist_server" : {
+                            "type": "string",
+                            "title": "Playlist Server",
+                            "description" : "mongo or json"
+                        },
+                        "mvcp_server" : {
+                            "type": "string",
+                            "title": "Mvcp Server",
+                            "description" : "Only melted at the moment"
+                        }
+                    }
+                },
+                "Melted" : {
+                    "type" : "object",
+                    "title" : "Melted",
+                    "description" : "",
+                    "properties" : {
+                        "bin" : {
+                            "type": "string",
+                            "title": "Binary",
+                            "description" : ""
+                        },
+                        "root" : {
+                            "type": "string",
+                            "title": "Root directory",
+                            "description" : ""
+                        },
+                        "host" : {
+                            "type": "string",
+                            "title": "Host",
+                            "description" : ""
+                        },
+                        "port" : {
+                            "type": "integer",
+                            "title": "Port",
+                            "description" : ""
+                        },
+                        "output" : {
+                            "type": "string",
+                            "title": "Output Driver",
+                            "description" : ""
+                        },
+                        "playlists_xml_dir" : {
+                            "type": "string",
+                            "title": "Playlist Xml directory",
+                            "description" : ""
+                        }
+                    }
+                },
+                "Mongo" : {
+                    "type" : "object",
+                    "title" : "Mongo DB",
+                    "description" : "",
+                    "properties" : {
+                        "load_time" : {
+                            "type": "integer",
+                            "title": "Load time",
+                            "description" : ""
+                        }
+                    }
+                },
+                "Json" : {
+                    "type" : "object",
+                    "title" : "Javascript Object Notation",
+                    "description" : "",
+                    "properties" : {
+                        "to_read" : {
+                            "type": "string",
+                            "title": "To read",
+                            "description" : ""
+                        },
+                        "playing" : {
+                            "type": "string",
+                            "title": "Playing",
+                            "description" : ""
+                        },
+                        "old" : {
+                            "type": "string",
+                            "title": "Old",
+                            "description" : ""
+                        }
+
+                    }
+
+                }
+            }
+        },
+        "Webvfx" : {
+            "type" : "object",
+            "title" : "General UI Webvfx config",
+            "description" : "bits and pieces of the HTML5 UI",
+            "properties" : {
+                "Branding" : {
+                    "type" : "object",
+                    "title" : "Branding",
+                    "description" : "Application Info",
+                    "properties" : {
+                        "name" : {
+                            "type": "string",
+                            "title": "Name",
+                            "description" : "An application name"
+                        },
+                        "description" : {
+                            "type": "string",
+                            "title": "Description",
+                            "description" : "Description for Application"
+                        }
+                    }
+                },
+                "Dirs" : {
+                    "type" : "object",
+                    "title" : "Directories",
+                    "description" : "All directories configurables in app",
+                    "properties" : {
+                        "pub" : {
+                            "type": "string",
+                            "title": "Pub",
+                            "description" : "Public directory"
+                        },
+                        "views" : {
+                            "type": "string",
+                            "title": "Views",
+                            "description" : ""
+                        },
+                        "styles" : {
+                            "type": "string",
+                            "title": "Styles",
+                            "description" : "Css - Styling Stuff"
+                        },
+                        "models" : {
+                            "type": "string",
+                            "title": "Models",
+                            "description" : "Models "
+                        },
+                        "vendor" : {
+                            "type": "string",
+                            "title": "Vendor",
+                            "description" : "Third party libraries"
+                        },
+                        "uploads" : {
+                            "type": "string",
+                            "title": "Uploads",
+                            "description" : "File upload directory"
+                        },
+                        "logs" : {
+                            "type": "string",
+                            "title": "Logs",
+                            "description" : "Logging directory"
+                        }
+                    }
+                },
+                "Editor" : {
+                    "type" : "object",
+                    "title" : "Editor",
+                    "description" : "Default Editor config",
+                    "properties" : {
+                        "server" : {
+                            "type": "string",
+                            "title": "Server",
+                            "description" : "Webvfx server to send objects"
+                        },
+                        "width" : {
+                            "type": "integer",
+                            "title": "Width",
+                            "description" : "Canvas width"
+                        },
+                        "height" : {
+                            "type": "integer",
+                            "title": "Height",
+                            "description" : "Canvas height"
+                        },
+                        "scale" : {
+                            "type": "integer",
+                            "title": "Scale",
+                            "description" : "Canvas Scale"
+                        },
+                        "stream_url" : {
+                            "type": "string",
+                            "title": "Stream Url",
+                            "description" : "Stream url for displaying in editor background"
+                        },
+                        "realTimeEdition" : {
+                            "type": "boolean",
+                            "title": "Real time edition",
+                            "description" : "Edit sketchs in real time"
+                        },
+                        "showSafeArea" : {
+                            "type": "boolean",
+                            "title": "Show safe area",
+                            "description" : "Show safe area guides"
+                        },
+                        "videoPreview" : {
+                            "type": "boolean",
+                            "title": "Video preview",
+                            "description" : "Preview video behind editor area"
+                        }
+                    }
+                }
+            }
+        },
+        "Common" : {
+            "type" : "object",
+            "title" : "General Common config",
+            "description" : "settings shared by many MBC sub-projects",
+            "properties" : {
+                "Branding" : {
+                    "type" : "object",
+                    "title" : "Branding",
+                    "description" : "Application Info",
+                    "properties" : {
+                        "name" : {
+                            "type": "string",
+                            "title": "Name",
+                            "description" : ""
+                        },
+                        "description" : {
+                            "type": "string",
+                            "title": "Description",
+                            "description" : ""
+                        }
+                    }
+                },
+                "MediaDB" : {
+                    "type" : "object",
+                    "title" : "Database",
+                    "description" : "Authentication params",
+                    "properties" : {
+                        "dbName" : {
+                            "type": "string",
+                            "title": "Name",
+                            "description" : ""
+                        },
+                        "dbHost" : {
+                            "type": "string",
+                            "title": "Host",
+                            "description" : ""
+                        },
+                        "dbPort" : {
+                            "type": "integer",
+                            "title": "Port",
+                            "description" : ""
+                        },
+                        "dbUser" : {
+                            "type": "string",
+                            "title": "User",
+                            "description" : ""
+                        },
+                        "dbPassword" : {
+                            "type": "string",
+                            "title": "Password",
+                            "description" : ""
+                        }
+                    }
+                },
+                "Redis" : {
+                    "type" : "object",
+                    "title" : "Redis",
+                    "description" : "Authentication params",
+                    "properties" : {
+                        "host" : {
+                            "type": "string",
+                            "title": "Host",
+                            "description" : ""
+                        },
+                        "port" : {
+                            "type": "integer",
+                            "title": "Port",
+                            "description" : ""
+                        },
+                        "password" : {
+                            "type": "string",
+                            "title": "Password",
+                            "description" : ""
+                        }
+                    }
+                },
+                "Collections" : {
+                    "type" : "object",
+                    "title" : "Collections",
+                    "description" : "Database names for Collections",
+                    "properties" : {
+                        "Medias" : {
+                            "type": "string",
+                            "title": "Medias",
+                            "description" : "Collection name for list of medias"
+                        },
+                        "Pieces" : {
+                            "type": "string",
+                            "title": "Pieces",
+                            "description" : "Collection name for list of pieces"
+                        },
+                        "Lists" : {
+                            "type": "string",
+                            "title": "Lists",
+                            "description" : "Collection name for list of lists"
+                        },
+                        "Scheds" : {
+                            "type": "string",
+                            "title": "Scheds",
+                            "description" : "Collection name for list of scheds"
+                        },
+                        "Transforms" : {
+                            "type": "string",
+                            "title": "Transforms",
+                            "description" : "Collection name for list of transforms"
+                        },
+                        "Status" : {
+                            "type": "string",
+                            "title": "Status",
+                            "description" : "Collection name for list of status"
+                        },
+                        "Mostomessages" : {
+                            "type": "string",
+                            "title": "Mostomessages",
+                            "description" : "Collection name for list of mostomessages"
+                        },
+                        "Sketchs" : {
+                            "type": "string",
+                            "title": "Sketchs",
+                            "description" : "Collection name for list of sketchs"
+                        },
+                        "Auth" : {
+                            "type": "string",
+                            "title": "Auth",
+                            "description" : "Collection name for list of users"
+                        },
+                        "Transcoding" : {
+                            "type": "string",
+                            "title": "Transcoding",
+                            "description" : "Collection name for list of transcoding jobs"
+                        },
+                        "SketchSchedules" : {
+                            "type": "string",
+                            "title": "SketchSchedules",
+                            "description" : "Collection name for list of sketch schedules"
+                         }
+                    }
+                },
+                "Widgets" : {
+                    "type" : "object",
+                    "title" : "Widgets",
+                    "description" : "Widgets for Webvfx",
+                    "properties" : {
+                        "Files" : {
+                            "type": "array",
+                            "widget" : "list",
+                            "title": "Files",
+                            "description" : "Collection name for list of widgets"
+                        },
+                        "WeatherWoeid" : {
+                            "type": "integer",
+                            "title": "Weather WOEID",
+                            "description" : "Where on Earth IDentifier for weather widget"
+                        }
+                    }
+                },
+                "Others" : {
+                    "type" : "object",
+                    "title" : "Misc Config",
+                    "description" : "Miscellaneous Configuration for apps",
+                    "properties" : {
+                       "maxage" : {
+                            "type": "integer",
+                            "title": "Max Age",
+                            "description" : "Maximun time for caching on server"
+                        }
+                    }
+                }
+            }
+        },
+        "Search" : {
+            "type" : "object",
+            "title" : "Search options",
+            "description" : "Search config for mongo collections",
+            "properties" : {
+                "Medias" : {
+                    "type" : "object",
+                    "title": "Medias",
+                    "description" : "Mongo Collection",
+                    "properties" : {
+                        "fulltext" : {
+                            "type": "array",
+                            "widget" : "list",
+                            "title": "Fulltext",
+                            "description": "Fields array to make a full text search"
+                        },
+                        "facets" : {
+                            "type": "array",
+                            "widget" : "list",
+                            "title": "Facets",
+                            "description": "Facets array to make faceted search"
+                        },
+                        "criteria" : {
+                            "type": "object",
+                            "title": "Criteria",
+                            "description": "Custom criteria for queries in mongo style"
+                        },
+                        "max_facets" : {
+                             "type": "integer",
+                            "title": "Max Facets",
+                            "description": "Maximun limit for faceted queries"
+                        }
+                    }
+                },
+                "Lists" : {
+                    "type" : "object",
+                    "title": "List",
+                    "description" : "Mongo Collection",
+                    "properties" : {
+                        "fulltext" : {
+                            "type": "array",
+                            "widget" : "list",
+                            "title": "Fulltext",
+                            "description": "Fields array to make a full text search"
+                        },
+                        "facets" : {
+                            "type": "array",
+                            "widget" : "list",
+                            "title": "Facets",
+                            "description": "Facets array to make faceted search"
+                        },
+                        "criteria" : {
+                            "type": "object",
+                            "title": "Criteria",
+                            "description": "Custom criteria for queries in mongo style"
+                        },
+                        "max_facets" : {
+                            "type": "integer",
+                            "title": "Max Facets",
+                            "description": "Maximun limit for faceted queries"
+                        }
+                    }
+                },
+                "Scheds" : {
+                    "type" : "object",
+                    "title": "Scheds",
+                    "description" : "Mongo Collection",
+                    "properties" : {
+                        "fulltext" : {
+                            "type": "array",
+                            "widget" : "list",
+                            "title": "Fulltext",
+                            "description": "Fields array to make a full text search"
+                        },
+                        "facets" : {
+                            "type": "array",
+                            "widget" : "list",
+                            "title": "Facets",
+                            "description": "Facets array to make faceted search"
+                        },
+                        "criteria" : {
+                            "type": "object",
+                            "title": "Criteria",
+                            "description": "Custom criteria for queries in mongo style"
+                        },
+                        "max_facets" : {
+                            "type": "integer",
+                            "title": "Max Facets",
+                            "description": "Maximun limit for faceted queries"
+                        }
+                    }
+                },
+                "Pieces" : {
+                    "type" : "object",
+                    "title": "Pieces",
+                    "description" : "Mongo Collection",
+                    "properties" : {
+                        "fulltext" : {
+                            "type": "array",
+                            "widget" : "list",
+                            "title": "Fulltext",
+                            "description": "Fields array to make a full text search"
+                        },
+                        "facets" : {
+                            "type": "array",
+                            "widget" : "list",
+                            "title": "Facets",
+                            "description": "Facets array to make faceted search"
+                        },
+                        "criteria" : {
+                            "type": "object",
+                            "title": "Criteria",
+                            "description": "Custom criteria for queries in mongo style"
+                        },
+                        "max_facets" : {
+                            "type": "integer",
+                            "title": "Max Facets",
+                            "description": "Maximun limit for faceted queries"
+                        }
+                    }
+                },
+                "Transforms" : {
+                    "type" : "object",
+                    "title": "Transforms",
+                    "description" : "Mongo Collection",
+                    "properties" : {
+                        "fulltext" : {
+                            "type": "array",
+                            "widget" : "list",
+                            "title": "Fulltext",
+                            "description": "Fields array to make a full text search"
+                        },
+                        "facets" : {
+                            "type": "array",
+                            "widget" : "list",
+                            "title": "Facets",
+                            "description": "Facets array to make faceted search"
+                        },
+                        "criteria" : {
+                            "type": "object",
+                            "title": "Criteria",
+                            "description": "Custom criteria for queries in mongo style"
+                        },
+                        "max_facets" : {
+                            "type": "integer",
+                            "title": "Max Facets",
+                            "description": "Maximun limit for faceted queries"
+                        }
+                    }
+                },
+                "Status" : {
+                    "type" : "object",
+                    "title": "Scheds",
+                    "description" : "Mongo Collection",
+                    "properties" : {
+                        "fulltext" : {
+                            "type": "array",
+                            "widget" : "list",
+                            "title": "Fulltext",
+                            "description": "Fields array to make a full text search"
+                        },
+                        "facets" : {
+                            "type": "array",
+                            "widget" : "list",
+                            "title": "Facets",
+                            "description": "Facets array to make faceted search"
+                        },
+                        "criteria" : {
+                            "type": "object",
+                            "title": "Criteria",
+                            "description": "Custom criteria for queries in mongo style"
+                        },
+                        "max_facets" : {
+                            "type": "integer",
+                            "title": "Max Facets",
+                            "description": "Maximun limit for faceted queries"
+                        }
+                    }
+                },
+                "Mostomessages" : {
+                    "type" : "object",
+                    "title": "Mostomessages",
+                    "description" : "Mongo Collection",
+                    "properties" : {
+                        "fulltext" : {
+                            "type": "array",
+                            "widget" : "list",
+                            "title": "Fulltext",
+                            "description": "Fields array to make a full text search"
+                        },
+                        "facets" : {
+                            "type": "array",
+                            "widget" : "list",
+                            "title": "Facets",
+                            "description": "Facets array to make faceted search"
+                        },
+                        "criteria" : {
+                            "type": "object",
+                            "title": "Criteria",
+                            "description": "Custom criteria for queries in mongo style"
+                        },
+                        "max_facets" : {
+                            "type": "integer",
+                            "title": "Max Facets",
+                            "description": "Maximun limit for faceted queries"
+                        }
+                    }
+                },
+                "Sketchs" : {
+                    "type" : "object",
+                    "title": "Sketchs",
+                    "description" : "Mongo Collection",
+                    "properties" : {
+                        "fulltext" : {
+                            "type": "array",
+                            "widget" : "list",
+                            "title": "Fulltext",
+                            "description": "Fields array to make a full text search"
+                        },
+                        "facets" : {
+                            "type": "array",
+                            "widget" : "list",
+                            "title": "Facets",
+                            "description": "Facets array to make faceted search"
+                        },
+                        "criteria" : {
+                            "type": "object",
+                            "title": "Criteria",
+                            "description": "Custom criteria for queries in mongo style"
+                        },
+                        "max_facets" : {
+                            "type": "integer",
+                            "title": "Max Facets",
+                            "description": "Maximun limit for faceted queries"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
