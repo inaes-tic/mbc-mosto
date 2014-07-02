@@ -1,4 +1,5 @@
 var mbc      = require('mbc-common')
+,   g_config = mbc.config.Mosto.General
 ,   config   = mbc.config.Mosto.Mongo
 ,   col      = mbc.config.Common.Collections
 ,   mubsub   = require("mubsub")
@@ -8,7 +9,9 @@ var mbc      = require('mbc-common')
 ,   util     = require ('util')
 ,   logger   = mbc.logger().addLogger('MONGO-DRIVER')
 ,   models   = require('../../models/Mosto')
-,   _        = require('underscore');
+,   _        = require('underscore')
+,   fs       = require('fs')
+;
 
 function drop_err(callback, err_handler) {
     return function(err,v) {
@@ -159,22 +162,35 @@ mongo_driver.prototype.createPlaylist = function(sched, callback) {
             var playlist_id = (sched._id.toHexString && sched._id.toHexString()) || sched._id;
 
             var medias = [];
+            var get_length = function(l) {
+                var length = moment(l, "HH:mm:ss.SSS");
+                return moment.duration({
+                    hours: length.hours(),
+                    minutes: length.minutes(),
+                    seconds: length.seconds(),
+                    milliseconds: length.milliseconds(),
+                })
+            };
             pieces.forEach(function(block, order) {
-                var block_id = (block._id.toHexString && block._id.toHexString()) || block._id;
-                var orig_order = order;
-                var clip_name = block.name;
+                var media = {};
+                media.id = (block._id.toHexString && block._id.toHexString()) || block._id;
+                media.orig_order = order;
+                media.name = block.name;
                 // TODO: don't know what goes in type
-                var type = "default";
-                var file = block.file;
-                var length = moment(block.durationraw, "HH:mm:ss.SSS");
-                var fps = block.video.fps;
-                medias.push({"id": block_id, "orig_order": orig_order, "playlist_id": playlist_id, "name": clip_name, "type": type, "file": file,
-                                      "length": moment.duration({
-                                          hours: length.hours(),
-                                          minutes: length.minutes(),
-                                          seconds: length.seconds(),
-                                          milliseconds: length.milliseconds(),
-                                      }), "fps": parseFloat(fps)});
+                media.type = "default";
+                if(!fs.existsSync(block.file)) {
+                    media.file = g_config.blank;
+                    media.broken = block.file;
+                }
+                else {
+                    media.file = block.file;
+                }
+                media.length = get_length(block.durationraw);
+                media.fps = block.video.fps;
+                medias.push(media);
+                if(media.broken) {
+                    self.emit('file-not-found', media);
+                }
             });
 
             var playlist = new models.Playlist({"id": playlist_id, "name": name, "start": startDate, "end": endDate, "mode": "snap", "medias": medias});

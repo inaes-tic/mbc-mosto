@@ -90,6 +90,27 @@ mosto.prototype.initDriver = function() {
         self.playlists.removePlaylist(id);
     });
 
+    this.pl_driver.on('file-not-found', function(media) {
+        var error = self.status_driver.publishMessage(self.status_driver.CODES.FILE_NOT_FOUND, JSON.stringify(media), undefined, media.file);
+    });
+
+    this.playlists.on('remove:playlists', function(playlist) {
+        var broken = playlist.get('medias').filter(function(m) { return m.get("broken") });
+        broken.forEach(function(model) {
+            if(model.get('broken')) {
+                // a broken file was removed, drop messages regarding it
+                self.status_driver.dropMessage(self.status_driver.CODES.FILE_NOT_FOUND, model.get('broken'));
+            }
+        });
+    });
+
+    this.playlists.on('melted-disconnected:melted_medias', function() {
+        self.status_driver.publishMessage(self.status_driver.CODES.MELTED_CONN, "Connection with melted lost", undefined, "playlists");
+    });
+    this.playlists.on('melted-connected:melted_medias', function() {
+        self.status_driver.dropMessage(self.status_driver.CODES.MELTED_CONN, 'playlists');
+    });
+
     self.pl_driver.start();
 };
 
@@ -180,6 +201,20 @@ mosto.prototype.initHeartbeats = function() {
 
     self.heartbeats.on('startPlaying', function() {
         self.emit('playing');
+    });
+
+    self.on('playing', function() {
+        self.status_driver.publishMessage(self.status_driver.CODES.PLAY);
+    });
+    self.heartbeats.on('outOfSync', function() {
+        self.status_driver.publishMessage(self.status_driver.CODES.SYNC);
+    });
+
+    self.heartbeats.on('melted-disconnected', function() {
+        self.status_driver.publishMessage(self.status_driver.CODES.MELTED_CONN, "Connection with melted lost", undefined, "heartbeats");
+    });
+    self.heartbeats.on('melted-connected', function() {
+        self.status_driver.dropMessage(self.status_driver.CODES.MELTED_CONN, 'heartbeats');
     });
 
     self.heartbeats.init();

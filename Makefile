@@ -91,3 +91,5 @@ debug-test: videos melted-check
 clean-test:
 	rm ${TEST_VIDEOS} ${TEST_XMLS}
 
+node:
+	${NODE}
