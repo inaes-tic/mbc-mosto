@@ -107,7 +107,7 @@ describe('start mvcp-driver test', function(done) {
                     var pl = undefined;
                     var st = undefined;
                     before(function(done) {
-                        var clip = getMedia(1, 0, 1, file1.substring(file1.lastIndexOf("/") + 1), "default", file1, 1600, 25);
+                        var clip = getMedia(1, 0, 1, file1.substring(file1.lastIndexOf("/") + 1), "video", file1, 1600, 25);
                         //            server.stop().then(server.clearPlaylist()).then(server.loadClip(clip)).then(function() {
                         //                return server.getServerPlaylist().then(function(playlist) {
                         //                    pl = playlist;
@@ -210,7 +210,7 @@ describe('start mvcp-driver test', function(done) {
                     var pl = undefined;
                     var st = undefined;
                     before(function(done) {
-                        var clip = getMedia(2, 1, 1, file2.substring(file1.lastIndexOf("/") + 1), "default", file2, 3200, 25);
+                        var clip = getMedia(2, 1, 1, file2.substring(file1.lastIndexOf("/") + 1), "video", file2, 3200, 25);
                         server.appendClip(clip).then(function() {
                             return server.getServerPlaylist().then(function(playlist) {
                                 pl = playlist;
@@ -260,7 +260,7 @@ describe('start mvcp-driver test', function(done) {
                     var pl = undefined;
                     var st = undefined;
                     before(function(done) {
-                        var clip = getMedia(3, 2, 1, file3.substring(file1.lastIndexOf("/") + 1), "default", file3, 6400, 25);
+                        var clip = getMedia(3, 2, 1, file3.substring(file1.lastIndexOf("/") + 1), "video", file3, 6400, 25);
                         server.insertClip(clip, 1).then(function() {
                             return server.getServerPlaylist().then(function(playlist) {
                                 pl = playlist;
@@ -420,7 +420,7 @@ describe('start mvcp-driver test', function(done) {
                     var pl = undefined;
                     var st = undefined;
                     before(function(done) {
-                        var clip = getMedia(4, 3, 1, file2.substring(file1.lastIndexOf("/") + 1), "default", file2, 3200, 25);
+                        var clip = getMedia(4, 3, 1, file2.substring(file1.lastIndexOf("/") + 1), "video", file2, 3200, 25);
                         server.appendClip(clip).then(function() {
                             return server.getServerPlaylist().then(function(playlist) {
                                 pl = playlist;
@@ -794,7 +794,7 @@ describe('start mvcp-driver test', function(done) {
                     });
                     list.forEach(function(f, i) {
                         var clip = getMedia(i, 0, 1, f.substring(f.lastIndexOf("/") + 1),
-                                             "default", f, 1600, 25);
+                                             "video", f, 1600, 25);
                         server.appendClip(clip).then(function() {
                             assert.equal(count, i);
                             count++;

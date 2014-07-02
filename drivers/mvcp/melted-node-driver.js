@@ -177,12 +177,22 @@ melted.prototype.sendClip = function(clip, command) {
     logger.debug(this.uuid + " - Generating file " + filename);
 
     logger.debug(this.uuid + " - Adding media [" + file + "] to file " + filename);
-    var video = new melted_xml.Producer.Video({ source: file, startFrame: clip.in, length: clip.length });
-    xml.push(video);
+    var media = undefined;
+    if (clip.type === 'video') {
+        media = new melted_xml.Producer.Video({ source: file, startFrame: clip.in, length: clip.length });
+    } else if (clip.type === 'image') {
+        media = new melted_xml.Producer.Image({ source: file, startFrame: clip.in, length: clip.length });
+    } else {
+        var err = new Error("Media Type not supported:", clip.type);
+        logger.error(err);
+        throw err;
+    }
+        
+    xml.push(media);
 
     logger.debug(this.uuid + " - Creating playlist xml object for file " + filename);
     var pl = new melted_xml.Playlist;
-    pl.entry({producer: video});
+    pl.entry({producer: media});
     xml.push(pl);
 
     logger.debug(this.uuid + " - Creating track xml object for file " + filename);
