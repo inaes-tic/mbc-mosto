@@ -1,3 +1,14 @@
+/* XXX: I need the patched models for status driver.
+ * Not putting this there so everything is on one place.
+ */
+var mbc           = require('mbc-common')
+,   db            = mbc.db()
+,   backends_conf = require('./backends')(db)
+,   iobackends    = new mbc.iobackends(db, backends_conf)
+;
+iobackends.patchBackbone();
+
+//
 var fs               = require('fs')
 ,   util             = require('util')
 ,   events           = require('events')
@@ -7,13 +18,13 @@ var fs               = require('fs')
 ,   playlists_driver = require('./drivers/playlists/playlists-driver')
 ,   status_driver    = require('./drivers/status/pubsub')
 ,   utils            = require('./utils')
-,   mbc              = require('mbc-common')
 ,   config           = mbc.config.Mosto.General
 ,   _                = require('underscore')
 ,   heartbeats       = require('./heartbeats')
 ,   models           = require('./models/Mosto')
 ,   logger           = mbc.logger().addLogger('CORE')
 ;
+
 //TODO: Chequear window, se esta construyendo de formas distintas
 //INCLUSO EN EL DRIVER MISMO SE USA DE FORMAS DISTINTAS!!!
 function mosto(customConfig) {
@@ -88,6 +99,27 @@ mosto.prototype.initDriver = function() {
     this.pl_driver.on('delete', function(id) {
         logger.debug("Received delete event for playlist " + id);
         self.playlists.removePlaylist(id);
+    });
+
+    this.pl_driver.on('file-not-found', function(media) {
+        var error = self.status_driver.publishMessage(self.status_driver.CODES.FILE_NOT_FOUND, JSON.stringify(media), undefined, media.file);
+    });
+
+    this.playlists.on('remove:playlists', function(playlist) {
+        var broken = playlist.get('medias').filter(function(m) { return m.get("broken") });
+        broken.forEach(function(model) {
+            if(model.get('broken')) {
+                // a broken file was removed, drop messages regarding it
+                self.status_driver.dropMessage(self.status_driver.CODES.FILE_NOT_FOUND, model.get('broken'));
+            }
+        });
+    });
+
+    this.playlists.on('melted-disconnected:melted_medias', function() {
+        self.status_driver.publishMessage(self.status_driver.CODES.MELTED_CONN, "Connection with melted lost", undefined, "playlists");
+    });
+    this.playlists.on('melted-connected:melted_medias', function() {
+        self.status_driver.dropMessage(self.status_driver.CODES.MELTED_CONN, 'playlists');
     });
 
     self.pl_driver.start();
@@ -180,6 +212,20 @@ mosto.prototype.initHeartbeats = function() {
 
     self.heartbeats.on('startPlaying', function() {
         self.emit('playing');
+    });
+
+    self.on('playing', function() {
+        self.status_driver.publishMessage(self.status_driver.CODES.PLAY);
+    });
+    self.heartbeats.on('outOfSync', function() {
+        self.status_driver.publishMessage(self.status_driver.CODES.SYNC);
+    });
+
+    self.heartbeats.on('melted-disconnected', function() {
+        self.status_driver.publishMessage(self.status_driver.CODES.MELTED_CONN, "Connection with melted lost", undefined, "heartbeats");
+    });
+    self.heartbeats.on('melted-connected', function() {
+        self.status_driver.dropMessage(self.status_driver.CODES.MELTED_CONN, 'heartbeats');
     });
 
     self.heartbeats.init();

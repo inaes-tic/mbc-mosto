@@ -10,15 +10,28 @@ var melted_node = require('melted-node')
 ,   logger      = mbc.logger().addLogger('MELTED-NODE-DRIVER')
 ,   melted_log  = mbc.logger().addLogger('MELTED-NODE')
 ,   uuid        = require('node-uuid')
+,   events      = require('events')
+,   util        = require('util')
 ;
 
 function melted(host, port, timeout) {
     this.uuid = uuid.v4();
     logger.debug(this.uuid + " - Creating server instance [" + host + ":" + port + "]");
     this.mlt = new melted_node(host, port, melted_log, timeout);
+    var self = this;
+    ['response-timeout', 'command-error', 'command-response', 'start-connection', 'connected', 'disconnected', 'connection-error', 'reconnect', 'disconnect'].forEach(function(event) {
+        self.mlt.on(event, function() {
+            arguments = Array.prototype.slice.call(arguments, 0);
+            arguments.splice(0,0, event);
+            self.emit.apply(self, arguments);
+        });
+    });
     this.commandQueue = Q.resolve();
     logger.debug(this.uuid + " - Server instance created [" + this.mlt.host + ":" + this.mlt.port + "]");
+    events.EventEmitter.call(this);
 }
+
+util.inherits(melted, events.EventEmitter)
 
 melted.prototype._sendCommand = function(command) {
     logger.debug(this.uuid + " - Sending command: " + command);
@@ -115,7 +128,7 @@ melted.prototype.getServerStatus = function() {
         }
         var err = new Error(self.uuid + " - Error getting server status in response object: " + response)
         throw (err);
-    }).fail(function() {
+    }).fail(function(error) {
         var err = new Error(self.uuid + " - Error getting server status: " + error);
         logger.error(err.message);
         throw err;
